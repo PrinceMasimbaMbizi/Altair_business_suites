@@ -28,10 +28,12 @@ def allowed_file(filename):
 
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Laura#123452005",
-        database="altair_business_suite"
+        host=os.environ.get("DB_HOST"),
+        port=int(os.environ.get("DB_PORT", 3306)),
+        user=os.environ.get("DB_USER"),
+        password=os.environ.get("DB_PASSWORD"),
+        database=os.environ.get("DB_NAME"),
+        ssl_verify_cert=False
     )
 
 
