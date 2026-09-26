@@ -1443,18 +1443,18 @@ def settings():
         # Services
         services = request.form.get("services", "").strip()
 
-        ============================
+        
         # BANKING DETAILS
-        ============================
+        
         bank_name = request.form.get("bank_name", "").strip()
         account_name = request.form.get("account_name", "").strip()
         account_number = request.form.get("account_number", "").strip()
         branch_code = request.form.get("branch_code", "").strip()
         payment_terms = request.form.get("payment_terms", "").strip()
 
-        ============================
+        
         # LOGO UPLOAD
-        ============================
+        
         logo = request.files.get("logo")
         logo_filename = None
 
@@ -1489,9 +1489,9 @@ def settings():
                 )
             )
 
-        ============================
+        
         # CHECK IF COMPANY ALREADY EXISTS
-        ============================
+        
         cursor.execute("""
             SELECT id, logo
             FROM companies
@@ -1501,9 +1501,9 @@ def settings():
 
         existing_company = cursor.fetchone()
 
-        ============================
+        
         # UPDATE EXISTING COMPANY
-        ============================
+        
         if existing_company:
 
             # If a new logo was uploaded
@@ -1603,9 +1603,9 @@ def settings():
                     user_id
                 ))
 
-        ============================
+        
         # CREATE COMPANY IF IT DOESN'T EXIST
-        ============================
+        
         else:
 
             cursor.execute("""
