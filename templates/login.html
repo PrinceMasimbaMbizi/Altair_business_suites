@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | Altair Business Suite</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            color: #ffffff;
+
+            background:
+                radial-gradient(circle at 10% 20%,
+                    rgba(124, 58, 237, 0.22),
+                    transparent 35%),
+                radial-gradient(circle at 90% 80%,
+                    rgba(79, 70, 229, 0.18),
+                    transparent 35%),
+                #080812;
+
+            overflow-x: hidden;
+        }
+
+
+        /* BACKGROUND GLOW */
+
+        .background-glow {
+
+            position: fixed;
+
+            width: 500px;
+            height: 500px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(circle,
+                    rgba(139, 92, 246, 0.10),
+                    transparent 70%);
+
+            filter: blur(30px);
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+        .glow-one {
+            top: -250px;
+            left: -200px;
+        }
+
+        .glow-two {
+            bottom: -250px;
+            right: -200px;
+        }
+
+
+        /* MAIN CONTAINER */
+
+        .auth-container {
+
+            position: relative;
+
+            z-index: 2;
+
+            width: 100%;
+
+            max-width: 1050px;
+
+            min-height: 620px;
+
+            display: grid;
+
+            grid-template-columns:
+                0.9fr 1.1fr;
+
+            overflow: hidden;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.10);
+
+            border-radius: 28px;
+
+            background:
+                rgba(255, 255, 255, 0.045);
+
+            backdrop-filter: blur(25px);
+
+            -webkit-backdrop-filter: blur(25px);
+
+            box-shadow:
+                0 35px 100px rgba(0, 0, 0, 0.55);
+        }
+
+
+        /* BRAND PANEL */
+
+        .brand-panel {
+
+            position: relative;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: space-between;
+
+            padding: 55px;
+
+            background:
+                linear-gradient(145deg,
+                    rgba(124, 58, 237, 0.28),
+                    rgba(30, 30, 60, 0.15));
+
+            border-right:
+                1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .brand-content {
+            position: relative;
+            z-index: 2;
+        }
+
+
+        /* LOGO */
+
+        .company-logo {
+
+            width: 82px;
+            height: 82px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 28px;
+
+            border-radius: 22px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.25);
+
+            overflow: hidden;
+        }
+
+
+        .company-logo img {
+
+            width: 140%;
+            height: 140%;
+
+            object-fit: contain;
+
+            padding: 0;
+        }
+
+
+        /* BRAND TEXT */
+
+        .brand-panel h2 {
+
+            font-size: 30px;
+
+            line-height: 1.2;
+
+            letter-spacing: -0.7px;
+
+            margin-bottom: 14px;
+        }
+
+
+        .brand-panel h2 span {
+            color: #a78bfa;
+        }
+
+
+        .brand-description {
+
+            max-width: 360px;
+
+            color: #aaaabc;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        /* FEATURES */
+
+        .features {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 14px;
+
+            margin-top: 35px;
+        }
+
+
+        .feature {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            color: #c9c9d8;
+
+            font-size: 13px;
+        }
+
+
+        .feature-icon {
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background:
+                rgba(139, 92, 246, 0.15);
+
+            border:
+                1px solid rgba(139, 92, 246, 0.20);
+
+            color: #a78bfa;
+
+            font-size: 13px;
+        }
+
+
+        /* BRAND FOOTER */
+
+        .brand-footer {
+
+            color: #77778a;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+
+        /* FORM PANEL */
+
+        .form-panel {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 55px;
+        }
+
+
+        .form-wrapper {
+
+            width: 100%;
+
+            max-width: 420px;
+        }
+
+
+        /* FORM HEADER */
+
+        .form-header {
+
+            margin-bottom: 30px;
+        }
+
+
+        .small-title {
+
+            color: #a78bfa;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 10px;
+        }
+
+
+        .form-header h1 {
+
+            font-size: 30px;
+
+            letter-spacing: -0.8px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .form-header p {
+
+            color: #858596;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+
+        /* FLASH MESSAGE */
+
+        .message {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 12px 14px;
+
+            margin-bottom: 20px;
+
+            border-radius: 11px;
+
+            background:
+                rgba(255, 255, 255, 0.05);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            color: #cfcfde;
+
+            font-size: 12px;
+        }
+
+
+        /* FORM GROUP */
+
+        .form-group {
+
+            margin-bottom: 19px;
+        }
+
+
+        .form-group label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #c9c9d5;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+
+        /* INPUT */
+
+        .input-wrapper {
+
+            position: relative;
+        }
+
+
+        .input-icon {
+
+            position: absolute;
+
+            left: 14px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: #686879;
+
+            font-size: 14px;
+
+            pointer-events: none;
+        }
+
+
+        .form-group input {
+
+            width: 100%;
+
+            height: 50px;
+
+            padding:
+                0 15px 0 42px;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.10);
+
+            border-radius: 12px;
+
+            outline: none;
+
+            background:
+                rgba(8, 8, 18, 0.65);
+
+            color: #ffffff;
+
+            font-size: 13px;
+
+            transition:
+                border 0.2s,
+                box-shadow 0.2s,
+                background 0.2s;
+        }
+
+
+        .form-group input::placeholder {
+            color: #555567;
+        }
+
+
+        .form-group input:focus {
+
+            border-color: #8b5cf6;
+
+            background:
+                rgba(8, 8, 18, 0.85);
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.10);
+        }
+
+
+        /* PASSWORD BUTTON */
+
+        .password-toggle {
+
+            position: absolute;
+
+            right: 13px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: none;
+
+            background: none;
+
+            color: #777789;
+
+            cursor: pointer;
+
+            font-size: 12px;
+        }
+
+
+        .password-toggle:hover {
+            color: #a78bfa;
+        }
+
+
+        /* SIGN IN BUTTON */
+
+        .login-btn {
+
+            width: 100%;
+
+            height: 51px;
+
+            margin-top: 8px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(135deg,
+                    #8b5cf6,
+                    #6366f1);
+
+            color: #ffffff;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 12px 30px rgba(99, 102, 241, 0.20);
+
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s,
+                filter 0.2s;
+        }
+
+
+        .login-btn:hover {
+
+            transform: translateY(-2px);
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 16px 35px rgba(99, 102, 241, 0.28);
+        }
+
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+
+        /* REGISTER LINK */
+
+        .register-link {
+
+            text-align: center;
+
+            margin-top: 22px;
+
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+
+        .register-link a {
+
+            color: #a78bfa;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+
+        .register-link a:hover {
+
+            color: #c4b5fd;
+
+            text-decoration: underline;
+        }
+
+
+        /* SECURITY NOTE */
+
+        .security-note {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            margin-top: 22px;
+
+            color: #5f5f70;
+
+            font-size: 10px;
+        }
+
+
+        /* TABLET / MOBILE */
+
+        @media(max-width: 850px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .auth-container {
+
+                grid-template-columns: 1fr;
+
+                max-width: 520px;
+
+                min-height: auto;
+            }
+
+            .brand-panel {
+                display: none;
+            }
+
+            .form-panel {
+                padding: 40px 25px;
+            }
+        }
+
+
+        @media(max-width: 450px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .auth-container {
+                border-radius: 20px;
+            }
+
+            .form-panel {
+                padding: 32px 20px;
+            }
+
+            .form-header h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <!-- BACKGROUND GLOW -->
+
+    <div class="background-glow glow-one"></div>
+
+    <div class="background-glow glow-two"></div>
+
+
+    <!-- AUTH CONTAINER -->
+
+    <div class="auth-container">
+
+
+        <!-- BRAND PANEL -->
+
+        <section class="brand-panel">
+
+            <div class="brand-content">
+
+
+                <!-- COMPANY LOGO -->
+
+                <div class="company-logo">
+
+                    <img src="{{ url_for('static', filename='images/altair-logo.png') }}"
+                        alt="Altair Business Suite Logo">
+
+                </div>
+
+
+                <h2>
+                    Welcome back.<br>
+                    <span>Let's get started.</span>
+                </h2>
+
+
+                <p class="brand-description">
+
+                    Access your Altair Business Suite workspace and manage
+                    your customers, invoices and business operations
+                    from one professional platform.
+
+                </p>
+
+
+                <div class="features">
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        Secure business workspace
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ◈
+                        </div>
+
+                        Your business data stays private
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ✦
+                        </div>
+
+                        Powerful business management tools
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="brand-footer">
+
+                © 2026 Altair Business Suite<br>
+
+                Professional business management platform.
+
+            </div>
+
+        </section>
+
+
+        <!-- LOGIN FORM -->
+
+        <section class="form-panel">
+
+            <div class="form-wrapper">
+
+
+                <div class="form-header">
+
+                    <div class="small-title">
+                        Welcome back
+                    </div>
+
+                    <h1>
+                        Sign in to your account
+                    </h1>
+
+                    <p>
+                        Enter your credentials to access your secure
+                        business workspace.
+                    </p>
+
+                </div>
+
+
+                <!-- FLASH MESSAGES -->
+
+                {% with messages = get_flashed_messages() %}
+
+                {% if messages %}
+
+                {% for message in messages %}
+
+                <div class="message">
+
+                    <span>●</span>
+
+                    {{ message }}
+
+                </div>
+
+                {% endfor %}
+
+                {% endif %}
+
+                {% endwith %}
+
+
+                <!-- LOGIN FORM -->
+
+                <form method="POST">
+
+
+                    <!-- EMAIL -->
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Business Email
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                ✉
+                            </span>
+
+                            <input id="email" type="email" name="email" placeholder="you@company.com"
+                                autocomplete="email" required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                🔒
+                            </span>
+
+                            <input id="password" type="password" name="password" placeholder="Enter your password"
+                                autocomplete="current-password" required>
+
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LOGIN BUTTON -->
+
+                    <button type="submit" class="login-btn">
+                        Sign In
+                    </button>
+
+                </form>
+
+
+                <!-- REGISTER -->
+
+                <div class="register-link">
+
+                    Don't have an account?
+
+                    <a href="{{ url_for('register') }}">
+                        Create account
+                    </a>
+
+                </div>
+
+
+                <!-- SECURITY -->
+
+                <div class="security-note">
+
+                    🔐 Your account credentials are securely protected.
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+    <!-- PASSWORD SCRIPT -->
+
+    <script>
+
+        function togglePassword() {
+
+            const password =
+                document.getElementById("password");
+
+            const button =
+                document.querySelector(".password-toggle");
+
+
+            if (password.type === "password") {
+
+                password.type = "text";
+
+                button.textContent = "Hide";
+
+            } else {
+
+                password.type = "password";
+
+                button.textContent = "Show";
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

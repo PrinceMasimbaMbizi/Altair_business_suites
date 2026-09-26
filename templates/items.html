@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Inventory | Altair Business Suite
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b0b14;
+            color: #ffffff;
+        }
+
+        /* 
+           SIDEBAR
+         */
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            width: 250px;
+            height: 100vh;
+
+            background: #11111c;
+
+            border-right: 1px solid #242438;
+
+            padding: 25px 18px;
+
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin-bottom: 35px;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+
+            border-radius: 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: #ffffff;
+
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .brand-name {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: #77778a;
+            margin-top: 3px;
+        }
+
+        .nav-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+
+            color: #666678;
+
+            margin: 25px 10px 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 12px 14px;
+
+            margin-bottom: 5px;
+
+            color: #9c9cad;
+
+            text-decoration: none;
+
+            border-radius: 10px;
+
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #1b1b2b;
+            color: white;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg,
+                    rgba(0, 240, 255, 0.15),
+                    rgba(255, 0, 212, 0.08));
+
+            color: #00f0ff;
+
+            border-left: 3px solid #00f0ff;
+        }
+
+        /* 
+           MAIN
+         */
+
+        .main {
+            margin-left: 250px;
+
+            padding: 30px;
+
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 30px;
+            margin: 0 0 6px;
+        }
+
+        .page-subtitle {
+            color: #77778a;
+            margin: 0;
+        }
+
+        .company-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .company-logo {
+            width: 45px;
+            height: 45px;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+
+            border: 1px solid #33334a;
+        }
+
+        .company-logo-placeholder {
+            width: 45px;
+            height: 45px;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .company-name {
+            font-weight: bold;
+        }
+
+        .user-name {
+            color: #77778a;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        /* 
+           STATS
+         */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #13131f;
+
+            border: 1px solid #242438;
+
+            border-radius: 15px;
+
+            padding: 20px;
+        }
+
+        .stat-label {
+            color: #77778a;
+
+            font-size: 13px;
+
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 27px;
+            font-weight: bold;
+        }
+
+        .stat-warning {
+            color: #ffb020;
+        }
+
+        .stat-danger {
+            color: #ff4d67;
+        }
+
+        .stat-money {
+            color: #00f0ff;
+        }
+
+        /* 
+           TOOLBAR
+         */
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 15px;
+
+            margin-bottom: 18px;
+        }
+
+        .search-box {
+            flex: 1;
+
+            max-width: 450px;
+        }
+
+        .search-box input {
+            width: 100%;
+
+            background: #13131f;
+
+            border: 1px solid #292940;
+
+            border-radius: 10px;
+
+            padding: 13px 15px;
+
+            color: white;
+
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #00f0ff;
+        }
+
+        .btn {
+            border: none;
+
+            border-radius: 10px;
+
+            padding: 13px 18px;
+
+            background: linear-gradient(135deg,
+                    #00f0ff,
+                    #9d4edd);
+
+            color: white;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 
+           TABLE
+         */
+
+        .table-container {
+            background: #13131f;
+
+            border: 1px solid #242438;
+
+            border-radius: 15px;
+
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 1000px;
+        }
+
+        th {
+            text-align: left;
+
+            color: #77778a;
+
+            font-size: 12px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+            padding: 17px;
+
+            border-bottom: 1px solid #242438;
+        }
+
+        td {
+            padding: 17px;
+
+            border-bottom: 1px solid #1f1f30;
+
+            color: #d8d8e2;
+
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #171725;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: white;
+        }
+
+        .sku {
+            font-size: 11px;
+            color: #666678;
+            margin-top: 4px;
+        }
+
+        .type {
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+
+            background: rgba(0,
+                    240,
+                    255,
+                    0.1);
+
+            color: #00f0ff;
+        }
+
+        .type.service {
+            background: rgba(255,
+                    0,
+                    212,
+                    0.1);
+
+            color: #ff55df;
+        }
+
+        .status {
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+        }
+
+        .status.active {
+            background: rgba(0,
+                    220,
+                    130,
+                    0.12);
+
+            color: #00dc82;
+        }
+
+        .status.inactive {
+            background: rgba(150,
+                    150,
+                    150,
+                    0.12);
+
+            color: #aaa;
+        }
+
+        .stock-good {
+            color: #00dc82;
+        }
+
+        .stock-low {
+            color: #ffb020;
+        }
+
+        .stock-out {
+            color: #ff4d67;
+        }
+
+        .actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .action-btn {
+            border: 1px solid #303049;
+
+            background: #1a1a29;
+
+            color: #aaa;
+
+            border-radius: 7px;
+
+            padding: 7px 10px;
+
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            color: white;
+            border-color: #00f0ff;
+        }
+
+        .delete-btn:hover {
+            border-color: #ff4d67;
+            color: #ff4d67;
+        }
+
+        /* 
+           EMPTY
+         */
+
+        .empty {
+            text-align: center;
+
+            padding: 60px 20px;
+
+            color: #77778a;
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        /* 
+           MODAL
+         */
+
+        .modal {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,
+                    0,
+                    0,
+                    0.72);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 9999;
+
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+
+            max-width: 700px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            background: #151522;
+
+            border: 1px solid #303049;
+
+            border-radius: 18px;
+
+            padding: 25px;
+        }
+
+        .modal-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 22px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close {
+            border: none;
+
+            background: none;
+
+            color: #77778a;
+
+            font-size: 25px;
+
+            cursor: pointer;
+        }
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+
+            color: #aaaabd;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            padding: 12px;
+
+            border-radius: 9px;
+
+            border: 1px solid #303049;
+
+            background: #0e0e18;
+
+            color: white;
+
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #00f0ff;
+        }
+
+        textarea {
+            min-height: 90px;
+
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+            margin-top: 22px;
+        }
+
+        .cancel-btn {
+            background: #252535;
+
+            border: 1px solid #33334a;
+
+            color: #aaa;
+
+            border-radius: 9px;
+
+            padding: 12px 18px;
+
+            cursor: pointer;
+        }
+
+        /* 
+           FLASH
+         */
+
+        .flash {
+            padding: 13px 17px;
+
+            margin-bottom: 20px;
+
+            border-radius: 10px;
+
+            background: #171725;
+
+            border: 1px solid #303049;
+        }
+
+        .flash.success {
+            border-color: #00dc82;
+            color: #00dc82;
+        }
+
+        .flash.error {
+            border-color: #ff4d67;
+            color: #ff4d67;
+        }
+
+        /* 
+           MOBILE
+         */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+        }
+
+        @media (max-width: 800px) {
+
+            .sidebar {
+                position: relative;
+
+                width: 100%;
+
+                height: auto;
+
+                border-right: none;
+
+                border-bottom: 1px solid #242438;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .topbar {
+                align-items: flex-start;
+
+                gap: 15px;
+
+                flex-direction: column;
+            }
+
+        }
+
+        @media (max-width: 550px) {
+
+            .main {
+                padding: 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+    <!-- 
+     SIDEBAR
+ -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                A
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    Altair Business
+                </div>
+
+                <div class="brand-subtitle">
+                    Business Suite
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="nav-title">
+            Main
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="nav-link">
+
+            📊 Dashboard
+
+        </a>
+
+        <a href="{{ url_for('customer') }}" class="nav-link">
+
+            👥 Customers
+
+        </a>
+
+        <a href="{{ url_for('invoice') }}" class="nav-link">
+
+            🧾 Invoices
+
+        </a>
+
+        <a href="{{ url_for('items') }}" class="nav-link active">
+
+            📦 Inventory
+
+        </a>
+
+
+        <div class="nav-title">
+            Business
+        </div>
+
+        <a href="#" class="nav-link">
+            💳 Transactions
+        </a>
+
+        <a href="#" class="nav-link">
+            🤖 AI Lead Finder
+        </a>
+
+        <a href="#" class="nav-link">
+            📈 Facebook Analytics
+        </a>
+
+        <a href="#" class="nav-link">
+            💬 WhatsApp Analytics
+        </a>
+
+
+        <div class="nav-title">
+            Settings
+        </div>
+
+        <a href="#" class="nav-link">
+            🏢 Company Profile
+        </a>
+
+        <a href="#" class="nav-link">
+            📊 Business Analytics
+        </a>
+
+        <a href="#" class="nav-link">
+            🔮 Forecasting
+        </a>
+
+        <a href="#" class="nav-link">
+            ⚙ Settings
+        </a>
+
+        <a href="{{ url_for('logout') }}" class="nav-link">
+
+            🚪 Logout
+
+        </a>
+
+    </aside>
+
+
+    <!-- 
+     MAIN
+ -->
+
+    <main class="main">
+
+
+        <!-- TOP BAR -->
+
+        <div class="topbar">
+
+            <div>
+
+                <h1 class="page-title">
+                    Inventory
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage your products and services
+                </p>
+
+            </div>
+
+
+            <div class="company-area">
+
+                {% if company and company.logo %}
+
+                <img src="{{ url_for(
+                        'static',
+                        filename='uploads/' + company.logo
+                    ) }}" class="company-logo" alt="{{ company.company_name }}">
+
+                {% elif company %}
+
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0] }}
+                </div>
+
+                {% else %}
+
+                <div class="company-logo-placeholder">
+                    A
+                </div>
+
+                {% endif %}
+
+
+                <div>
+
+                    <div class="company-name">
+
+                        {{ company.company_name
+                        if company
+                        else "Your Company" }}
+
+                    </div>
+
+                    <div class="user-name">
+
+                        {{ user_name }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(
+        with_categories=true
+        ) %}
+
+        {% if messages %}
+
+        {% for category, message in messages %}
+
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+        {% endif %}
+
+        {% endwith %}
+
+
+        <!-- 
+         STATISTICS
+    = -->
+
+        <section class="stats">
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total Items
+                </div>
+
+                <div class="stat-value">
+                    {{ total_items }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Products
+                </div>
+
+                <div class="stat-value">
+                    {{ total_products }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Services
+                </div>
+
+                <div class="stat-value">
+                    {{ total_services }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Low Stock
+                </div>
+
+                <div class="stat-value stat-warning">
+                    {{ low_stock }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Inventory Value
+                </div>
+
+                <div class="stat-value stat-money">
+
+                    R{{ "%.2f"|format(
+                    inventory_value|float
+                    ) }}
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 
+         TOOLBAR
+    = -->
+
+        <div class="toolbar">
+
+            <div class="search-box">
+
+                <input type="text" id="searchInput" placeholder="Search products, services, SKU..."
+                    onkeyup="searchInventory()">
+
+            </div>
+
+
+            <button class="btn" onclick="openAddModal()">
+
+                + Add Item
+
+            </button>
+
+        </div>
+
+
+        <!-- 
+         TABLE
+    = -->
+
+        <div class="table-container">
+
+            <table id="inventoryTable">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Item
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
+                        <th>
+                            Cost
+                        </th>
+
+                        <th>
+                            Price
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% if inventory %}
+
+                    {% for item in inventory %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="item-name">
+                                {{ item.item_name }}
+                            </div>
+
+                            {% if item.sku %}
+
+                            <div class="sku">
+                                SKU: {{ item.sku }}
+                            </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if item.item_type == "Service" %}
+
+                            <span class="type service">
+                                Service
+                            </span>
+
+                            {% else %}
+
+                            <span class="type">
+                                Product
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ item.category or "—" }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if item.item_type == "Service" %}
+
+                            <span class="stock-good">
+                                N/A
+                            </span>
+
+                            {% elif item.quantity <= 0 %} <span class="stock-out">
+                                Out of stock
+                                </span>
+
+                                {% elif item.quantity <= item.low_stock_level %} <span class="stock-low">
+                                    {{ item.quantity }}
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="stock-good">
+                                        {{ item.quantity }}
+                                    </span>
+
+                                    {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            R{{ "%.2f"|format(
+                            item.cost_price|float
+                            ) }}
+
+                        </td>
+
+
+                        <td>
+
+                            R{{ "%.2f"|format(
+                            item.selling_price|float
+                            ) }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if item.status == "Active" %}
+
+                            <span class="status active">
+                                Active
+                            </span>
+
+                            {% else %}
+
+                            <span class="status inactive">
+                                Inactive
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="actions">
+
+
+                                <button class="action-btn" onclick='openEditModal(
+                                        {{ item|tojson }}
+                                    )'>
+
+                                    Edit
+
+                                </button>
+
+
+                                <form method="POST" action="{{ url_for(
+                                        'delete_item',
+                                        item_id=item.id
+                                    ) }}" onsubmit="
+                                        return confirm(
+                                            'Delete this item?'
+                                        );
+                                    ">
+
+                                    <button type="submit" class="action-btn delete-btn">
+
+                                        Delete
+
+                                    </button>
+
+                                </form>
+
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    {% else %}
+
+                    <tr>
+
+                        <td colspan="8">
+
+                            <div class="empty">
+
+                                <div class="empty-icon">
+                                    📦
+                                </div>
+
+                                <div>
+                                    No inventory items yet.
+                                </div>
+
+                                <div style="margin-top:8px;">
+                                    Add your first product or service.
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+
+    <!-- 
+     ADD ITEM MODAL
+ -->
+
+    <div class="modal" id="addModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>
+                    Add Inventory Item
+                </h2>
+
+                <button class="close" onclick="closeAddModal()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_item') }}">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Item Name *
+                        </label>
+
+                        <input type="text" name="item_name" required placeholder="e.g. Website Development">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Type *
+                        </label>
+
+                        <select name="item_type" id="addItemType" onchange="toggleStockFields('add')">
+
+                            <option value="Product">
+                                Product
+                            </option>
+
+                            <option value="Service">
+                                Service
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            SKU / Item Code
+                        </label>
+
+                        <input type="text" name="sku" placeholder="e.g. WEB-001">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input type="text" name="category" placeholder="e.g. Web Development">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Quantity
+                        </label>
+
+                        <input type="number" step="0.01" name="quantity" id="addQuantity" value="0">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Low Stock Alert
+                        </label>
+
+                        <input type="number" step="0.01" name="low_stock_level" value="5">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Cost Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="cost_price" value="0" placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Selling Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="selling_price" value="0" placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Supplier
+                        </label>
+
+                        <input type="text" name="supplier" placeholder="Supplier name">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" placeholder="Describe this product or service..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeAddModal()">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit" class="btn">
+
+                        Add Item
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- 
+     EDIT ITEM MODAL
+ -->
+
+    <div class="modal" id="editModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>
+                    Edit Inventory Item
+                </h2>
+
+                <button class="close" onclick="closeEditModal()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form method="POST" id="editForm">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Item Name *
+                        </label>
+
+                        <input type="text" name="item_name" id="editItemName" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Type
+                        </label>
+
+                        <select name="item_type" id="editItemType">
+
+                            <option value="Product">
+                                Product
+                            </option>
+
+                            <option value="Service">
+                                Service
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            SKU / Item Code
+                        </label>
+
+                        <input type="text" name="sku" id="editSKU">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input type="text" name="category" id="editCategory">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Quantity
+                        </label>
+
+                        <input type="number" step="0.01" name="quantity" id="editQuantity">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Low Stock Alert
+                        </label>
+
+                        <input type="number" step="0.01" name="low_stock_level" id="editLowStock">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Cost Price
+                        </label>
+
+                        <input type="number" step="0.01" name="cost_price" id="editCost">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Selling Price
+                        </label>
+
+                        <input type="number" step="0.01" name="selling_price" id="editPrice">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Supplier
+                        </label>
+
+                        <input type="text" name="supplier" id="editSupplier">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status" id="editStatus">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" id="editDescription"></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeEditModal()">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit" class="btn">
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /* 
+           ADD MODAL
+         */
+
+        function openAddModal() {
+
+            document
+                .getElementById("addModal")
+                .classList.add("show");
+
+        }
+
+
+        function closeAddModal() {
+
+            document
+                .getElementById("addModal")
+                .classList.remove("show");
+
+        }
+
+
+        /* 
+           EDIT MODAL
+         */
+
+        function openEditModal(item) {
+
+            document
+                .getElementById("editModal")
+                .classList.add("show");
+
+
+            document
+                .getElementById("editForm")
+                .action =
+                "/items/edit/" + item.id;
+
+
+            document
+                .getElementById("editItemName")
+                .value =
+                item.item_name || "";
+
+
+            document
+                .getElementById("editItemType")
+                .value =
+                item.item_type || "Product";
+
+
+            document
+                .getElementById("editSKU")
+                .value =
+                item.sku || "";
+
+
+            document
+                .getElementById("editCategory")
+                .value =
+                item.category || "";
+
+
+            document
+                .getElementById("editQuantity")
+                .value =
+                item.quantity || 0;
+
+
+            document
+                .getElementById("editLowStock")
+                .value =
+                item.low_stock_level || 5;
+
+
+            document
+                .getElementById("editCost")
+                .value =
+                item.cost_price || 0;
+
+
+            document
+                .getElementById("editPrice")
+                .value =
+                item.selling_price || 0;
+
+
+            document
+                .getElementById("editSupplier")
+                .value =
+                item.supplier || "";
+
+
+            document
+                .getElementById("editStatus")
+                .value =
+                item.status || "Active";
+
+
+            document
+                .getElementById("editDescription")
+                .value =
+                item.description || "";
+
+        }
+
+
+        function closeEditModal() {
+
+            document
+                .getElementById("editModal")
+                .classList.remove("show");
+
+        }
+
+
+        /* 
+           SEARCH
+         */
+
+        function searchInventory() {
+
+            const input =
+                document
+                    .getElementById("searchInput")
+                    .value
+                    .toLowerCase();
+
+            const rows =
+                document
+                    .querySelectorAll(
+                        "#inventoryTable tbody tr"
+                    );
+
+
+            rows.forEach(function (row) {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+                row.style.display =
+                    text.includes(input)
+                        ? ""
+                        : "none";
+
+            });
+
+        }
+
+
+        /* 
+           CLOSE MODAL WHEN CLICKING OUTSIDE
+         */
+
+        window.addEventListener(
+            "click",
+            function (event) {
+
+                const addModal =
+                    document.getElementById("addModal");
+
+                const editModal =
+                    document.getElementById("editModal");
+
+
+                if (event.target === addModal) {
+
+                    closeAddModal();
+
+                }
+
+
+                if (event.target === editModal) {
+
+                    closeEditModal();
+
+                }
+
+            }
+        );
+
+
+        /* 
+           ESC KEY
+         */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+
+                    closeAddModal();
+
+                    closeEditModal();
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>

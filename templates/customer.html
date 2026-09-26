@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Customers | Altair Business Suite</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+    <style>
+        /* 
+           RESET
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+
+            background: #f5f6fa;
+
+            color: #171722;
+
+            overflow: hidden;
+        }
+
+
+        /* 
+           APP
+         */
+
+        .app {
+            display: flex;
+
+            width: 100%;
+
+            height: 100vh;
+
+            overflow: hidden;
+        }
+
+
+        /* 
+           SIDEBAR
+         */
+
+        .sidebar {
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 250px;
+
+            height: 100vh;
+
+            background: #11111c;
+
+            color: white;
+
+            padding: 25px 18px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+
+            z-index: 1000;
+        }
+
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #36364b;
+
+            border-radius: 10px;
+        }
+
+
+        /* 
+           COMPANY LOGO
+         */
+
+        .logo {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding-left: 10px;
+
+            margin-bottom: 40px;
+
+            min-width: 0;
+        }
+
+
+        .logo img,
+        .company-logo-placeholder {
+            width: 40px;
+            height: 40px;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+
+        .logo img {
+            display: block;
+
+            background: #242435;
+
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+
+        .company-logo-placeholder {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            font-size: 18px;
+
+            font-weight: 800;
+        }
+
+
+        .logo-text {
+            min-width: 0;
+        }
+
+
+        .logo-text span {
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+
+        /* 
+           MENU
+         */
+
+        .menu-title {
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+
+        /* 
+           NAVIGATION
+         */
+
+        .nav-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            width: 100%;
+
+            padding: 12px;
+
+            margin-bottom: 5px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            transition: all .2s ease;
+
+            white-space: nowrap;
+        }
+
+
+        .nav-item:hover {
+            background: #242435;
+
+            color: white;
+
+            transform: translateX(2px);
+        }
+
+
+        .nav-item.active {
+            background: #242435;
+
+            color: white;
+
+            border-left: 3px solid #8b5cf6;
+        }
+
+
+        /* 
+           LOGOUT
+         */
+
+        .logout-link {
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
+            transition: .2s;
+        }
+
+
+        .logout-link:hover {
+            color: white;
+        }
+
+
+        /* 
+           MAIN
+         */
+
+        .main {
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            height: 100vh;
+
+            padding: 30px 35px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+        }
+
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f6fa;
+        }
+
+
+        .main::-webkit-scrollbar-thumb {
+            background: #c7c7d1;
+
+            border-radius: 10px;
+        }
+
+
+        /* 
+           PAGE HEADER
+         */
+
+        .page-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 25px;
+        }
+
+
+        .page-header h1 {
+            font-size: 26px;
+
+            font-weight: 800;
+
+            letter-spacing: -.5px;
+        }
+
+
+        .page-header p {
+            color: #777789;
+
+            font-size: 13px;
+
+            margin-top: 6px;
+        }
+
+
+        /* 
+           BUTTON
+         */
+
+        .btn {
+            border: none;
+
+            outline: none;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #6366f1);
+
+            color: white;
+
+            padding: 11px 17px;
+
+            border-radius: 9px;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all .2s ease;
+
+            box-shadow:
+                0 5px 15px rgba(124, 58, 237, .18);
+        }
+
+
+        .btn:hover {
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 7px 20px rgba(124, 58, 237, .25);
+        }
+
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+
+        /* 
+           STATISTICS
+         */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .stat-card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, .04);
+
+            transition: .2s;
+        }
+
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, .07);
+        }
+
+
+        .stat-label {
+            color: #777789;
+
+            font-size: 12px;
+
+            font-weight: 500;
+        }
+
+
+        .stat-card h2 {
+            margin-top: 12px;
+
+            font-size: 24px;
+
+            font-weight: 800;
+
+            letter-spacing: -.5px;
+        }
+
+
+        .growth {
+            margin-top: 7px;
+
+            font-size: 11px;
+
+            color: #16a34a;
+
+            font-weight: 600;
+        }
+
+
+        /* 
+           CARD
+         */
+
+        .card {
+            background: white;
+
+            padding: 22px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, .04);
+
+            margin-bottom: 20px;
+        }
+
+
+        /* 
+           SEARCH
+         */
+
+        .search-box {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .search {
+            width: 320px;
+
+            height: 42px;
+
+            padding: 0 14px;
+
+            border:
+                1px solid #e3e3ea;
+
+            border-radius: 9px;
+
+            outline: none;
+
+            background: #fafafd;
+
+            color: #171722;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            transition: .2s;
+        }
+
+
+        .search::placeholder {
+            color: #9999a8;
+        }
+
+
+        .search:focus {
+            border-color: #8b5cf6;
+
+            background: white;
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, .08);
+        }
+
+
+        /* 
+           TABLE
+         */
+
+        .table-wrapper {
+            width: 100%;
+
+            overflow-x: auto;
+        }
+
+
+        .table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #c7c7d1;
+
+            border-radius: 10px;
+        }
+
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 750px;
+
+            font-size: 12px;
+        }
+
+
+        thead {
+            background: #f8f8fb;
+        }
+
+
+        th {
+            text-align: left;
+
+            padding: 14px 13px;
+
+            color: #777789;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .5px;
+        }
+
+
+        td {
+            padding: 16px 13px;
+
+            border-bottom:
+                1px solid #eeeef3;
+
+            color: #555563;
+
+            white-space: nowrap;
+        }
+
+
+        tbody tr {
+            transition: background .2s ease;
+        }
+
+
+        tbody tr:hover {
+            background: #faf9ff;
+        }
+
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+
+        /* 
+           CUSTOMER
+         */
+
+        .customer {
+            color: #171722;
+
+            font-weight: 700;
+        }
+
+
+        /* 
+           STATUS
+         */
+
+        .status {
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 5px 10px;
+
+            border-radius: 20px;
+
+            font-size: 10px;
+
+            font-weight: 700;
+        }
+
+
+        .status.active {
+            background: #dcfce7;
+
+            color: #15803d;
+        }
+
+
+        .status.pending {
+            background: #fef3c7;
+
+            color: #b45309;
+        }
+
+
+        .status.overdue {
+            background: #fee2e2;
+
+            color: #dc2626;
+        }
+
+
+        /* 
+           EMPTY STATE
+         */
+
+        .empty-state {
+            text-align: center;
+
+            padding: 50px 20px;
+
+            color: #777789;
+        }
+
+
+        .empty-icon {
+            font-size: 35px;
+
+            margin-bottom: 12px;
+        }
+
+
+        .empty-state h3 {
+            color: #171722;
+
+            font-size: 15px;
+
+            margin-bottom: 6px;
+        }
+
+
+        .empty-state p {
+            font-size: 12px;
+        }
+
+
+        /* 
+           RESPONSIVE TABLET
+         */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        /* 
+           MOBILE
+         */
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+
+                padding: 20px 10px;
+            }
+
+
+            .logo {
+                justify-content: center;
+
+                padding: 0;
+            }
+
+
+            .logo-text,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+                display: none;
+            }
+
+
+            .nav-item {
+                justify-content: center;
+
+                padding: 12px 8px;
+            }
+
+
+            .main {
+                margin-left: 70px;
+
+                width: calc(100% - 70px);
+
+                padding: 20px;
+            }
+
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+
+            .page-header {
+                align-items: flex-start;
+
+                gap: 15px;
+            }
+
+
+            .page-header h1 {
+                font-size: 21px;
+            }
+
+
+            .page-header p {
+                font-size: 11px;
+            }
+
+
+            .search-box {
+                flex-direction: column;
+
+                align-items: stretch;
+            }
+
+
+            .search {
+                width: 100%;
+            }
+
+
+            .search-box .btn {
+                width: 100%;
+            }
+
+
+            .card {
+                padding: 17px;
+            }
+
+        }
+
+
+        /* 
+           SMALL MOBILE
+         */
+
+        @media (max-width: 450px) {
+
+            .main {
+                padding: 15px;
+            }
+
+
+            .page-header {
+                flex-direction: column;
+            }
+
+
+            .page-header .btn {
+                width: 100%;
+            }
+
+
+            .stat-card h2 {
+                font-size: 21px;
+            }
+
+        }
+
+        /* 
+   CUSTOMER MODAL
+ */
+
+        .modal {
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(17, 17, 28, 0.65);
+
+            backdrop-filter: blur(6px);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 5000;
+        }
+
+
+        .modal.show {
+            display: flex;
+        }
+
+
+        .modal-content {
+            width: 100%;
+
+            max-width: 650px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, .25);
+
+            animation: modalIn .2s ease;
+        }
+
+
+        @keyframes modalIn {
+
+            from {
+                opacity: 0;
+                transform: translateY(15px) scale(.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+        }
+
+
+        .modal-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            margin-bottom: 25px;
+        }
+
+
+        .modal-header h2 {
+            font-size: 21px;
+
+            font-weight: 800;
+        }
+
+
+        .modal-header p {
+            margin-top: 5px;
+
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+
+        .modal-close {
+            width: 35px;
+
+            height: 35px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #f3f3f7;
+
+            color: #555563;
+
+            font-size: 24px;
+
+            cursor: pointer;
+        }
+
+
+        .modal-close:hover {
+            background: #e8e8ef;
+
+            color: #171722;
+        }
+
+
+        /* FORM */
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 17px;
+        }
+
+
+        .form-group {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+
+        .form-group label {
+            font-size: 11px;
+
+            font-weight: 700;
+
+            color: #555563;
+        }
+
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+
+            border: 1px solid #e1e1e8;
+
+            border-radius: 9px;
+
+            padding: 11px 12px;
+
+            background: #fafafd;
+
+            color: #171722;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            outline: none;
+
+            transition: .2s;
+        }
+
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #8b5cf6;
+
+            background: white;
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, .08);
+        }
+
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+
+        /* ACTIONS */
+
+        .modal-actions {
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+            margin-top: 25px;
+
+            padding-top: 18px;
+
+            border-top: 1px solid #eeeef3;
+        }
+
+
+        .cancel-btn {
+            border: none;
+
+            background: #f1f1f5;
+
+            color: #555563;
+
+            padding: 11px 17px;
+
+            border-radius: 9px;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+        }
+
+
+        .cancel-btn:hover {
+            background: #e5e5eb;
+        }
+
+
+        @media (max-width: 600px) {
+
+            .modal-content {
+                padding: 20px;
+
+                max-height: 95vh;
+            }
+
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+
+            .modal-actions button {
+                width: 100%;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="app">
+
+
+        <!-- 
+         SIDEBAR
+     -->
+
+        <aside class="sidebar">
+
+
+            <!-- COMPANY -->
+
+            <div class="logo">
+
+                {% if company and company.logo %}
+
+                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" alt="{{ company.company_name }}">
+
+                {% elif company %}
+
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0] }}
+                </div>
+
+                {% else %}
+
+                <div class="company-logo-placeholder">
+                    A
+                </div>
+
+                {% endif %}
+
+
+                <div class="logo-text">
+
+                    <span>
+
+                        {% if company %}
+
+                        {{ company.company_name }}
+
+                        {% else %}
+
+                        Altair Business Suite
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- MAIN MENU -->
+
+            <div class="menu-title">
+                Main
+            </div>
+
+
+            <!-- DASHBOARD -->
+
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+
+                📊
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <!-- CUSTOMERS -->
+
+            <a href="{{ url_for('customer') }}" class="nav-item active">
+
+                👥
+
+                <span>
+                    Customers
+                </span>
+
+            </a>
+
+
+            <!-- INVOICES -->
+
+            <a href="{{ url_for('invoice') }}" class="nav-item">
+
+                🧾
+
+                <span>
+                    Invoices
+                </span>
+
+            </a>
+
+
+            <!-- INVENTORY -->
+
+            <a href="{{ url_for('items') }}" class="nav-item">
+
+                📦
+
+                <span>
+                    Inventory
+                </span>
+
+            </a>
+
+
+            <!-- TRANSACTIONS -->
+
+            <a href="#" class="nav-item">
+
+                💳
+
+                <span>
+                    Transactions
+                </span>
+
+            </a>
+
+
+            <!-- INTELLIGENCE -->
+
+            <div class="menu-title">
+                Intelligence
+            </div>
+
+
+            <a href="#" class="nav-item">
+
+                🤖
+
+                <span>
+                    AI Lead Finder
+                </span>
+
+            </a>
+
+
+            <a href="#" class="nav-item">
+
+                📈
+
+                <span>
+                    Analytics
+                </span>
+
+            </a>
+
+
+            <a href="#" class="nav-item">
+
+                🔮
+
+                <span>
+                    Forecasting
+                </span>
+
+            </a>
+
+
+            <!-- SYSTEM -->
+
+            <div class="menu-title">
+                System
+            </div>
+
+
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
+
+                ⚙️
+
+                <span>
+                    Settings
+                </span>
+
+            </a>
+
+
+            <a href="#" class="nav-item">
+
+                🎓
+
+                <span>
+                    Academy
+                </span>
+
+            </a>
+
+
+            <!-- LOGOUT -->
+
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                Logout
+            </a>
+
+
+        </aside>
+
+
+
+        <!-- 
+         MAIN CONTENT
+     -->
+
+        <main class="main">
+
+
+            <!-- PAGE HEADER -->
+
+            <div class="page-header">
+
+
+                <div>
+
+                    <h1>
+                        Customers
+                    </h1>
+
+                    <p>
+                        Manage your customers and relationships.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn" onclick="openCustomerModal()">
+                    + Add Customer
+                </button>
+
+
+            </div>
+
+
+
+            <!-- 
+             CUSTOMER STATISTICS
+         -->
+
+            <section class="stats">
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Total Customers
+                    </span>
+
+                    <h2>
+                        {{ total_customers }}
+                    </h2>
+
+                    <div class="growth">
+                        Your customers
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        New Customers
+                    </span>
+
+                    <h2>
+                        {{ new_customers }}
+                    </h2>
+
+                    <div class="growth">
+                        This month
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Active Customers
+                    </span>
+
+                    <h2>
+                        {{ active_customers }}
+                    </h2>
+
+                    <div class="growth">
+                        Currently active
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Average Value
+                    </span>
+
+                    <h2>
+                        R{{ "%.2f"|format(average_value|float) }}
+                    </h2>
+
+                    <div class="growth">
+                        Customer value
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- 
+             CUSTOMER TABLE
+         -->
+
+            <div class="card">
+
+
+                <div class="search-box">
+
+
+                    <input type="text" id="customerSearch" class="search" placeholder="Search customers..."
+                        autocomplete="off">
+
+
+                    <button type="button" class="btn" onclick="clearSearch()">
+                        Clear
+                    </button>
+
+
+                </div>
+
+
+
+                <div class="table-wrapper">
+
+
+                    <table id="customerTable">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Customer
+                                </th>
+
+                                <th>
+                                    Email
+                                </th>
+
+                                <th>
+                                    Phone
+                                </th>
+
+                                <th>
+                                    Orders
+                                </th>
+
+                                <th>
+                                    Total Spent
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% if customers %}
+
+                            {% for customer in customers %}
+
+                            <tr>
+
+                                <td>
+                                    <div class="customer">
+                                        {{ customer.name }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ customer.email or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ customer.phone or "—" }}
+                                </td>
+
+                                <td>
+                                    {{ customer.orders or 0 }}
+                                </td>
+
+                                <td>
+                                    R{{ "%.2f"|format(customer.total_spent|float) }}
+                                </td>
+
+                                <td>
+
+                                    {% if customer.status == "Active" %}
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                    {% elif customer.status == "Pending" %}
+
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+
+                                    {% else %}
+
+                                    <span class="status overdue">
+                                        {{ customer.status }}
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                            {% else %}
+
+                            <tr>
+
+                                <td colspan="6">
+
+                                    <div class="empty-state">
+
+                                        <div class="empty-icon">
+                                            👥
+                                        </div>
+
+                                        <h3>
+                                            No customers yet
+                                        </h3>
+
+                                        <p>
+                                            Add your first customer to start
+                                            managing your customer relationships.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            {% endif %}
+
+                        </tbody>
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </main>
+
+
+    </div>
+
+
+    <!-- 
+     ADD CUSTOMER MODAL
+ -->
+
+    <div id="customerModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Add Customer</h2>
+
+                    <p>
+                        Add a new customer to {{ company.company_name }}.
+                    </p>
+                </div>
+
+                <button type="button" class="modal-close" onclick="closeCustomerModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_customer') }}">
+
+                <div class="form-grid">
+
+                    <!-- NAME -->
+
+                    <div class="form-group full">
+
+                        <label>
+                            Customer Name *
+                        </label>
+
+                        <input type="text" name="name" placeholder="Enter customer name" required>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Email
+                        </label>
+
+                        <input type="email" name="email" placeholder="customer@example.com">
+
+                    </div>
+
+
+                    <!-- PHONE -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Phone
+                        </label>
+
+                        <input type="text" name="phone" placeholder="+27 00 000 0000">
+
+                    </div>
+
+
+                    <!-- COMPANY -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Company
+                        </label>
+
+                        <input type="text" name="company_name" placeholder="Customer company">
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Pending">
+                                Pending
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- CITY -->
+
+                    <div class="form-group">
+
+                        <label>
+                            City
+                        </label>
+
+                        <input type="text" name="city" placeholder="City">
+
+                    </div>
+
+
+                    <!-- COUNTRY -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Country
+                        </label>
+
+                        <input type="text" name="country" placeholder="Country">
+
+                    </div>
+
+
+                    <!-- ADDRESS -->
+
+                    <div class="form-group full">
+
+                        <label>
+                            Address
+                        </label>
+
+                        <textarea name="address" rows="3" placeholder="Customer address"></textarea>
+
+                    </div>
+
+
+                    <!-- NOTES -->
+
+                    <div class="form-group full">
+
+                        <label>
+                            Notes
+                        </label>
+
+                        <textarea name="notes" rows="3" placeholder="Additional customer information..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+
+                <div class="modal-actions">
+
+                    <button type="button" class="cancel-btn" onclick="closeCustomerModal()">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="btn">
+                        Save Customer
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- 
+     JAVASCRIPT
+ -->
+
+    <script>
+
+
+        /* 
+           CUSTOMER SEARCH
+         */
+
+        const searchInput =
+            document.getElementById("customerSearch");
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                function () {
+
+                    const searchValue =
+                        this.value.toLowerCase().trim();
+
+
+                    const rows =
+                        document.querySelectorAll(
+                            "#customerTable tbody tr"
+                        );
+
+
+                    rows.forEach(function (row) {
+
+                        const text =
+                            row.textContent.toLowerCase();
+
+
+                        if (
+                            searchValue === "" ||
+                            text.includes(searchValue)
+                        ) {
+
+                            row.style.display = "";
+
+                        } else {
+
+                            row.style.display = "none";
+
+                        }
+
+                    });
+
+                }
+            );
+
+        }
+
+
+        /* 
+           CLEAR SEARCH
+         */
+
+        function clearSearch() {
+
+            if (!searchInput) {
+                return;
+            }
+
+            searchInput.value = "";
+
+            const rows =
+                document.querySelectorAll(
+                    "#customerTable tbody tr"
+                );
+
+
+            rows.forEach(function (row) {
+
+                row.style.display = "";
+
+            });
+
+        }
+
+        /* 
+   CUSTOMER MODAL
+ */
+
+        function openCustomerModal() {
+
+            const modal =
+                document.getElementById("customerModal");
+
+            if (modal) {
+
+                modal.classList.add("show");
+
+            }
+
+        }
+
+
+        function closeCustomerModal() {
+
+            const modal =
+                document.getElementById("customerModal");
+
+            if (modal) {
+
+                modal.classList.remove("show");
+
+            }
+
+        }
+
+
+        /* Close when clicking outside */
+
+        document.addEventListener("click", function (event) {
+
+            const modal =
+                document.getElementById("customerModal");
+
+            if (
+                modal &&
+                event.target === modal
+            ) {
+
+                closeCustomerModal();
+
+            }
+
+        });
+
+
+        /* Close with ESC */
+
+        document.addEventListener("keydown", function (event) {
+
+            if (event.key === "Escape") {
+
+                closeCustomerModal();
+
+            }
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>

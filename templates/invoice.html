@@ -1,0 +1,3178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Invoices | Altair Business Suite
+    </title>
+
+
+    <!--GOOGLE FONT-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+
+    <style>
+
+        /* RESET */
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+
+            width: 100%;
+
+            height: 100%;
+        }
+
+
+        body {
+
+            font-family: "Inter", sans-serif;
+
+            background: #f5f6fa;
+
+            color: #171722;
+
+            overflow: hidden;
+        }
+
+
+
+        /* APP */
+
+        .app {
+
+            display: flex;
+
+            width: 100%;
+
+            height: 100vh;
+
+            overflow: hidden;
+        }
+
+
+
+        /* SIDEBAR */
+
+        .sidebar {
+
+            width: 250px;
+
+            height: 100vh;
+
+            background: #11111c;
+
+            color: white;
+
+            padding: 25px 18px;
+
+            position: fixed;
+
+            left: 0;
+
+            top: 0;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+
+            z-index: 1000;
+        }
+
+
+        .sidebar::-webkit-scrollbar {
+
+            width: 5px;
+        }
+
+
+        .sidebar::-webkit-scrollbar-track {
+
+            background: #11111c;
+        }
+
+
+        .sidebar::-webkit-scrollbar-thumb {
+
+            background: #35354b;
+
+            border-radius: 10px;
+        }
+
+
+
+        /* COMPANY LOGO */
+
+        .logo {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 40px;
+
+            padding-left: 10px;
+
+            min-width: 0;
+        }
+
+
+        .logo img,
+        .company-logo-placeholder {
+
+            width: 40px;
+
+            height: 40px;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+
+        .logo img {
+
+            display: block;
+
+            background: #242435;
+
+            border:
+                1px solid rgba(
+                    255,
+                    255,
+                    255,
+                    0.10
+                );
+        }
+
+
+        .company-logo-placeholder {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            color: white;
+
+            font-size: 18px;
+
+            font-weight: 800;
+        }
+
+
+        .logo > div:last-child {
+
+            min-width: 0;
+        }
+
+
+        .logo span {
+
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+
+
+        /* 
+           MENU TITLE
+         */
+
+        .menu-title {
+
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+
+
+        /*  NAVIGATION */
+
+        .nav-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
+        }
+
+
+        .nav-item:hover,
+        .nav-item.active {
+
+            background: #242435;
+
+            color: white;
+        }
+
+
+        .nav-item.active {
+
+            border-left:
+                3px solid #8b5cf6;
+        }
+
+
+
+        /*  LOGOUT */
+
+        .logout-link {
+
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
+            transition: 0.2s;
+        }
+
+
+        .logout-link:hover {
+
+            color: white;
+        }
+
+
+
+        /* 
+           MAIN
+         */
+
+        .main {
+
+            margin-left: 250px;
+
+            width:
+                calc(100% - 250px);
+
+            height: 100vh;
+
+            padding:
+                28px 35px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+        }
+
+
+        .main::-webkit-scrollbar {
+
+            width: 8px;
+        }
+
+
+        .main::-webkit-scrollbar-track {
+
+            background: #f5f6fa;
+        }
+
+
+        .main::-webkit-scrollbar-thumb {
+
+            background: #c9c9d4;
+
+            border-radius: 10px;
+        }
+
+
+        .main::-webkit-scrollbar-thumb:hover {
+
+            background: #a7a7b6;
+        }
+
+
+
+        /* 
+           TOPBAR
+         */
+
+        .topbar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 30px;
+
+            gap: 20px;
+        }
+
+
+        .welcome h1 {
+
+            font-size: 25px;
+
+            font-weight: 800;
+        }
+
+
+        .welcome p {
+
+            color: #777789;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+
+        .top-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+
+        /* 
+           NOTIFICATION
+         */
+
+        .notification {
+
+            width: 40px;
+
+            height: 40px;
+
+            background: white;
+
+            border-radius: 11px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 2px 10px rgba(
+                    0,
+                    0,
+                    0,
+                    0.04
+                );
+        }
+
+
+
+        /* 
+           PROFILE
+         */
+
+        .profile {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: white;
+
+            padding:
+                6px 12px 6px 6px;
+
+            border-radius: 12px;
+        }
+
+
+        .avatar {
+
+            width: 34px;
+
+            height: 34px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+
+        .profile small {
+
+            display: block;
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 2px;
+        }
+
+
+
+        /* 
+           HEADER ACTIONS
+         */
+
+        .invoice-actions {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .btn {
+
+            border: none;
+
+            padding:
+                11px 17px;
+
+            border-radius: 10px;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            transition: 0.2s;
+        }
+
+
+        .btn-primary {
+
+            background: #8b5cf6;
+
+            color: white;
+        }
+
+
+        .btn-primary:hover {
+
+            background: #7c3aed;
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(
+                    124,
+                    58,
+                    237,
+                    0.22
+                );
+        }
+
+
+        .btn-secondary {
+
+            background: white;
+
+            color: #555566;
+
+            border:
+                1px solid #e5e5ec;
+        }
+
+
+        .btn-secondary:hover {
+
+            border-color: #c9c1e9;
+
+            color: #7c3aed;
+        }
+
+
+
+        /* 
+           STATS
+         */
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .stat-card {
+
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(
+                    0,
+                    0,
+                    0,
+                    0.04
+                );
+        }
+
+
+        .stat-top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+
+        .stat-label {
+
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+
+        .stat-icon {
+
+            width: 38px;
+
+            height: 38px;
+
+            border-radius: 11px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        .stat-value {
+
+            margin-top: 12px;
+
+            font-size: 24px;
+
+            font-weight: 800;
+        }
+
+
+        .stat-description {
+
+            margin-top: 6px;
+
+            color: #9999a7;
+
+            font-size: 10px;
+        }
+
+
+
+        /* 
+           SEARCH / FILTER
+         */
+
+        .toolbar {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 18px;
+
+            box-shadow:
+                0 4px 18px rgba(
+                    0,
+                    0,
+                    0,
+                    0.04
+                );
+
+            display: flex;
+
+            gap: 12px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .search {
+
+            flex: 1;
+
+            padding:
+                12px 14px;
+
+            border:
+                1px solid #e2e2e9;
+
+            border-radius: 10px;
+
+            background: #fafafd;
+
+            color: #171722;
+
+            outline: none;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+        }
+
+
+        .search:focus {
+
+            background: white;
+
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(
+                    139,
+                    92,
+                    246,
+                    0.08
+                );
+        }
+
+
+        .search::placeholder {
+
+            color: #aaaab5;
+        }
+
+
+        .filter {
+
+            min-width: 150px;
+
+            padding:
+                12px 14px;
+
+            border:
+                1px solid #e2e2e9;
+
+            border-radius: 10px;
+
+            background: #fafafd;
+
+            color: #555566;
+
+            outline: none;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+
+        .filter:focus {
+
+            border-color: #8b5cf6;
+        }
+
+
+
+        /* 
+           TABLE CARD
+         */
+
+        .table-card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(
+                    0,
+                    0,
+                    0,
+                    0.04
+                );
+
+            overflow: hidden;
+
+            margin-bottom: 20px;
+        }
+
+
+        .table-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 20px 22px;
+
+            border-bottom:
+                1px solid #eeeef3;
+        }
+
+
+        .table-header h3 {
+
+            font-size: 15px;
+        }
+
+
+        .table-header span {
+
+            color: #888899;
+
+            font-size: 11px;
+        }
+
+
+        .table-wrapper {
+
+            overflow-x: auto;
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 900px;
+        }
+
+
+        th {
+
+            padding:
+                14px 20px;
+
+            text-align: left;
+
+            color: #888899;
+
+            font-size: 10px;
+
+            font-weight: 600;
+
+            background: #fafafd;
+
+            border-bottom:
+                1px solid #eeeef3;
+        }
+
+
+        td {
+
+            padding:
+                15px 20px;
+
+            border-bottom:
+                1px solid #eeeef3;
+
+            font-size: 11px;
+
+            color: #555566;
+        }
+
+
+        tr:last-child td {
+
+            border-bottom: none;
+        }
+
+
+        tbody tr {
+
+            transition: 0.15s;
+        }
+
+
+        tbody tr:hover {
+
+            background: #fafaff;
+        }
+
+
+        .invoice-number {
+
+            color: #171722;
+
+            font-weight: 700;
+        }
+
+
+        .customer-name {
+
+            color: #171722;
+
+            font-weight: 600;
+        }
+
+
+        .muted {
+
+            color: #9999a7;
+        }
+
+
+
+        /* 
+           STATUS
+         */
+
+        .status {
+
+            display: inline-block;
+
+            padding:
+                5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 9px;
+
+            font-weight: 700;
+
+            text-transform: capitalize;
+        }
+
+
+        .status.paid {
+
+            background: #ecfdf5;
+
+            color: #16a34a;
+        }
+
+
+        .status.pending {
+
+            background: #fff7ed;
+
+            color: #d97706;
+        }
+
+
+        .status.overdue {
+
+            background: #fef2f2;
+
+            color: #dc2626;
+        }
+
+
+
+        /* 
+           ACTIONS
+         */
+
+        .actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .action {
+
+            padding:
+                6px 9px;
+
+            border:
+                1px solid #e3e3eb;
+
+            background: white;
+
+            color: #555566;
+
+            border-radius: 7px;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 9px;
+
+            transition: 0.2s;
+        }
+
+
+        .action:hover {
+
+            border-color: #8b5cf6;
+
+            color: #7c3aed;
+
+            background: #faf8ff;
+        }
+
+
+        .action.delete {
+
+            color: #dc2626;
+        }
+
+
+        .action.delete:hover {
+
+            border-color: #fecaca;
+
+            background: #fef2f2;
+        }
+
+
+
+        /* 
+           EMPTY STATE
+         */
+
+        .empty {
+
+            text-align: center;
+
+            padding: 60px 20px;
+        }
+
+
+        .empty-icon {
+
+            width: 60px;
+
+            height: 60px;
+
+            margin:
+                0 auto 15px;
+
+            border-radius: 16px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 25px;
+        }
+
+
+        .empty h3 {
+
+            font-size: 16px;
+
+            margin-bottom: 6px;
+        }
+
+
+        .empty p {
+
+            color: #888899;
+
+            font-size: 12px;
+
+            margin-bottom: 18px;
+        }
+
+
+
+        /* 
+           QUICK ACTIONS
+         */
+
+        .quick-actions {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 30px;
+        }
+
+
+        .quick-card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 4px 18px rgba(
+                    0,
+                    0,
+                    0,
+                    0.04
+                );
+
+            text-decoration: none;
+
+            color: #171722;
+
+            transition: 0.2s;
+        }
+
+
+        .quick-card:hover {
+
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 8px 25px rgba(
+                    0,
+                    0,
+                    0,
+                    0.07
+                );
+        }
+
+
+        .quick-icon {
+
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 11px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 13px;
+        }
+
+
+        .quick-card strong {
+
+            display: block;
+
+            font-size: 12px;
+
+            margin-bottom: 5px;
+        }
+
+
+        .quick-card p {
+
+            color: #888899;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+        }
+
+
+
+        /* 
+           FLASH MESSAGE
+         */
+
+        .flash {
+
+            padding:
+                13px 15px;
+
+            border-radius: 10px;
+
+            margin-bottom: 20px;
+
+            background: #ecfdf5;
+
+            border:
+                1px solid #bbf7d0;
+
+            color: #15803d;
+
+            font-size: 12px;
+        }
+
+
+
+        /* 
+           MODAL
+         */
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(
+                    17,
+                    17,
+                    28,
+                    0.70
+                );
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 9999;
+
+            padding: 20px;
+        }
+
+
+        .modal-box {
+
+            width: 100%;
+
+            max-width: 620px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 25px;
+
+            box-shadow:
+                0 20px 60px rgba(
+                    0,
+                    0,
+                    0,
+                    0.20
+                );
+        }
+
+
+        .modal-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 22px;
+        }
+
+
+        .modal-header h2 {
+
+            font-size: 19px;
+        }
+
+
+        .modal-header p {
+
+            margin-top: 4px;
+
+            color: #888899;
+
+            font-size: 11px;
+        }
+
+
+        .close {
+
+            width: 35px;
+
+            height: 35px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #f5f5f9;
+
+            color: #555566;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        .close:hover {
+
+            background: #eeeef5;
+
+            color: #171722;
+        }
+
+
+
+        /* 
+           FORM
+         */
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 17px;
+        }
+
+
+        .form-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .form-group.full {
+
+            grid-column:
+                1 / -1;
+        }
+
+
+        .form-group label {
+
+            color: #555566;
+
+            font-size: 11px;
+
+            font-weight: 600;
+        }
+
+
+        .form-group input,
+        .form-group textarea {
+
+            width: 100%;
+
+            padding:
+                12px 13px;
+
+            border:
+                1px solid #e2e2e9;
+
+            border-radius: 10px;
+
+            background: #fafafd;
+
+            color: #171722;
+
+            outline: none;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+        }
+
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+
+            background: white;
+
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(
+                    139,
+                    92,
+                    246,
+                    0.08
+                );
+        }
+
+
+        .form-group textarea {
+
+            min-height: 100px;
+
+            resize: vertical;
+        }
+
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+
+            color: #aaaab5;
+        }
+
+
+        .submit-btn {
+
+            width: 100%;
+
+            margin-top: 20px;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #8b5cf6;
+
+            color: white;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        .submit-btn:hover {
+
+            background: #7c3aed;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+
+        /* 
+           RESPONSIVE
+         */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .quick-actions {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
+
+
+        @media (max-width: 700px) {
+
+            body {
+
+                overflow: hidden;
+            }
+
+
+            .sidebar {
+
+                width: 70px;
+
+                padding:
+                    20px 10px;
+            }
+
+
+            .logo span,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+
+                display: none;
+            }
+
+
+            .logo {
+
+                justify-content: center;
+
+                padding: 0;
+            }
+
+
+            .logo img,
+            .company-logo-placeholder {
+
+                width: 40px;
+
+                height: 40px;
+            }
+
+
+            .nav-item {
+
+                justify-content: center;
+
+                padding:
+                    12px 8px;
+            }
+
+
+            .main {
+
+                margin-left: 70px;
+
+                width:
+                    calc(100% - 70px);
+
+                padding: 20px;
+            }
+
+
+            .topbar {
+
+                align-items: flex-start;
+            }
+
+
+            .welcome h1 {
+
+                font-size: 20px;
+            }
+
+
+            .welcome p {
+
+                font-size: 11px;
+            }
+
+
+            .profile div {
+
+                display: none;
+            }
+
+
+            .profile {
+
+                padding: 3px;
+            }
+
+
+            .top-actions {
+
+                gap: 8px;
+            }
+
+
+            .invoice-actions {
+
+                width: 100%;
+            }
+
+
+            .invoice-actions .btn {
+
+                flex: 1;
+            }
+
+
+            .stats {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .toolbar {
+
+                flex-direction: column;
+            }
+
+
+            .filter {
+
+                width: 100%;
+            }
+
+
+            .form-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .form-group.full {
+
+                grid-column: auto;
+            }
+
+        }
+
+
+
+        @media (max-width: 450px) {
+
+            .main {
+
+                padding: 15px;
+            }
+
+
+            .welcome h1 {
+
+                font-size: 17px;
+            }
+
+
+            .notification {
+
+                width: 35px;
+
+                height: 35px;
+            }
+
+
+            .avatar {
+
+                width: 30px;
+
+                height: 30px;
+            }
+
+
+            .stat-card {
+
+                padding: 17px;
+            }
+
+
+            .table-header {
+
+                padding:
+                    17px;
+            }
+
+
+            .quick-card {
+
+                padding: 17px;
+            }
+
+
+            .modal-box {
+
+                padding: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- 
+         SIDEBAR
+     -->
+
+    <aside class="sidebar">
+
+
+        <!-- COMPANY LOGO -->
+
+        <div class="logo">
+
+
+            {% if company and company.logo %}
+
+            <img
+                src="{{ url_for('static', filename='uploads/' + company.logo) }}"
+                alt="{{ company.company_name }}"
+            >
+
+            {% else %}
+
+            <div class="company-logo-placeholder">
+
+                {{ company.company_name[0] if company and company.company_name else 'A' }}
+
+            </div>
+
+            {% endif %}
+
+
+            <div>
+
+                <span>
+
+                    {{ company.company_name
+                        if company and company.company_name
+                        else "Altair Business Suite" }}
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- MAIN -->
+
+        <div class="menu-title">
+            Main
+        </div>
+
+
+        <!-- DASHBOARD -->
+
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="nav-item"
+        >
+
+            📊
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <!-- CUSTOMERS -->
+
+        <a
+            href="{{ url_for('customer') }}"
+            class="nav-item"
+        >
+
+            👥
+
+            <span>
+                Customers
+            </span>
+
+        </a>
+
+
+        <!-- INVOICES -->
+
+        <a
+            href="{{ url_for('invoice') }}"
+            class="nav-item active"
+        >
+
+            🧾
+
+            <span>
+                Invoices
+            </span>
+
+        </a>
+
+
+        <!-- INVENTORY -->
+
+        <a
+            href="{{ url_for('items') }}"
+            class="nav-item"
+        >
+
+            📦
+
+            <span>
+                Inventory
+            </span>
+
+        </a>
+
+
+        <!-- TRANSACTIONS -->
+
+        <a
+            href="#"
+            class="nav-item"
+        >
+
+            💳
+
+            <span>
+                Transactions
+            </span>
+
+        </a>
+
+
+
+        <!-- INTELLIGENCE -->
+
+        <div class="menu-title">
+            Intelligence
+        </div>
+
+
+        <a href="#" class="nav-item">
+
+            🤖
+
+            <span>
+                AI Lead Finder
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            🇫
+
+            <span>
+                Facebook Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            🟢
+
+            <span>
+                WhatsApp Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            💼
+
+            <span>
+                Company Profile
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            📈
+
+            <span>
+                Business Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            📊
+
+            <span>
+                Forecasting
+            </span>
+
+        </a>
+
+
+
+        <!-- SYSTEM -->
+
+        <div class="menu-title">
+            System
+        </div>
+
+
+        <!-- SETTINGS -->
+
+        <a
+            href="{{ url_for('settings') }}"
+            class="nav-item"
+        >
+
+            ⚙️
+
+            <span>
+                Settings
+            </span>
+
+        </a>
+
+
+        <!-- LOGOUT -->
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-link"
+        >
+            Logout
+        </a>
+
+
+    </aside>
+
+
+
+    <!-- 
+         MAIN
+     -->
+
+    <main class="main">
+
+
+        <!-- 
+             TOPBAR
+         -->
+
+        <div class="topbar">
+
+
+            <div class="welcome">
+
+                <h1>
+                    Invoices 🧾
+                </h1>
+
+                <p>
+                    Manage invoices, payments and customer billing.
+                </p>
+
+            </div>
+
+
+            <div class="top-actions">
+
+
+                <div class="notification">
+                    🔔
+                </div>
+
+
+                <div class="profile">
+
+
+                    <div class="avatar">
+
+                        {{ user_name[0]|upper if user_name else 'A' }}
+
+                    </div>
+
+
+                    <div>
+
+                        <strong style="font-size:12px;">
+
+                            {{ user_name }}
+
+                        </strong>
+
+                        <small>
+                            Administrator
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- 
+             ACTION BUTTONS
+         -->
+
+        <div class="invoice-actions">
+
+
+            <a
+                href="{{ url_for('dashboard') }}"
+                class="btn btn-secondary"
+            >
+                ← Dashboard
+            </a>
+
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                onclick="openCreateModal()"
+            >
+                + Create Invoice
+            </button>
+
+
+        </div>
+
+
+
+        <!-- 
+             FLASH MESSAGES
+         -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+
+        <!-- 
+             INVOICE STATISTICS
+         -->
+
+        <section class="stats">
+
+
+            <!-- TOTAL -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Total Invoices
+                    </span>
+
+                    <div class="stat-icon">
+                        🧾
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+                    {{ total_invoices }}
+                </div>
+
+
+                <div class="stat-description">
+                    All invoices
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PAID -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Paid
+                    </span>
+
+                    <div class="stat-icon">
+                        ✅
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+                    {{ paid_invoices }}
+                </div>
+
+
+                <div class="stat-description">
+                    Successfully paid
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PENDING -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Pending
+                    </span>
+
+                    <div class="stat-icon">
+                        ⏳
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+                    {{ pending_invoices }}
+                </div>
+
+
+                <div class="stat-description">
+                    Awaiting payment
+                </div>
+
+
+            </div>
+
+
+
+            <!-- OVERDUE -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Overdue
+                    </span>
+
+                    <div class="stat-icon">
+                        ⚠️
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+                    {{ overdue_invoices }}
+                </div>
+
+
+                <div class="stat-description">
+                    Requires attention
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- 
+             AMOUNT STATISTICS
+         -->
+
+        <section class="stats">
+
+
+            <!-- TOTAL AMOUNT -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Total Amount
+                    </span>
+
+                    <div class="stat-icon">
+                        💰
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    R{{ "%.2f"|format(total_amount|float) }}
+
+                </div>
+
+
+                <div class="stat-description">
+                    Invoice value
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PAID AMOUNT -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Paid Amount
+                    </span>
+
+                    <div class="stat-icon">
+                        💵
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    R{{ "%.2f"|format(paid_amount|float) }}
+
+                </div>
+
+
+                <div class="stat-description">
+                    Payments received
+                </div>
+
+
+            </div>
+
+
+
+            <!-- PENDING AMOUNT -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Pending Amount
+                    </span>
+
+                    <div class="stat-icon">
+                        ⏳
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    R{{ "%.2f"|format(pending_amount|float) }}
+
+                </div>
+
+
+                <div class="stat-description">
+                    Awaiting payment
+                </div>
+
+
+            </div>
+
+
+
+            <!-- OVERDUE AMOUNT -->
+
+            <div class="stat-card">
+
+
+                <div class="stat-top">
+
+                    <span class="stat-label">
+                        Overdue Amount
+                    </span>
+
+                    <div class="stat-icon">
+                        ⚠️
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    R{{ "%.2f"|format(overdue_amount|float) }}
+
+                </div>
+
+
+                <div class="stat-description">
+                    Requires attention
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- 
+             SEARCH
+         -->
+
+        <div class="toolbar">
+
+
+            <input
+                type="text"
+                id="invoiceSearch"
+                class="search"
+                placeholder="Search invoice number, customer..."
+                onkeyup="filterInvoices()"
+            >
+
+
+            <select
+                id="statusFilter"
+                class="filter"
+                onchange="filterInvoices()"
+            >
+
+                <option value="all">
+                    All statuses
+                </option>
+
+                <option value="paid">
+                    Paid
+                </option>
+
+                <option value="pending">
+                    Pending
+                </option>
+
+                <option value="overdue">
+                    Overdue
+                </option>
+
+            </select>
+
+
+        </div>
+
+
+
+        <!-- 
+             INVOICE TABLE
+         -->
+
+        <div class="table-card">
+
+
+            <div class="table-header">
+
+
+                <h3>
+                    Invoice Records
+                </h3>
+
+
+                <span>
+                    {{ total_invoices }} invoice(s)
+                </span>
+
+
+            </div>
+
+
+
+            <div class="table-wrapper">
+
+
+                {% if invoices %}
+
+
+                <table id="invoiceTable">
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Invoice
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Due Date
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for item in invoices %}
+
+
+                        <tr>
+
+
+                            <!-- INVOICE -->
+
+                            <td>
+
+                                <span class="invoice-number">
+
+                                    {{ item.invoice_number }}
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- CUSTOMER -->
+
+                            <td>
+
+                                <span class="customer-name">
+
+                                    {{ item.customer_name }}
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- DATE -->
+
+                            <td>
+
+                                <span class="muted">
+
+                                    {{ item.created_at.strftime('%d %b %Y')
+                                       if item.created_at
+                                       else '-' }}
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- DUE DATE -->
+
+                            <td>
+
+                                <span class="muted">
+
+                                    {{ item.due_date
+                                       if item.due_date
+                                       else '-' }}
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- AMOUNT -->
+
+                            <td>
+
+                                <strong>
+
+                                    R{{ "%.2f"|format(item.amount|float) }}
+
+                                </strong>
+
+                            </td>
+
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+
+                                {% set status = item.status|lower %}
+
+
+                                <span class="status {{ status }}">
+
+                                    {{ item.status }}
+
+                                </span>
+
+
+                            </td>
+
+
+
+                            <!-- ACTIONS -->
+
+                            <td>
+
+
+                                <div class="actions">
+
+
+                                    <!-- VIEW -->
+
+                                    <a
+                                        href="{{ url_for('view_invoice', invoice_id=item.id) }}"
+                                        class="action"
+                                    >
+                                        View
+                                    </a>
+
+
+
+                                    <!-- MARK PAID -->
+
+                                    {% if item.status != 'Paid' %}
+
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('mark_invoice_paid', invoice_id=item.id) }}"
+                                        style="display:inline;"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="action"
+                                        >
+                                            Mark Paid
+                                        </button>
+
+                                    </form>
+
+
+                                    {% endif %}
+
+
+
+                                    <!-- REMIND -->
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('remind_invoice', invoice_id=item.id) }}"
+                                        style="display:inline;"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="action"
+                                        >
+                                            Remind
+                                        </button>
+
+                                    </form>
+
+
+
+                                    <!-- DELETE -->
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('delete_invoice', invoice_id=item.id) }}"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Delete this invoice?');"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="action delete"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+
+                                </div>
+
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+
+                </table>
+
+
+                {% else %}
+
+
+                <!-- EMPTY -->
+
+                <div class="empty">
+
+
+                    <div class="empty-icon">
+                        🧾
+                    </div>
+
+
+                    <h3>
+                        No invoices yet
+                    </h3>
+
+
+                    <p>
+                        Create your first invoice to get started.
+                    </p>
+
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="openCreateModal()"
+                    >
+                        + Create Invoice
+                    </button>
+
+
+                </div>
+
+
+                {% endif %}
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- 
+             QUICK ACTIONS
+         -->
+
+        <section class="quick-actions">
+
+
+            <!-- CREATE -->
+
+            <a
+                href="javascript:void(0)"
+                onclick="openCreateModal()"
+                class="quick-card"
+            >
+
+                <div class="quick-icon">
+                    ➕
+                </div>
+
+
+                <strong>
+                    Create Invoice
+                </strong>
+
+
+                <p>
+                    Create a new customer invoice.
+                </p>
+
+
+            </a>
+
+
+
+            <!-- TEMPLATES -->
+
+            <a
+                href="javascript:void(0)"
+                onclick="alert('Invoice templates will be available here.')"
+                class="quick-card"
+            >
+
+                <div class="quick-icon">
+                    🎨
+                </div>
+
+
+                <strong>
+                    Invoice Templates
+                </strong>
+
+
+                <p>
+                    Manage your invoice designs.
+                </p>
+
+
+            </a>
+
+
+
+            <!-- REPORTS -->
+
+            <a
+                href="javascript:void(0)"
+                onclick="alert('Payment reports will be available here.')"
+                class="quick-card"
+            >
+
+                <div class="quick-icon">
+                    📊
+                </div>
+
+
+                <strong>
+                    Payment Reports
+                </strong>
+
+
+                <p>
+                    View payment and revenue reports.
+                </p>
+
+
+            </a>
+
+
+        </section>
+
+
+
+        <div style="height:40px;"></div>
+
+
+    </main>
+
+
+</div>
+
+
+
+<!-- 
+     CREATE INVOICE MODAL
+ -->
+
+<div
+    id="createModal"
+    class="modal"
+>
+
+
+    <div class="modal-box">
+
+
+        <div class="modal-header">
+
+
+            <div>
+
+                <h2>
+                    Create Invoice
+                </h2>
+
+                <p>
+                    Enter the details for the new invoice.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="close"
+                onclick="closeCreateModal()"
+            >
+                &times;
+            </button>
+
+
+        </div>
+
+
+
+        <form
+            method="POST"
+            action="{{ url_for('create_invoice') }}"
+        >
+
+
+            <div class="form-grid">
+
+
+                <!-- CUSTOMER -->
+
+                <div class="form-group full">
+
+                    <label>
+                        Customer Name *
+                    </label>
+
+                    <input
+                        type="text"
+                        name="customer_name"
+                        placeholder="Enter customer name"
+                        required
+                    >
+
+                </div>
+
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label>
+                        Customer Email
+                    </label>
+
+                    <input
+                        type="email"
+                        name="customer_email"
+                        placeholder="customer@example.com"
+                    >
+
+                </div>
+
+
+
+                <!-- AMOUNT -->
+
+                <div class="form-group">
+
+                    <label>
+                        Amount *
+                    </label>
+
+                    <input
+                        type="number"
+                        name="amount"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+
+
+                <!-- SERVICE -->
+
+                <div class="form-group full">
+
+                    <label>
+                        Product / Service
+                    </label>
+
+                    <textarea
+                        name="description"
+                        placeholder="Describe the product or service..."
+                    ></textarea>
+
+                </div>
+
+
+
+                <!-- DUE DATE -->
+
+                <div class="form-group">
+
+                    <label>
+                        Due Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="due_date"
+                    >
+
+                </div>
+
+
+
+                <!-- NOTES -->
+
+                <div class="form-group">
+
+                    <label>
+                        Notes
+                    </label>
+
+                    <textarea
+                        name="notes"
+                        placeholder="Payment notes..."
+                    ></textarea>
+
+                </div>
+
+
+            </div>
+
+
+
+            <button
+                type="submit"
+                class="submit-btn"
+            >
+                Create Invoice
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+    /* 
+       CREATE MODAL
+     */
+
+    function openCreateModal() {
+
+        document.getElementById(
+            "createModal"
+        ).style.display = "flex";
+
+    }
+
+
+    function closeCreateModal() {
+
+        document.getElementById(
+            "createModal"
+        ).style.display = "none";
+
+    }
+
+
+
+    /* 
+       CLOSE MODAL WHEN CLICKING OUTSIDE
+     */
+
+    window.addEventListener(
+        "click",
+        function(event) {
+
+            const modal =
+                document.getElementById(
+                    "createModal"
+                );
+
+
+            if (
+                event.target === modal
+            ) {
+
+                closeCreateModal();
+
+            }
+
+        }
+    );
+
+
+
+    /* 
+       ESCAPE KEY
+     */
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeCreateModal();
+
+            }
+
+        }
+    );
+
+
+
+    /* 
+       SEARCH + STATUS FILTER
+     */
+
+    function filterInvoices() {
+
+
+        const search =
+            document
+                .getElementById(
+                    "invoiceSearch"
+                )
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        const status =
+            document
+                .getElementById(
+                    "statusFilter"
+                )
+                .value
+                .toLowerCase();
+
+
+        const rows =
+            document.querySelectorAll(
+                "#invoiceTable tbody tr"
+            );
+
+
+        rows.forEach(
+            function(row) {
+
+
+                const text =
+                    row.innerText
+                        .toLowerCase();
+
+
+                const statusElement =
+                    row.querySelector(
+                        ".status"
+                    );
+
+
+                const rowStatus =
+                    statusElement
+                        ? statusElement
+                            .innerText
+                            .toLowerCase()
+                            .trim()
+                        : "";
+
+
+                const matchesSearch =
+                    text.includes(search);
+
+
+                const matchesStatus =
+                    status === "all" ||
+                    rowStatus === status;
+
+
+                if (
+                    matchesSearch &&
+                    matchesStatus
+                ) {
+
+                    row.style.display = "";
+
+                } else {
+
+                    row.style.display =
+                        "none";
+
+                }
+
+
+            }
+        );
+
+
+    }
+
+
+</script>
+
+
+</body>
+
+</html>

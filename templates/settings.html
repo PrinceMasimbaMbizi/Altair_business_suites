@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings | Altair Business Suite</title>
+
+
+    <!-- 
+         GOOGLE FONT
+     -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+
+    <style>
+
+        /* 
+           RESET
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        body {
+
+            font-family: "Inter", sans-serif;
+
+            background: #f5f6fa;
+
+            color: #171722;
+
+            overflow: hidden;
+        }
+
+
+
+        /* 
+           APP
+         */
+
+        .app {
+
+            display: flex;
+
+            width: 100%;
+
+            height: 100vh;
+
+            overflow: hidden;
+        }
+
+
+
+        /* 
+           SIDEBAR
+         */
+
+        .sidebar {
+
+            width: 250px;
+
+            height: 100vh;
+
+            background: #11111c;
+
+            color: white;
+
+            padding: 25px 18px;
+
+            position: fixed;
+
+            left: 0;
+
+            top: 0;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+
+            z-index: 1000;
+        }
+
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
+        }
+
+
+        .sidebar::-webkit-scrollbar-thumb {
+
+            background: #35354b;
+
+            border-radius: 10px;
+        }
+
+
+
+        /* 
+           COMPANY LOGO
+         */
+
+        .logo {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 40px;
+
+            padding-left: 10px;
+
+            min-width: 0;
+        }
+
+
+        .logo img,
+        .company-logo-placeholder {
+
+            width: 40px;
+
+            height: 40px;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+
+        .logo img {
+
+            display: block;
+
+            background: #242435;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.10);
+        }
+
+
+        .company-logo-placeholder {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            color: white;
+
+            font-size: 18px;
+
+            font-weight: 800;
+        }
+
+
+        .logo > div:last-child {
+
+            min-width: 0;
+        }
+
+
+        .logo span {
+
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+
+
+        /* 
+           MENU TITLE
+         */
+
+        .menu-title {
+
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+
+
+        /* 
+           NAVIGATION
+         */
+
+        .nav-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
+        }
+
+
+        .nav-item:hover,
+        .nav-item.active {
+
+            background: #242435;
+
+            color: white;
+        }
+
+
+        .nav-item.active {
+
+            border-left:
+                3px solid #8b5cf6;
+        }
+
+
+
+        /* 
+           LOGOUT
+         */
+
+        .logout-link {
+
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
+            transition: 0.2s;
+        }
+
+
+        .logout-link:hover {
+
+            color: white;
+        }
+
+
+
+        /* 
+           MAIN CONTENT
+         */
+
+        .main {
+
+            margin-left: 250px;
+
+            width:
+                calc(100% - 250px);
+
+            height: 100vh;
+
+            padding:
+                28px 35px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+        }
+
+
+        .main::-webkit-scrollbar {
+
+            width: 8px;
+        }
+
+
+        .main::-webkit-scrollbar-track {
+
+            background: #f5f6fa;
+        }
+
+
+        .main::-webkit-scrollbar-thumb {
+
+            background: #c9c9d4;
+
+            border-radius: 10px;
+        }
+
+
+        .main::-webkit-scrollbar-thumb:hover {
+
+            background: #a7a7b6;
+        }
+
+
+
+        /* 
+           TOP BAR
+         */
+
+        .topbar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+
+        .welcome h1 {
+
+            font-size: 25px;
+
+            font-weight: 800;
+        }
+
+
+        .welcome p {
+
+            color: #777789;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+
+        .top-actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+
+        /* 
+           NOTIFICATION
+         */
+
+        .notification {
+
+            width: 40px;
+
+            height: 40px;
+
+            background: white;
+
+            border-radius: 11px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+
+
+        /* 
+           PROFILE
+         */
+
+        .profile {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: white;
+
+            padding:
+                6px 12px 6px 6px;
+
+            border-radius: 12px;
+        }
+
+
+        .avatar {
+
+            width: 34px;
+
+            height: 34px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+
+        .profile small {
+
+            display: block;
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 2px;
+        }
+
+
+
+        /* 
+           SETTINGS CONTAINER
+         */
+
+        .settings-container {
+
+            max-width: 1100px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 20px;
+        }
+
+
+
+        /* 
+           CARD
+         */
+
+        .settings-card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 24px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+        }
+
+
+
+        /* 
+           CARD HEADER
+         */
+
+        .card-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 22px;
+
+            padding-bottom: 18px;
+
+            border-bottom:
+                1px solid #eeeef3;
+        }
+
+
+        .card-header-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+        }
+
+
+        .section-icon {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 11px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 18px;
+        }
+
+
+        .card-header h2 {
+
+            font-size: 16px;
+
+            font-weight: 700;
+        }
+
+
+        .card-header p {
+
+            margin-top: 4px;
+
+            color: #888899;
+
+            font-size: 11px;
+        }
+
+
+
+        /* 
+           FORM GRID
+         */
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 18px;
+        }
+
+
+        .form-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .form-group.full {
+
+            grid-column:
+                1 / -1;
+        }
+
+
+        .form-group label {
+
+            color: #555566;
+
+            font-size: 11px;
+
+            font-weight: 600;
+        }
+
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+
+            width: 100%;
+
+            padding:
+                12px 13px;
+
+            border:
+                1px solid #e2e2e9;
+
+            border-radius: 10px;
+
+            background: #fafafd;
+
+            color: #171722;
+
+            outline: none;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            transition: 0.2s;
+        }
+
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+
+            background: white;
+
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(
+                    139,
+                    92,
+                    246,
+                    0.08
+                );
+        }
+
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+
+            color: #aaaab5;
+        }
+
+
+        .form-group textarea {
+
+            min-height: 110px;
+
+            resize: vertical;
+        }
+
+
+        .form-group select option {
+
+            background: white;
+
+            color: #171722;
+        }
+
+
+
+        /* 
+           BANKING CARD
+         */
+
+        .banking-box {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #faf9ff,
+                    #f8f7fc
+                );
+
+            border:
+                1px solid #ebe7f7;
+
+            border-radius: 14px;
+
+            padding: 20px;
+        }
+
+
+        .banking-header {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .bank-icon {
+
+            width: 44px;
+
+            height: 44px;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #4f46e5
+                );
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: white;
+
+            font-size: 19px;
+        }
+
+
+        .banking-header h3 {
+
+            font-size: 14px;
+
+            margin: 0;
+        }
+
+
+        .banking-header p {
+
+            margin-top: 4px;
+
+            color: #888899;
+
+            font-size: 11px;
+        }
+
+
+
+        /* 
+           BANK NOTE
+         */
+
+        .bank-note {
+
+            margin-top: 20px;
+
+            padding: 13px 14px;
+
+            border-radius: 10px;
+
+            background: #f0ebff;
+
+            border:
+                1px solid #e4dcff;
+
+            color: #77718b;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+
+        .bank-note strong {
+
+            color: #5b3db7;
+        }
+
+
+
+        /* 
+           SAVE AREA
+         */
+
+        .save-area {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            padding-bottom: 30px;
+        }
+
+
+        .save-btn {
+
+            border: none;
+
+            padding:
+                12px 22px;
+
+            border-radius: 10px;
+
+            background:
+                #8b5cf6;
+
+            color: white;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        .save-btn:hover {
+
+            background: #7c3aed;
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(
+                    124,
+                    58,
+                    237,
+                    0.22
+                );
+        }
+
+
+
+        /* 
+           FLASH MESSAGE
+         */
+
+        .flash {
+
+            margin-bottom: 20px;
+
+            padding:
+                13px 15px;
+
+            border-radius: 10px;
+
+            background:
+                #ecfdf5;
+
+            border:
+                1px solid #bbf7d0;
+
+            color: #15803d;
+
+            font-size: 12px;
+        }
+
+
+
+        /* 
+           MOBILE / TABLET
+         */
+
+        @media (max-width: 1000px) {
+
+            .form-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .form-group.full {
+
+                grid-column: auto;
+            }
+
+        }
+
+
+
+        /* 
+           MOBILE
+         */
+
+        @media (max-width: 700px) {
+
+            body {
+
+                overflow: hidden;
+            }
+
+
+            .sidebar {
+
+                width: 70px;
+
+                padding:
+                    20px 10px;
+            }
+
+
+            .logo span,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+
+                display: none;
+            }
+
+
+            .logo {
+
+                justify-content: center;
+
+                padding: 0;
+            }
+
+
+            .logo img,
+            .company-logo-placeholder {
+
+                width: 40px;
+
+                height: 40px;
+            }
+
+
+            .nav-item {
+
+                justify-content: center;
+
+                padding:
+                    12px 8px;
+            }
+
+
+            .main {
+
+                margin-left: 70px;
+
+                width:
+                    calc(100% - 70px);
+
+                padding: 20px;
+            }
+
+
+            .topbar {
+
+                align-items: flex-start;
+            }
+
+
+            .welcome h1 {
+
+                font-size: 20px;
+            }
+
+
+            .welcome p {
+
+                font-size: 11px;
+            }
+
+
+            .profile div {
+
+                display: none;
+            }
+
+
+            .profile {
+
+                padding: 3px;
+            }
+
+
+            .top-actions {
+
+                gap: 8px;
+            }
+
+
+            .settings-card {
+
+                padding: 18px;
+            }
+
+
+            .banking-box {
+
+                padding: 16px;
+            }
+
+
+            .card-header {
+
+                align-items: flex-start;
+            }
+
+
+            .save-area {
+
+                justify-content: stretch;
+            }
+
+
+            .save-btn {
+
+                width: 100%;
+            }
+
+        }
+
+
+
+        /* 
+           VERY SMALL SCREENS
+         */
+
+        @media (max-width: 450px) {
+
+            .main {
+
+                padding: 15px;
+            }
+
+
+            .welcome h1 {
+
+                font-size: 17px;
+            }
+
+
+            .notification {
+
+                width: 35px;
+
+                height: 35px;
+            }
+
+
+            .avatar {
+
+                width: 30px;
+
+                height: 30px;
+            }
+
+
+            .settings-card {
+
+                padding: 15px;
+            }
+
+
+            .card-header h2 {
+
+                font-size: 14px;
+            }
+
+
+            .section-icon {
+
+                width: 38px;
+
+                height: 38px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="app">
+
+
+    <!-- 
+         SIDEBAR
+     -->
+
+    <aside class="sidebar">
+
+
+        <!-- COMPANY LOGO -->
+
+        <div class="logo">
+
+            {% if company.logo %}
+
+            <img
+                src="{{ url_for('static', filename='uploads/' + company.logo) }}"
+                alt="{{ company.company_name }}"
+            >
+
+            {% else %}
+
+            <div class="company-logo-placeholder">
+
+                {{ company.company_name[0] if company.company_name else 'A' }}
+
+            </div>
+
+            {% endif %}
+
+
+            <div>
+
+                <span>
+                    {{ company.company_name or 'Altair Business Suite' }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- MAIN MENU -->
+
+        <div class="menu-title">
+            Main
+        </div>
+
+
+        <!-- DASHBOARD -->
+
+        <a href="{{ url_for('dashboard') }}" class="nav-item">
+
+            📊
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <!-- CUSTOMERS -->
+
+        <a href="{{ url_for('customer') }}" class="nav-item">
+
+            👥
+
+            <span>
+                Customers
+            </span>
+
+        </a>
+
+
+        <!-- INVOICES -->
+
+        <a href="{{ url_for('invoice') }}" class="nav-item">
+
+            🧾
+
+            <span>
+                Invoices
+            </span>
+
+        </a>
+
+
+        <!-- INVENTORY -->
+
+        <a href="{{ url_for('items') }}" class="nav-item">
+
+            📦
+
+            <span>
+                Inventory
+            </span>
+
+        </a>
+
+
+        <!-- TRANSACTIONS -->
+
+        <a href="#" class="nav-item">
+
+            💳
+
+            <span>
+                Transactions
+            </span>
+
+        </a>
+
+
+
+        <!-- INTELLIGENCE -->
+
+        <div class="menu-title">
+            Intelligence
+        </div>
+
+
+        <a href="#" class="nav-item">
+
+            🤖
+
+            <span>
+                AI Lead Finder
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            🇫
+
+            <span>
+                Facebook Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            🟢
+
+            <span>
+                WhatsApp Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            💼
+
+            <span>
+                Company Profile
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            📈
+
+            <span>
+                Business Analytics
+            </span>
+
+        </a>
+
+
+        <a href="#" class="nav-item">
+
+            📊
+
+            <span>
+                Forecasting
+            </span>
+
+        </a>
+
+
+
+        <!-- SYSTEM -->
+
+        <div class="menu-title">
+            System
+        </div>
+
+
+        <!-- SETTINGS -->
+
+        <a
+            href="{{ url_for('settings') }}"
+            class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}"
+        >
+
+            ⚙️
+
+            <span>
+                Settings
+            </span>
+
+        </a>
+
+
+        <!-- LOGOUT -->
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-link"
+        >
+            Logout
+        </a>
+
+
+    </aside>
+
+
+
+    <!-- 
+         MAIN CONTENT
+     -->
+
+    <main class="main">
+
+
+        <!-- 
+             TOP BAR
+         -->
+
+        <div class="topbar">
+
+
+            <div class="welcome">
+
+                <h1>
+                    Settings ⚙️
+                </h1>
+
+                <p>
+                    Manage your company information and invoice settings.
+                </p>
+
+            </div>
+
+
+            <div class="top-actions">
+
+
+                <!-- NOTIFICATION -->
+
+                <div class="notification">
+                    🔔
+                </div>
+
+
+                <!-- PROFILE -->
+
+                <div class="profile">
+
+
+                    <div class="avatar">
+
+                        {{ user_name[0]|upper if user_name else 'A' }}
+
+                    </div>
+
+
+                    <div>
+
+                        <strong style="font-size:12px;">
+
+                            {{ user_name }}
+
+                        </strong>
+
+                        <small>
+                            Administrator
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- 
+             FLASH MESSAGE
+         -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+
+        <!-- 
+             SETTINGS
+         -->
+
+        <form
+            method="POST"
+            action="{{ url_for('settings') }}"
+        >
+
+
+            <div class="settings-container">
+
+
+
+                <!-- 
+                     COMPANY INFORMATION
+                 -->
+
+                <section class="settings-card">
+
+
+                    <div class="card-header">
+
+
+                        <div class="card-header-left">
+
+
+                            <div class="section-icon">
+                                🏢
+                            </div>
+
+
+                            <div>
+
+                                <h2>
+                                    Company Information
+                                </h2>
+
+                                <p>
+                                    Information used throughout Altair Business Suite.
+                                </p>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <div class="form-grid">
+
+
+                        <!-- COMPANY NAME -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Company Name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="company_name"
+                                value="{{ company.company_name or '' }}"
+                                placeholder="Company name"
+                            >
+
+                        </div>
+
+
+
+                        <!-- INDUSTRY -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Industry
+                            </label>
+
+                            <input
+                                type="text"
+                                name="industry"
+                                value="{{ company.industry or '' }}"
+                                placeholder="e.g. Technology"
+                            >
+
+                        </div>
+
+
+
+                        <!-- PHONE -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Phone
+                            </label>
+
+                            <input
+                                type="text"
+                                name="phone"
+                                value="{{ company.phone or '' }}"
+                                placeholder="+27..."
+                            >
+
+                        </div>
+
+
+
+                        <!-- EMAIL -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Company Email
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                value="{{ company.email or '' }}"
+                                placeholder="company@example.com"
+                            >
+
+                        </div>
+
+
+
+                        <!-- WEBSITE -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Website
+                            </label>
+
+                            <input
+                                type="text"
+                                name="website"
+                                value="{{ company.website or '' }}"
+                                placeholder="https://example.com"
+                            >
+
+                        </div>
+
+
+
+                        <!-- CITY -->
+
+                        <div class="form-group">
+
+                            <label>
+                                City
+                            </label>
+
+                            <input
+                                type="text"
+                                name="city"
+                                value="{{ company.city or '' }}"
+                                placeholder="City"
+                            >
+
+                        </div>
+
+
+
+                        <!-- ADDRESS -->
+
+                        <div class="form-group full">
+
+                            <label>
+                                Business Address
+                            </label>
+
+                            <input
+                                type="text"
+                                name="address"
+                                value="{{ company.address or '' }}"
+                                placeholder="Full business address"
+                            >
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- 
+                     BANKING DETAILS
+                 -->
+
+                <section class="settings-card">
+
+
+                    <div class="card-header">
+
+
+                        <div class="card-header-left">
+
+
+                            <div class="section-icon">
+                                🏦
+                            </div>
+
+
+                            <div>
+
+                                <h2>
+                                    Banking Details
+                                </h2>
+
+                                <p>
+                                    Payment information displayed on your invoices.
+                                </p>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <div class="banking-box">
+
+
+                        <div class="banking-header">
+
+
+                            <div class="bank-icon">
+                                🏦
+                            </div>
+
+
+                            <div>
+
+                                <h3>
+                                    Company Payment Information
+                                </h3>
+
+                                <p>
+                                    Enter your business bank account information.
+                                </p>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <div class="form-grid">
+
+
+                            <!-- BANK NAME -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Bank Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="bank_name"
+                                    value="{{ company.bank_name or '' }}"
+                                    placeholder="e.g. Standard Bank"
+                                >
+
+                            </div>
+
+
+
+                            <!-- ACCOUNT NAME -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Account Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="account_name"
+                                    value="{{ company.account_name or '' }}"
+                                    placeholder="Name registered on bank account"
+                                >
+
+                            </div>
+
+
+
+                            <!-- ACCOUNT NUMBER -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Account Number
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="account_number"
+                                    value="{{ company.account_number or '' }}"
+                                    placeholder="Account number"
+                                >
+
+                            </div>
+
+
+
+                            <!-- BRANCH CODE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Branch Code
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="branch_code"
+                                    value="{{ company.branch_code or '' }}"
+                                    placeholder="Branch code"
+                                >
+
+                            </div>
+
+
+
+                            <!-- PAYMENT TERMS -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Default Payment Terms
+                                </label>
+
+                                <select name="payment_terms">
+
+
+                                    <option value="">
+                                        Select payment terms
+                                    </option>
+
+
+                                    <option
+                                        value="Due on receipt"
+                                        {% if company.payment_terms == "Due on receipt" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        Due on receipt
+                                    </option>
+
+
+                                    <option
+                                        value="7 days"
+                                        {% if company.payment_terms == "7 days" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        7 days
+                                    </option>
+
+
+                                    <option
+                                        value="14 days"
+                                        {% if company.payment_terms == "14 days" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        14 days
+                                    </option>
+
+
+                                    <option
+                                        value="30 days"
+                                        {% if company.payment_terms == "30 days" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        30 days
+                                    </option>
+
+
+                                    <option
+                                        value="60 days"
+                                        {% if company.payment_terms == "60 days" %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        60 days
+                                    </option>
+
+
+                                </select>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <!-- BANK NOTE -->
+
+                        <div class="bank-note">
+
+                            💡
+
+                            <strong>
+                                Automatic invoice information:
+                            </strong>
+
+                            Once these banking details are saved,
+                            they will automatically be available
+                            on your company's invoices.
+
+                            You only need to enter them here once.
+
+                        </div>
+
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- 
+                     SAVE BUTTON
+                 -->
+
+                <div class="save-area">
+
+                    <button
+                        type="submit"
+                        class="save-btn"
+                    >
+
+                        💾 Save Settings
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+        </form>
+
+
+        <div style="height:40px;"></div>
+
+
+    </main>
+
+
+</div>
+
+
+</body>
+
+</html>
