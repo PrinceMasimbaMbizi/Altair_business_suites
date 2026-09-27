@@ -39,6 +39,41 @@ def allowed_file(filename):
     )
 
 
+# MONEY FORMATTER
+
+
+def format_money(value):
+    """
+    Format money using spaces for thousands.
+
+    Examples:
+        2000       -> 2 000
+        20000      -> 20 000
+        200000     -> 200 000
+        2450.50    -> 2 450.50
+        1000000    -> 1 000 000
+    """
+
+    if value is None:
+        return "0"
+
+    try:
+        value = float(value)
+
+        # Remove unnecessary decimal .0
+        if value.is_integer():
+            return f"{int(value):,}".replace(",", " ")
+
+        # Keep decimal values
+        return f"{value:,.2f}".replace(",", " ")
+
+    except (ValueError, TypeError):
+        return "0"
+
+
+# Make the function available inside all Jinja templates
+app.jinja_env.filters["money"] = format_money
+
 
 # MYSQL CONNECTION
 

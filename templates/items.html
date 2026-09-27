@@ -9,7 +9,9 @@
     <title>Inventory & Money Management | Altair Business Suite</title>
 
     <style>
-        /* RESET */
+        /* 
+           RESET
+         */
 
         * {
             margin: 0;
@@ -17,11 +19,9 @@
             box-sizing: border-box;
         }
 
-
         html {
             scroll-behavior: smooth;
         }
-
 
         body {
             font-family: Arial, sans-serif;
@@ -30,11 +30,9 @@
             min-height: 100vh;
         }
 
-
         body.modal-open {
             overflow: hidden;
         }
-
 
         button,
         input,
@@ -43,948 +41,617 @@
             font-family: inherit;
         }
 
-
         button {
             cursor: pointer;
         }
 
 
-        /* SIDEBAR */
+        /* 
+           SIDEBAR
+         */
 
         .sidebar {
-
             position: fixed;
-
             left: 0;
             top: 0;
-
             width: 250px;
             height: 100vh;
-
             background: #11111c;
-
             border-right: 1px solid #242438;
-
             padding: 25px 18px;
-
             overflow-y: auto;
-
             z-index: 1000;
         }
 
-
         .brand {
-
             display: flex;
-
             align-items: center;
-
             gap: 12px;
-
             margin-bottom: 35px;
         }
 
-
         .brand-icon {
-
             width: 45px;
             height: 45px;
-
             min-width: 45px;
-
             border-radius: 50%;
-
             display: flex;
-
             align-items: center;
             justify-content: center;
-
-            background:
-                linear-gradient(135deg,
-                    #00f0ff,
-                    #ff00d4);
-
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
             color: #ffffff;
-
             font-size: 20px;
-
             font-weight: bold;
-
-            box-shadow:
-                0 0 20px rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
         }
-
 
         .brand-name {
-
             font-size: 17px;
-
             font-weight: bold;
         }
 
-
         .brand-subtitle {
-
             font-size: 11px;
-
             color: #77778a;
-
             margin-top: 3px;
         }
 
-
         .nav-title {
-
             font-size: 10px;
-
             text-transform: uppercase;
-
             letter-spacing: 1.5px;
-
             color: #666678;
-
             margin: 25px 10px 10px;
         }
 
-
         .nav-link {
-
             display: flex;
-
             align-items: center;
-
             gap: 12px;
-
             padding: 12px 14px;
-
             margin-bottom: 5px;
-
             color: #9c9cad;
-
             text-decoration: none;
-
             border-radius: 10px;
-
             transition: 0.2s;
         }
 
-
         .nav-link:hover {
-
             background: #1b1b2b;
-
             color: #ffffff;
         }
 
-
         .nav-link.active {
-
-            background:
-                linear-gradient(90deg,
+            background: linear-gradient(90deg,
                     rgba(0, 240, 255, 0.15),
                     rgba(255, 0, 212, 0.08));
-
             color: #00f0ff;
-
             border-left: 3px solid #00f0ff;
         }
 
 
-        /* MAIN */
+        /* 
+           MAIN
+         */
 
         .main {
-
             margin-left: 250px;
-
             padding: 30px;
-
             min-height: 100vh;
         }
 
 
-        /*  TOPBAR */
+        /* 
+           TOPBAR
+         */
 
         .topbar {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             gap: 25px;
-
             margin-bottom: 25px;
         }
 
-
         .title-area {
-
             flex: 1;
-
             min-width: 0;
         }
 
-
         .page-title {
-
             font-size: 30px;
-
             margin-bottom: 6px;
         }
 
-
         .page-subtitle {
-
             color: #77778a;
-
             font-size: 14px;
-
             line-height: 1.5;
         }
 
-
         .company-area {
-
             display: flex;
-
             align-items: center;
-
             gap: 12px;
-
             flex-shrink: 0;
-
             max-width: 320px;
         }
 
-
         .company-logo,
         .company-logo-placeholder {
-
             width: 48px;
             height: 48px;
-
             min-width: 48px;
-
             border-radius: 12px;
         }
 
-
         .company-logo {
-
             object-fit: cover;
-
             border: 1px solid #33334a;
         }
 
-
         .company-logo-placeholder {
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
-            background:
-                linear-gradient(135deg,
-                    #00f0ff,
-                    #ff00d4);
-
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
             font-weight: bold;
-
             font-size: 20px;
         }
 
-
         .company-name {
-
             font-weight: bold;
-
             font-size: 14px;
-
             white-space: nowrap;
-
             overflow: hidden;
-
             text-overflow: ellipsis;
         }
-
 
         .user-name {
-
             color: #77778a;
-
             font-size: 12px;
-
             margin-top: 4px;
-
             white-space: nowrap;
-
             overflow: hidden;
-
             text-overflow: ellipsis;
         }
 
 
-        /* FLASH */
+        /* 
+           FLASH
+         */
 
         .flash {
-
             padding: 13px 17px;
-
             margin-bottom: 20px;
-
             border-radius: 10px;
-
             background: #171725;
-
             border: 1px solid #303049;
-
             font-size: 14px;
         }
 
-
         .flash.success {
-
             border-color: #00dc82;
-
             color: #00dc82;
         }
 
-
         .flash.error {
-
             border-color: #ff4d67;
-
             color: #ff4d67;
         }
 
-
         .flash.warning {
-
             border-color: #ffb020;
-
             color: #ffb020;
         }
 
 
-        /* TABS */
+        /* 
+           TABS
+         */
 
         .inventory-tabs {
-
             display: flex;
-
             gap: 8px;
-
             flex-wrap: wrap;
-
             margin-bottom: 25px;
-
             padding: 8px;
-
             background: #13131f;
-
             border: 1px solid #242438;
-
             border-radius: 14px;
         }
 
-
         .inventory-tab {
-
             border: none;
-
             background: transparent;
-
             color: #88889a;
-
             padding: 12px 16px;
-
             border-radius: 9px;
-
             font-size: 13px;
-
             font-weight: 600;
-
             transition: 0.2s;
         }
 
-
         .inventory-tab:hover {
-
             background: #1b1b2b;
-
             color: #ffffff;
         }
 
-
         .inventory-tab.active {
-
-            background:
-                linear-gradient(135deg,
+            background: linear-gradient(135deg,
                     rgba(0, 240, 255, 0.16),
                     rgba(157, 78, 221, 0.16));
-
             color: #00f0ff;
-
             border: 1px solid rgba(0, 240, 255, 0.25);
         }
 
 
-        /* SECTIONS */
+        /* 
+           SECTIONS
+         */
 
         .inventory-section {
-
             display: none;
-
             animation: sectionFade 0.25s ease;
         }
 
-
         .inventory-section.active {
-
             display: block;
         }
 
-
         @keyframes sectionFade {
-
             from {
-
                 opacity: 0;
-
                 transform: translateY(5px);
             }
 
             to {
-
                 opacity: 1;
-
                 transform: translateY(0);
             }
         }
 
 
-        /* STATS */
+        /* 
+           STATS
+         */
 
         .stats {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(5, 1fr);
-
+            grid-template-columns: repeat(5, 1fr);
             gap: 18px;
-
             margin-bottom: 25px;
         }
-
 
         .money-stats {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
+            grid-template-columns: repeat(4, 1fr);
             gap: 18px;
-
             margin-bottom: 25px;
         }
-
 
         .stat-card,
         .money-card {
-
             background: #13131f;
-
             border: 1px solid #242438;
-
             border-radius: 15px;
-
             padding: 20px;
-
             transition: 0.2s;
         }
 
-
         .stat-card:hover,
         .money-card:hover {
-
             border-color: #343450;
-
             transform: translateY(-2px);
         }
 
-
         .stat-label,
         .money-card-label {
-
             color: #77778a;
-
             font-size: 13px;
-
             margin-bottom: 11px;
         }
 
-
         .stat-value,
         .money-card-value {
-
             font-size: 26px;
-
             font-weight: bold;
-
             word-break: break-word;
         }
 
-
         .stat-warning {
-
             color: #ffb020;
         }
 
-
         .stat-danger {
-
             color: #ff4d67;
         }
 
-
         .stat-money {
-
             color: #00f0ff;
         }
 
-
         .money-out {
-
             color: #ff4d67;
         }
 
-
         .money-investment {
-
             color: #9d4edd;
         }
 
-
         .money-recurring {
-
             color: #00f0ff;
         }
 
-
         .money-total {
-
             color: #00dc82;
         }
 
 
-        /* SECTION HEADER */
+        /* 
+           SECTION HEADER
+         */
 
         .section-header {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             gap: 15px;
-
             margin-bottom: 18px;
         }
 
-
         .section-heading {
-
             font-size: 20px;
-
             margin-bottom: 4px;
         }
 
-
         .section-description {
-
             color: #77778a;
-
             font-size: 13px;
-
             line-height: 1.5;
         }
 
 
-        /* TOOLBAR */
+        /* 
+           TOOLBAR
+         */
 
-        .toolbar,
-        .money-toolbar {
-
+        .toolbar {
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
-
             gap: 15px;
-
             margin-bottom: 18px;
         }
 
-
         .search-box {
-
             flex: 1;
-
             max-width: 450px;
         }
 
-
         .search-box input {
-
             width: 100%;
-
             background: #13131f;
-
             border: 1px solid #292940;
-
             border-radius: 10px;
-
             padding: 13px 15px;
-
             color: #ffffff;
-
             outline: none;
         }
 
-
         .search-box input:focus {
-
             border-color: #00f0ff;
         }
 
 
-        /* BUTTONS */
+        /* 
+           BUTTONS
+         */
 
         .btn {
-
             border: none;
-
             border-radius: 10px;
-
             padding: 13px 18px;
-
-            background:
-                linear-gradient(135deg,
-                    #00f0ff,
-                    #9d4edd);
-
+            background: linear-gradient(135deg, #00f0ff, #9d4edd);
             color: #ffffff;
-
             font-weight: bold;
-
             cursor: pointer;
-
             transition: 0.2s;
-
             white-space: nowrap;
         }
 
-
         .btn:hover {
-
             opacity: 0.9;
-
             transform: translateY(-1px);
         }
 
-
         .btn-danger {
-
-            background:
-                linear-gradient(135deg,
-                    #ff4d67,
-                    #9d2040);
+            background: linear-gradient(135deg, #ff4d67, #9d2040);
         }
 
-
         .btn-secondary {
-
             background: #252535;
-
             border: 1px solid #33334a;
         }
 
 
         /* 
-           TABLE
+           TABLES
          */
 
         .table-container {
-
             background: #13131f;
-
             border: 1px solid #242438;
-
             border-radius: 15px;
-
             overflow-x: auto;
         }
 
-
         table {
-
             width: 100%;
-
             border-collapse: collapse;
-
             min-width: 900px;
         }
 
-
         th {
-
             text-align: left;
-
             color: #77778a;
-
             font-size: 11px;
-
             text-transform: uppercase;
-
             letter-spacing: 0.6px;
-
             padding: 17px;
-
             border-bottom: 1px solid #242438;
-
             white-space: nowrap;
         }
 
-
         td {
-
             padding: 17px;
-
             border-bottom: 1px solid #1f1f30;
-
             color: #d8d8e2;
-
             font-size: 14px;
-
             vertical-align: middle;
         }
 
-
         tbody tr:hover {
-
             background: #171725;
         }
 
-
         tbody tr:last-child td {
-
             border-bottom: none;
         }
 
-
         .item-name {
-
             font-weight: bold;
-
             color: #ffffff;
-
             max-width: 280px;
-
             word-break: break-word;
         }
-
 
         .sku {
-
             font-size: 11px;
-
             color: #666678;
-
             margin-top: 4px;
-
             max-width: 280px;
-
             word-break: break-word;
         }
 
 
+        /* 
+           BADGES
+         */
+
         .type,
-        .status,
-        .category-badge {
-
+        .status {
             display: inline-block;
-
             padding: 5px 9px;
-
             border-radius: 20px;
-
             font-size: 11px;
-
             white-space: nowrap;
         }
 
-
         .type {
-
             background: rgba(0, 240, 255, 0.1);
-
             color: #00f0ff;
         }
 
-
         .type.service {
-
             background: rgba(255, 0, 212, 0.1);
-
             color: #ff55df;
         }
 
-
         .status.active {
-
             background: rgba(0, 220, 130, 0.12);
-
             color: #00dc82;
         }
 
-
         .status.inactive {
-
             background: rgba(150, 150, 150, 0.12);
-
             color: #aaa;
         }
 
-
         .status.paused {
-
             background: rgba(255, 176, 32, 0.12);
-
             color: #ffb020;
         }
 
-
         .status.completed {
-
             background: rgba(157, 78, 221, 0.15);
-
             color: #b980ff;
         }
 
-
         .status.ended {
-
             background: rgba(255, 77, 103, 0.12);
-
             color: #ff4d67;
         }
 
 
-        .stock-good {
+        /* 
+           STOCK
+         */
 
+        .stock-good {
             color: #00dc82;
         }
 
-
         .stock-low {
-
             color: #ffb020;
         }
 
-
         .stock-out {
-
             color: #ff4d67;
         }
-
 
         .amount-out {
-
             color: #ff4d67;
-
             font-weight: bold;
-
             white-space: nowrap;
         }
-
 
         .amount-investment {
-
             color: #9d4edd;
-
             font-weight: bold;
-
             white-space: nowrap;
         }
-
 
         .amount-positive {
-
             color: #00dc82;
-
             font-weight: bold;
-
             white-space: nowrap;
         }
 
 
+        /* 
+           ACTIONS
+         */
+
         .actions {
-
             display: flex;
-
             gap: 7px;
-
             align-items: center;
-
             flex-wrap: wrap;
         }
 
-
         .actions form {
-
             margin: 0;
         }
 
-
         .action-btn {
-
             border: 1px solid #303049;
-
             background: #1a1a29;
-
             color: #aaa;
-
             border-radius: 7px;
-
             padding: 7px 10px;
-
             cursor: pointer;
-
             transition: 0.2s;
-
             white-space: nowrap;
         }
 
-
         .action-btn:hover {
-
             color: #ffffff;
-
             border-color: #00f0ff;
         }
 
-
         .delete-btn:hover {
-
             border-color: #ff4d67;
-
             color: #ff4d67;
         }
 
@@ -994,37 +661,24 @@
          */
 
         .empty {
-
             text-align: center;
-
             padding: 60px 20px;
-
             color: #77778a;
         }
 
-
         .empty-icon {
-
             font-size: 42px;
-
             margin-bottom: 12px;
         }
 
-
         .empty-title {
-
             color: #ffffff;
-
             font-weight: bold;
-
             margin-bottom: 6px;
         }
 
-
         .empty-text {
-
             font-size: 13px;
-
             line-height: 1.5;
         }
 
@@ -1034,108 +688,63 @@
          */
 
         .modal {
-
             position: fixed;
-
             inset: 0;
-
             background: rgba(0, 0, 0, 0.78);
-
             display: none;
-
             align-items: center;
-
             justify-content: center;
-
             z-index: 9999;
-
             padding: 20px;
-
             backdrop-filter: blur(5px);
         }
 
-
         .modal.show {
-
             display: flex;
         }
-
 
         .modal-content {
-
             width: 100%;
-
             max-width: 720px;
-
             max-height: 90vh;
-
             overflow-y: auto;
-
             background: #151522;
-
             border: 1px solid #303049;
-
             border-radius: 18px;
-
             padding: 25px;
-
-            box-shadow:
-                0 25px 80px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
         }
 
-
         .modal-header {
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: flex-start;
-
             gap: 15px;
-
             margin-bottom: 22px;
         }
 
-
         .modal-header h2 {
-
             font-size: 21px;
         }
 
-
         .modal-header p {
-
             color: #77778a;
-
             font-size: 12px;
-
             margin-top: 5px;
-
             line-height: 1.5;
         }
 
-
         .close {
-
             border: none;
-
             background: none;
-
             color: #77778a;
-
             font-size: 27px;
-
             line-height: 1;
-
             cursor: pointer;
-
             padding: 0;
         }
 
-
         .close:hover {
-
             color: #ffffff;
         }
 
@@ -1145,116 +754,72 @@
          */
 
         .form-grid {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
 
-
         .form-group {
-
             display: flex;
-
             flex-direction: column;
-
             gap: 7px;
         }
 
-
         .form-group.full {
-
             grid-column: 1 / -1;
         }
 
-
         label {
-
             font-size: 12px;
-
             color: #aaaabd;
         }
-
 
         input,
         select,
         textarea {
-
             width: 100%;
-
             padding: 12px;
-
             border-radius: 9px;
-
             border: 1px solid #303049;
-
             background: #0e0e18;
-
             color: #ffffff;
-
             outline: none;
         }
-
 
         input:focus,
         select:focus,
         textarea:focus {
-
             border-color: #00f0ff;
-
-            box-shadow:
-                0 0 0 2px rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.05);
         }
-
 
         input::placeholder,
         textarea::placeholder {
-
             color: #555568;
         }
 
-
         textarea {
-
             min-height: 90px;
-
             resize: vertical;
         }
 
-
         .modal-footer {
-
             display: flex;
-
             justify-content: flex-end;
-
             gap: 10px;
-
             margin-top: 22px;
         }
 
-
         .cancel-btn {
-
             background: #252535;
-
             border: 1px solid #33334a;
-
             color: #aaa;
-
             border-radius: 9px;
-
             padding: 12px 18px;
-
             cursor: pointer;
         }
 
-
         .cancel-btn:hover {
-
             color: #ffffff;
         }
 
@@ -1264,142 +829,86 @@
          */
 
         .info-box {
-
-            background:
-                rgba(0, 240, 255, 0.05);
-
+            background: rgba(0, 240, 255, 0.05);
             border: 1px solid rgba(0, 240, 255, 0.15);
-
             border-radius: 12px;
-
             padding: 14px 16px;
-
             margin-bottom: 18px;
-
             color: #9c9cad;
-
             font-size: 13px;
-
             line-height: 1.6;
         }
 
-
         .info-box strong {
-
             color: #00f0ff;
         }
 
 
         /* 
-           RECURRING CARDS
+           RECURRING
          */
 
         .recurring-grid {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
             gap: 18px;
         }
 
-
         .recurring-card {
-
             background: #13131f;
-
             border: 1px solid #242438;
-
             border-radius: 15px;
-
             padding: 20px;
-
             transition: 0.2s;
         }
 
-
         .recurring-card:hover {
-
             border-color: #343450;
-
             transform: translateY(-2px);
         }
 
-
         .recurring-top {
-
             display: flex;
-
             justify-content: space-between;
-
             gap: 15px;
-
             margin-bottom: 18px;
         }
 
-
         .recurring-name {
-
             font-size: 16px;
-
             font-weight: bold;
-
             margin-bottom: 5px;
         }
 
-
         .recurring-category {
-
             color: #77778a;
-
             font-size: 12px;
         }
 
-
         .recurring-amount {
-
             color: #00f0ff;
-
             font-size: 20px;
-
             font-weight: bold;
-
             white-space: nowrap;
         }
 
-
         .recurring-details {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-
             padding-top: 15px;
-
             border-top: 1px solid #242438;
         }
 
-
         .detail-label {
-
             color: #666678;
-
             font-size: 11px;
-
             margin-bottom: 4px;
         }
 
-
         .detail-value {
-
             color: #d8d8e2;
-
             font-size: 13px;
-
             word-break: break-word;
         }
 
@@ -1411,16 +920,11 @@
         @media (max-width: 1200px) {
 
             .stats {
-
-                grid-template-columns:
-                    repeat(3, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
 
-
             .money-stats {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
 
         }
@@ -1429,45 +933,29 @@
         @media (max-width: 900px) {
 
             .sidebar {
-
                 position: relative;
-
                 width: 100%;
-
                 height: auto;
-
                 border-right: none;
-
                 border-bottom: 1px solid #242438;
-
                 padding: 20px;
             }
 
-
             .main {
-
                 margin-left: 0;
             }
 
-
             .topbar {
-
                 align-items: flex-start;
-
                 flex-direction: column;
             }
 
-
             .company-area {
-
                 width: 100%;
-
                 max-width: 100%;
             }
 
-
             .recurring-grid {
-
                 grid-template-columns: 1fr;
             }
 
@@ -1477,89 +965,59 @@
         @media (max-width: 700px) {
 
             .main {
-
                 padding: 18px;
             }
-
 
             .stats,
             .money-stats {
-
                 grid-template-columns: 1fr;
             }
 
-
             .inventory-tabs {
-
                 flex-direction: column;
             }
 
-
             .inventory-tab {
-
                 width: 100%;
-
                 text-align: left;
             }
 
-
-            .toolbar,
-            .money-toolbar {
-
+            .toolbar {
                 flex-direction: column;
-
                 align-items: stretch;
             }
 
-
             .search-box {
-
                 max-width: none;
             }
 
-
             .toolbar .btn {
-
                 width: 100%;
             }
 
-
             .section-header {
-
                 align-items: stretch;
-
                 flex-direction: column;
             }
 
-
             .section-header .btn {
-
                 width: 100%;
             }
 
-
             .form-grid {
-
                 grid-template-columns: 1fr;
             }
 
-
             .form-group.full {
-
                 grid-column: auto;
             }
 
-
             .modal {
-
                 padding: 10px;
             }
 
-
             .modal-content {
-
                 padding: 18px;
-
                 max-height: 94vh;
             }
 
@@ -1569,43 +1027,30 @@
         @media (max-width: 500px) {
 
             .page-title {
-
                 font-size: 24px;
             }
 
-
             .page-subtitle {
-
                 font-size: 13px;
             }
 
-
             .modal-footer {
-
                 flex-direction: column;
             }
 
-
             .modal-footer button {
-
                 width: 100%;
             }
 
-
             .recurring-details {
-
                 grid-template-columns: 1fr;
             }
 
-
             .recurring-top {
-
                 flex-direction: column;
             }
 
-
             .recurring-amount {
-
                 font-size: 18px;
             }
 
@@ -1619,8 +1064,8 @@
 
 
     <!-- 
-         SIDEBAR
-     -->
+     SIDEBAR
+ -->
 
     <aside class="sidebar">
 
@@ -1700,7 +1145,7 @@
         </div>
 
 
-        <a href="#" class="nav-link">
+        <a href="{{ url_for('settings') }}" class="nav-link">
             🏢 Company Profile
         </a>
 
@@ -1715,7 +1160,7 @@
         </a>
 
 
-        <a href="#" class="nav-link">
+        <a href="{{ url_for('settings') }}" class="nav-link">
             ⚙ Settings
         </a>
 
@@ -1729,15 +1174,15 @@
 
 
     <!-- 
-         MAIN
-     -->
+     MAIN
+ -->
 
     <main class="main">
 
 
         <!-- =====================================================
-             TOPBAR
-        ===================================================== -->
+         TOPBAR
+    ===================================================== -->
 
         <div class="topbar">
 
@@ -1759,14 +1204,12 @@
                 {% if company and company.logo %}
 
                 <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" class="company-logo"
-                    alt="{{ company.company_name }}">
+                    alt="{{ company.company_name|default('Company') }}">
 
                 {% elif company %}
 
                 <div class="company-logo-placeholder">
-
-                    {{ company.company_name[0]|upper }}
-
+                    {{ company.company_name[0]|upper if company.company_name else "A" }}
                 </div>
 
                 {% else %}
@@ -1781,16 +1224,11 @@
                 <div>
 
                     <div class="company-name">
-
                         {{ company.company_name if company else "Your Company" }}
-
                     </div>
 
-
                     <div class="user-name">
-
                         {{ user_name|default("Administrator") }}
-
                     </div>
 
                 </div>
@@ -1802,8 +1240,8 @@
 
 
         <!-- =====================================================
-             FLASH MESSAGES
-        ===================================================== -->
+         FLASH MESSAGES
+    ===================================================== -->
 
         {% with messages = get_flashed_messages(with_categories=true) %}
 
@@ -1824,8 +1262,8 @@
 
 
         <!-- =====================================================
-             TABS
-        ===================================================== -->
+         TABS
+    ===================================================== -->
 
         <div class="inventory-tabs">
 
@@ -1857,9 +1295,9 @@
 
 
 
-        <!-- 
-             PRODUCTS & SERVICES
-         -->
+        <!-- =====================================================
+         PRODUCTS & SERVICES
+    ===================================================== -->
 
         <section id="productsSection" class="inventory-section active">
 
@@ -1926,11 +1364,7 @@
                     </div>
 
                     <div class="stat-value stat-money">
-
-                        R{{ "%.2f"|format(
-                        inventory_value|default(0)|float
-                        ) }}
-
+                        R{{ inventory_value|default(0)|money }}
                     </div>
 
                 </div>
@@ -1985,14 +1419,13 @@
 
                         {% for item in inventory %}
 
-                        <tr>
+                        <tr class="inventory-row">
 
                             <td>
 
                                 <div class="item-name">
                                     {{ item.item_name }}
                                 </div>
-
 
                                 {% if item.sku %}
 
@@ -2037,12 +1470,12 @@
                                     N/A
                                 </span>
 
-                                {% elif item.quantity|float <= 0 %} <span class="stock-out">
+                                {% elif item.quantity|default(0)|float <= 0 %} <span class="stock-out">
                                     Out of stock
                                     </span>
 
-                                    {% elif item.quantity|float <= item.low_stock_level|float %} <span
-                                        class="stock-low">
+                                    {% elif item.quantity|default(0)|float <= item.low_stock_level|default(5)|float %}
+                                        <span class="stock-low">
                                         {{ item.quantity }}
                                         </span>
 
@@ -2058,20 +1491,12 @@
 
 
                             <td>
-
-                                R{{ "%.2f"|format(
-                                item.cost_price|default(0)|float
-                                ) }}
-
+                                R{{ item.cost_price|default(0)|money }}
                             </td>
 
 
                             <td>
-
-                                R{{ "%.2f"|format(
-                                item.selling_price|default(0)|float
-                                ) }}
-
+                                R{{ item.selling_price|default(0)|money }}
                             </td>
 
 
@@ -2081,6 +1506,18 @@
 
                                 <span class="status active">
                                     Active
+                                </span>
+
+                                {% elif item.status == "Paused" %}
+
+                                <span class="status paused">
+                                    Paused
+                                </span>
+
+                                {% elif item.status == "Completed" %}
+
+                                <span class="status completed">
+                                    Completed
                                 </span>
 
                                 {% else %}
@@ -2104,7 +1541,7 @@
 
 
                                     <form method="POST" action="{{ url_for('delete_item', item_id=item.id) }}"
-                                        onsubmit="return confirm('Delete this item?');">
+                                        onsubmit="return confirm('Delete this item? This action cannot be undone.');">
 
                                         <button type="submit" class="action-btn delete-btn">
                                             Delete
@@ -2158,9 +1595,9 @@
 
 
 
-        <!-- 
-             EXPENSES
-         -->
+        <!-- =====================================================
+         EXPENSES
+    ===================================================== -->
 
         <section id="expensesSection" class="inventory-section">
 
@@ -2198,11 +1635,7 @@
                     </div>
 
                     <div class="money-card-value money-out">
-
-                        R{{ "%.2f"|format(
-                        total_expenses|default(0)|float
-                        ) }}
-
+                        R{{ total_expenses|default(0)|money }}
                     </div>
 
                 </div>
@@ -2215,11 +1648,7 @@
                     </div>
 
                     <div class="money-card-value money-out">
-
-                        R{{ "%.2f"|format(
-                        month_expenses|default(0)|float
-                        ) }}
-
+                        R{{ month_expenses|default(0)|money }}
                     </div>
 
                 </div>
@@ -2232,9 +1661,7 @@
                     </div>
 
                     <div class="money-card-value">
-
                         {{ expense_count|default(0) }}
-
                     </div>
 
                 </div>
@@ -2247,11 +1674,7 @@
                     </div>
 
                     <div class="money-card-value money-recurring">
-
-                        R{{ "%.2f"|format(
-                        monthly_recurring|default(0)|float
-                        ) }}
-
+                        R{{ monthly_recurring|default(0)|money }}
                     </div>
 
                 </div>
@@ -2294,7 +1717,6 @@
                                     {{ expense.expense_name }}
                                 </div>
 
-
                                 {% if expense.description %}
 
                                 <div class="sku">
@@ -2322,20 +1744,14 @@
 
 
                             <td class="amount-out">
-
-                                R{{ "%.2f"|format(
-                                expense.amount|default(0)|float
-                                ) }}
-
+                                R{{ expense.amount|default(0)|money }}
                             </td>
 
 
                             <td>
 
-                                <form method="POST" action="{{ url_for(
-                                                'delete_expense',
-                                                expense_id=expense.id
-                                            ) }}" onsubmit="return confirm('Delete this expense?');">
+                                <form method="POST" action="{{ url_for('delete_expense', expense_id=expense.id) }}"
+                                    onsubmit="return confirm('Delete this expense? This action cannot be undone.');">
 
                                     <button type="submit" class="action-btn delete-btn">
                                         Delete
@@ -2387,9 +1803,9 @@
 
 
 
-        <!-- 
-             INVESTMENTS
-         -->
+        <!-- =====================================================
+         INVESTMENTS
+    ===================================================== -->
 
         <section id="investmentsSection" class="inventory-section">
 
@@ -2427,11 +1843,7 @@
                     </div>
 
                     <div class="money-card-value money-investment">
-
-                        R{{ "%.2f"|format(
-                        total_investments|default(0)|float
-                        ) }}
-
+                        R{{ total_investments|default(0)|money }}
                     </div>
 
                 </div>
@@ -2444,11 +1856,7 @@
                     </div>
 
                     <div class="money-card-value money-total">
-
-                        R{{ "%.2f"|format(
-                        expected_returns|default(0)|float
-                        ) }}
-
+                        R{{ expected_returns|default(0)|money }}
                     </div>
 
                 </div>
@@ -2461,9 +1869,7 @@
                     </div>
 
                     <div class="money-card-value">
-
                         {{ investment_count|default(0) }}
-
                     </div>
 
                 </div>
@@ -2476,9 +1882,7 @@
                     </div>
 
                     <div class="money-card-value money-investment">
-
                         {{ active_investments|default(0) }}
-
                     </div>
 
                 </div>
@@ -2522,7 +1926,6 @@
                                     {{ investment.investment_name }}
                                 </div>
 
-
                                 {% if investment.description %}
 
                                 <div class="sku">
@@ -2545,20 +1948,12 @@
 
 
                             <td class="amount-investment">
-
-                                R{{ "%.2f"|format(
-                                investment.amount|default(0)|float
-                                ) }}
-
+                                R{{ investment.amount|default(0)|money }}
                             </td>
 
 
                             <td class="amount-positive">
-
-                                R{{ "%.2f"|format(
-                                investment.expected_return|default(0)|float
-                                ) }}
-
+                                R{{ investment.expected_return|default(0)|money }}
                             </td>
 
 
@@ -2595,10 +1990,9 @@
 
                             <td>
 
-                                <form method="POST" action="{{ url_for(
-                                                'delete_investment',
-                                                investment_id=investment.id
-                                            ) }}" onsubmit="return confirm('Delete this investment?');">
+                                <form method="POST"
+                                    action="{{ url_for('delete_investment', investment_id=investment.id) }}"
+                                    onsubmit="return confirm('Delete this investment? This action cannot be undone.');">
 
                                     <button type="submit" class="action-btn delete-btn">
                                         Delete
@@ -2650,9 +2044,9 @@
 
 
 
-        <!-- 
-             RECURRING PAYMENTS
-         -->
+        <!-- =====================================================
+         RECURRING PAYMENTS
+    ===================================================== -->
 
         <section id="recurringSection" class="inventory-section">
 
@@ -2703,11 +2097,7 @@
                     </div>
 
                     <div class="money-card-value money-recurring">
-
-                        R{{ "%.2f"|format(
-                        monthly_recurring|default(0)|float
-                        ) }}
-
+                        R{{ monthly_recurring|default(0)|money }}
                     </div>
 
                 </div>
@@ -2720,9 +2110,7 @@
                     </div>
 
                     <div class="money-card-value">
-
                         {{ active_recurring|default(0) }}
-
                     </div>
 
                 </div>
@@ -2735,9 +2123,7 @@
                     </div>
 
                     <div class="money-card-value">
-
                         {{ next_payment_date|default("—") }}
-
                     </div>
 
                 </div>
@@ -2750,9 +2136,7 @@
                     </div>
 
                     <div class="money-card-value money-recurring">
-
                         {{ recurring_record_count|default(0) }}
-
                     </div>
 
                 </div>
@@ -2785,11 +2169,7 @@
 
 
                         <div class="recurring-amount">
-
-                            R{{ "%.2f"|format(
-                            payment.amount|default(0)|float
-                            ) }}
-
+                            R{{ payment.amount|default(0)|money }}
                         </div>
 
                     </div>
@@ -2910,10 +2290,9 @@
                                 </button>
 
 
-                                <form method="POST" action="{{ url_for(
-                                                'delete_recurring_payment',
-                                                payment_id=payment.id
-                                            ) }}" onsubmit="return confirm('Delete this recurring payment?');">
+                                <form method="POST"
+                                    action="{{ url_for('delete_recurring_payment', payment_id=payment.id) }}"
+                                    onsubmit="return confirm('Delete this recurring payment? This action cannot be undone.');">
 
                                     <button type="submit" class="action-btn delete-btn">
                                         Delete
@@ -2961,9 +2340,9 @@
 
 
 
-        <!-- 
-             MONEY OUT RECORDS
-         -->
+        <!-- =====================================================
+         MONEY OUT RECORDS
+    ===================================================== -->
 
         <section id="recordsSection" class="inventory-section">
 
@@ -2996,11 +2375,7 @@
                     </div>
 
                     <div class="money-card-value money-out">
-
-                        R{{ "%.2f"|format(
-                        total_money_out|default(0)|float
-                        ) }}
-
+                        R{{ total_money_out|default(0)|money }}
                     </div>
 
                 </div>
@@ -3013,11 +2388,7 @@
                     </div>
 
                     <div class="money-card-value money-out">
-
-                        R{{ "%.2f"|format(
-                        month_money_out|default(0)|float
-                        ) }}
-
+                        R{{ month_money_out|default(0)|money }}
                     </div>
 
                 </div>
@@ -3030,11 +2401,7 @@
                     </div>
 
                     <div class="money-card-value">
-
-                        R{{ "%.2f"|format(
-                        total_expenses|default(0)|float
-                        ) }}
-
+                        R{{ total_expenses|default(0)|money }}
                     </div>
 
                 </div>
@@ -3047,11 +2414,7 @@
                     </div>
 
                     <div class="money-card-value money-investment">
-
-                        R{{ "%.2f"|format(
-                        total_investments|default(0)|float
-                        ) }}
-
+                        R{{ total_investments|default(0)|money }}
                     </div>
 
                 </div>
@@ -3138,11 +2501,7 @@
 
 
                             <td class="amount-out">
-
-                                R{{ "%.2f"|format(
-                                record.amount|default(0)|float
-                                ) }}
-
+                                R{{ record.amount|default(0)|money }}
                             </td>
 
                         </tr>
@@ -3190,8 +2549,8 @@
 
 
     <!-- 
-         ADD ITEM MODAL
-     -->
+     ADD ITEM MODAL
+ -->
 
     <div class="modal" id="addModal">
 
@@ -3211,8 +2570,7 @@
 
                 </div>
 
-
-                <button type="button" class="close" onclick="closeAddModal()">
+                <button type="button" class="close" onclick="closeAddModal()" aria-label="Close">
                     ×
                 </button>
 
@@ -3241,7 +2599,7 @@
                             Type *
                         </label>
 
-                        <select name="item_type" required>
+                        <select name="item_type" id="addItemType" required onchange="toggleAddItemFields()">
 
                             <option value="Product">
                                 Product
@@ -3278,24 +2636,24 @@
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="form-group" id="addQuantityGroup">
 
                         <label>
                             Quantity
                         </label>
 
-                        <input type="number" step="0.01" min="0" name="quantity" value="0">
+                        <input type="number" step="0.01" min="0" name="quantity" id="addQuantity" value="0">
 
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="form-group" id="addLowStockGroup">
 
                         <label>
                             Low Stock Alert
                         </label>
 
-                        <input type="number" step="0.01" min="0" name="low_stock_level" value="5">
+                        <input type="number" step="0.01" min="0" name="low_stock_level" id="addLowStock" value="5">
 
                     </div>
 
@@ -3389,8 +2747,8 @@
 
 
     <!-- 
-         EDIT ITEM MODAL
-     -->
+     EDIT ITEM MODAL
+ -->
 
     <div class="modal" id="editModal">
 
@@ -3411,7 +2769,7 @@
                 </div>
 
 
-                <button type="button" class="close" onclick="closeEditModal()">
+                <button type="button" class="close" onclick="closeEditModal()" aria-label="Close">
                     ×
                 </button>
 
@@ -3440,7 +2798,7 @@
                             Type
                         </label>
 
-                        <select name="item_type" id="editItemType">
+                        <select name="item_type" id="editItemType" onchange="toggleEditItemFields()">
 
                             <option value="Product">
                                 Product
@@ -3477,7 +2835,7 @@
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="form-group" id="editQuantityGroup">
 
                         <label>
                             Quantity
@@ -3488,7 +2846,7 @@
                     </div>
 
 
-                    <div class="form-group">
+                    <div class="form-group" id="editLowStockGroup">
 
                         <label>
                             Low Stock Alert
@@ -3588,8 +2946,8 @@
 
 
     <!-- 
-         ADD EXPENSE MODAL
-     -->
+     ADD EXPENSE MODAL
+ -->
 
     <div class="modal" id="expenseModal">
 
@@ -3768,8 +3126,8 @@
 
 
     <!-- 
-         ADD INVESTMENT MODAL
-     -->
+     ADD INVESTMENT MODAL
+ -->
 
     <div class="modal" id="investmentModal">
 
@@ -3943,8 +3301,8 @@
 
 
     <!-- 
-         ADD RECURRING PAYMENT MODAL
-     -->
+     ADD RECURRING PAYMENT MODAL
+ -->
 
     <div class="modal" id="recurringModal">
 
@@ -4171,8 +3529,8 @@
 
 
     <!-- 
-         EDIT RECURRING PAYMENT MODAL
-     -->
+     EDIT RECURRING PAYMENT MODAL
+ -->
 
     <div class="modal" id="editRecurringModal">
 
@@ -4349,14 +3707,14 @@
 
 
     <!-- 
-         JAVASCRIPT
-     -->
+     JAVASCRIPT
+ -->
 
     <script>
 
 
         /* 
-           HELPER
+           MODAL HELPERS
          */
 
         function openModal(id) {
@@ -4370,6 +3728,7 @@
             modal.classList.add("show");
 
             document.body.classList.add("modal-open");
+
         }
 
 
@@ -4383,16 +3742,12 @@
 
             modal.classList.remove("show");
 
-            const anyOpen =
-                document.querySelector(".modal.show");
+            const anyOpen = document.querySelector(".modal.show");
 
             if (!anyOpen) {
-
-                document.body.classList.remove(
-                    "modal-open"
-                );
-
+                document.body.classList.remove("modal-open");
             }
+
         }
 
 
@@ -4421,9 +3776,7 @@
 
 
             const selectedSection =
-                document.getElementById(
-                    section + "Section"
-                );
+                document.getElementById(section + "Section");
 
 
             if (selectedSection) {
@@ -4442,7 +3795,6 @@
         }
 
 
-
         /* 
            ADD ITEM
          */
@@ -4450,14 +3802,52 @@
         function openAddModal() {
 
             openModal("addModal");
+
+            toggleAddItemFields();
+
         }
 
 
         function closeAddModal() {
 
             closeModal("addModal");
+
         }
 
+
+        function toggleAddItemFields() {
+
+            const type =
+                document.getElementById("addItemType");
+
+            const quantityGroup =
+                document.getElementById("addQuantityGroup");
+
+            const lowStockGroup =
+                document.getElementById("addLowStockGroup");
+
+            if (!type) {
+                return;
+            }
+
+            const isService =
+                type.value === "Service";
+
+            if (quantityGroup) {
+
+                quantityGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+            if (lowStockGroup) {
+
+                lowStockGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+        }
 
 
         /* 
@@ -4473,6 +3863,11 @@
 
             const form =
                 document.getElementById("editForm");
+
+
+            if (!form) {
+                return;
+            }
 
 
             form.action =
@@ -4523,15 +3918,53 @@
                 item.description ?? "";
 
 
+            toggleEditItemFields();
+
             openModal("editModal");
+
         }
 
 
         function closeEditModal() {
 
             closeModal("editModal");
+
         }
 
+
+        function toggleEditItemFields() {
+
+            const type =
+                document.getElementById("editItemType");
+
+            const quantityGroup =
+                document.getElementById("editQuantityGroup");
+
+            const lowStockGroup =
+                document.getElementById("editLowStockGroup");
+
+            if (!type) {
+                return;
+            }
+
+            const isService =
+                type.value === "Service";
+
+            if (quantityGroup) {
+
+                quantityGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+            if (lowStockGroup) {
+
+                lowStockGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+        }
 
 
         /* 
@@ -4543,14 +3976,15 @@
             setTodayIfEmpty("expenseDate");
 
             openModal("expenseModal");
+
         }
 
 
         function closeExpenseModal() {
 
             closeModal("expenseModal");
-        }
 
+        }
 
 
         /* 
@@ -4562,14 +3996,15 @@
             setTodayIfEmpty("investmentDate");
 
             openModal("investmentModal");
+
         }
 
 
         function closeInvestmentModal() {
 
             closeModal("investmentModal");
-        }
 
+        }
 
 
         /* 
@@ -4583,18 +4018,19 @@
             setTodayIfEmpty("recurringNextDate");
 
             openModal("recurringModal");
+
         }
 
 
         function closeRecurringModal() {
 
             closeModal("recurringModal");
+
         }
 
 
-
         /* 
-           EDIT RECURRING PAYMENT
+           EDIT RECURRING
          */
 
         function openEditRecurringModal(payment) {
@@ -4605,74 +4041,60 @@
 
 
             const form =
-                document.getElementById(
-                    "editRecurringForm"
-                );
+                document.getElementById("editRecurringForm");
+
+
+            if (!form) {
+                return;
+            }
 
 
             form.action =
                 "/recurring-payments/edit/" + payment.id;
 
 
-            document.getElementById(
-                "editPaymentName"
-            ).value =
+            document.getElementById("editPaymentName").value =
                 payment.payment_name ?? "";
 
 
-            document.getElementById(
-                "editPaymentCategory"
-            ).value =
+            document.getElementById("editPaymentCategory").value =
                 payment.category ?? "";
 
 
-            document.getElementById(
-                "editPaymentAmount"
-            ).value =
+            document.getElementById("editPaymentAmount").value =
                 payment.amount ?? 0;
 
 
-            document.getElementById(
-                "editPaymentFrequency"
-            ).value =
+            document.getElementById("editPaymentFrequency").value =
                 payment.frequency ?? "Monthly";
 
 
-            document.getElementById(
-                "editNextPaymentDate"
-            ).value =
-                formatDateForInput(
-                    payment.next_payment_date
-                );
+            document.getElementById("editNextPaymentDate").value =
+                formatDateForInput(payment.next_payment_date);
 
 
-            document.getElementById(
-                "editRecurringStatus"
-            ).value =
+            document.getElementById("editRecurringStatus").value =
                 payment.status ?? "Active";
 
 
-            document.getElementById(
-                "editPaymentMethod"
-            ).value =
+            document.getElementById("editPaymentMethod").value =
                 payment.payment_method ?? "";
 
 
-            document.getElementById(
-                "editPaymentDescription"
-            ).value =
+            document.getElementById("editPaymentDescription").value =
                 payment.description ?? "";
 
 
             openModal("editRecurringModal");
+
         }
 
 
         function closeEditRecurringModal() {
 
             closeModal("editRecurringModal");
-        }
 
+        }
 
 
         /* 
@@ -4681,17 +4103,23 @@
 
         function searchInventory() {
 
+            const inputElement =
+                document.getElementById("searchInput");
+
+            if (!inputElement) {
+                return;
+            }
+
+
             const input =
-                document
-                    .getElementById("searchInput")
-                    .value
+                inputElement.value
                     .trim()
                     .toLowerCase();
 
 
             const rows =
                 document.querySelectorAll(
-                    "#inventoryTable tbody tr"
+                    "#inventoryTable tbody tr.inventory-row"
                 );
 
 
@@ -4701,20 +4129,14 @@
                     row.innerText.toLowerCase();
 
 
-                if (text.includes(input)) {
-
-                    row.style.display = "";
-
-                } else {
-
-                    row.style.display = "none";
-
-                }
+                row.style.display =
+                    text.includes(input)
+                        ? ""
+                        : "none";
 
             });
 
         }
-
 
 
         /* 
@@ -4725,30 +4147,19 @@
 
             const now = new Date();
 
-
             const year =
                 now.getFullYear();
 
-
             const month =
-                String(
-                    now.getMonth() + 1
-                ).padStart(2, "0");
-
+                String(now.getMonth() + 1)
+                    .padStart(2, "0");
 
             const day =
-                String(
-                    now.getDate()
-                ).padStart(2, "0");
+                String(now.getDate())
+                    .padStart(2, "0");
 
+            return year + "-" + month + "-" + day;
 
-            return (
-                year +
-                "-" +
-                month +
-                "-" +
-                day
-            );
         }
 
 
@@ -4757,13 +4168,13 @@
             const element =
                 document.getElementById(id);
 
-
             if (
                 element &&
                 !element.value
             ) {
 
-                element.value = getToday();
+                element.value =
+                    getToday();
 
             }
 
@@ -4796,12 +4207,12 @@
                 0,
                 10
             );
+
         }
 
 
-
         /* 
-           CLOSE MODALS WHEN CLICKING OUTSIDE
+           CLOSE MODALS WHEN CLICKING BACKDROP
          */
 
         window.addEventListener(
@@ -4809,20 +4220,14 @@
             function (event) {
 
                 if (
-                    event.target.classList.contains(
-                        "modal"
-                    )
+                    event.target.classList.contains("modal")
                 ) {
 
-                    event.target.classList.remove(
-                        "show"
-                    );
+                    event.target.classList.remove("show");
 
 
                     const anyOpen =
-                        document.querySelector(
-                            ".modal.show"
-                        );
+                        document.querySelector(".modal.show");
 
 
                     if (!anyOpen) {
@@ -4839,7 +4244,6 @@
         );
 
 
-
         /* 
            ESC KEY
          */
@@ -4848,17 +4252,13 @@
             "keydown",
             function (event) {
 
-                if (
-                    event.key === "Escape"
-                ) {
+                if (event.key === "Escape") {
 
                     document
                         .querySelectorAll(".modal.show")
                         .forEach(function (modal) {
 
-                            modal.classList.remove(
-                                "show"
-                            );
+                            modal.classList.remove("show");
 
                         });
 
@@ -4873,37 +4273,28 @@
         );
 
 
-
         /* 
-           INITIAL DATE VALUES
+           INITIALIZATION
          */
 
         document.addEventListener(
             "DOMContentLoaded",
             function () {
 
-                setTodayIfEmpty(
-                    "expenseDate"
-                );
+                setTodayIfEmpty("expenseDate");
 
+                setTodayIfEmpty("investmentDate");
 
-                setTodayIfEmpty(
-                    "investmentDate"
-                );
+                setTodayIfEmpty("recurringStartDate");
 
+                setTodayIfEmpty("recurringNextDate");
 
-                setTodayIfEmpty(
-                    "recurringStartDate"
-                );
+                toggleAddItemFields();
 
-
-                setTodayIfEmpty(
-                    "recurringNextDate"
-                );
+                toggleEditItemFields();
 
             }
         );
-
 
     </script>
 
