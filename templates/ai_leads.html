@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        AI Lead Finder | Altair Business Suite
+    </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+
+            font-family:
+                Inter,
+                Arial,
+                sans-serif;
+
+            background:
+                linear-gradient(135deg,
+                    #070b18,
+                    #0d1224,
+                    #090d1b);
+
+            color: #ffffff;
+
+            min-height: 100vh;
+        }
+
+
+        /* =========================================
+           SIDEBAR
+        ========================================= */
+
+        .sidebar {
+
+            position: fixed;
+
+            left: 0;
+            top: 0;
+
+            width: 250px;
+            height: 100vh;
+
+            background: #0d111f;
+
+            border-right:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            padding: 22px 15px;
+
+            overflow-y: auto;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 28px;
+
+            padding: 10px;
+        }
+
+
+        .brand-logo {
+
+            width: 45px;
+            height: 45px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 22px;
+
+            font-weight: 800;
+        }
+
+
+        .brand-text {
+
+            font-size: 17px;
+
+            font-weight: 700;
+        }
+
+
+        .nav {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .nav a {
+
+            text-decoration: none;
+
+            color: #aeb7cc;
+
+            padding: 12px 14px;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            transition: 0.2s;
+        }
+
+
+        .nav a:hover {
+
+            background:
+                rgba(0, 240, 255, 0.08);
+
+            color: #ffffff;
+        }
+
+
+        .nav a.active {
+
+            background:
+                linear-gradient(90deg,
+                    rgba(0, 240, 255, 0.14),
+                    rgba(255, 0, 212, 0.10));
+
+            color: #00f0ff;
+
+            border:
+                1px solid rgba(0, 240, 255, 0.15);
+        }
+
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        .main {
+
+            margin-left: 250px;
+
+            padding: 30px;
+
+            min-height: 100vh;
+        }
+
+
+        /* =========================================
+           HEADER
+        ========================================= */
+
+        .topbar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+
+        .topbar h1 {
+
+            font-size: 30px;
+
+            margin-bottom: 7px;
+        }
+
+
+        .topbar p {
+
+            color: #8f9bb3;
+
+            font-size: 14px;
+        }
+
+
+        .user-box {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            padding: 9px 14px;
+
+            border-radius: 12px;
+        }
+
+
+        .avatar {
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================
+           SEARCH PANEL
+        ========================================= */
+
+        .search-panel {
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 18px;
+
+            padding: 25px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .search-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .ai-icon {
+
+            width: 45px;
+            height: 45px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 22px;
+
+            background:
+                linear-gradient(135deg,
+                    rgba(0, 240, 255, 0.18),
+                    rgba(255, 0, 212, 0.18));
+
+            border:
+                1px solid rgba(0, 240, 255, 0.2);
+        }
+
+
+        .search-title h2 {
+
+            font-size: 20px;
+        }
+
+
+        .search-title p {
+
+            color: #8f9bb3;
+
+            font-size: 13px;
+
+            margin-top: 4px;
+        }
+
+
+        .search-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 14px;
+        }
+
+
+        .field {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .field label {
+
+            color: #9ba6bd;
+
+            font-size: 12px;
+        }
+
+
+        .field input,
+        .field select {
+
+            width: 100%;
+
+            padding: 12px 13px;
+
+            background: #090e1c;
+
+            color: #ffffff;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.1);
+
+            border-radius: 9px;
+
+            outline: none;
+        }
+
+
+        .field input:focus,
+        .field select:focus {
+
+            border-color: #00f0ff;
+        }
+
+
+        .search-button {
+
+            margin-top: 18px;
+
+            padding: 12px 22px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            color: #ffffff;
+
+            font-weight: 700;
+
+            background:
+                linear-gradient(135deg,
+                    #00bcd4,
+                    #8e2de2);
+        }
+
+
+        /* =========================================
+           STATISTICS
+        ========================================= */
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(5, 1fr);
+
+            gap: 16px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .stat-card {
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 15px;
+
+            padding: 20px;
+        }
+
+
+        .stat-label {
+
+            color: #8f9bb3;
+
+            font-size: 12px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .stat-number {
+
+            font-size: 26px;
+
+            font-weight: 800;
+        }
+
+
+        /* =========================================
+           LEADS SECTION
+        ========================================= */
+
+        .section {
+
+            background:
+                rgba(255, 255, 255, 0.04);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 18px;
+
+            overflow: hidden;
+        }
+
+
+        .section-header {
+
+            padding: 20px 22px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.07);
+        }
+
+
+        .section-header h2 {
+
+            font-size: 19px;
+        }
+
+
+        .add-button {
+
+            border: none;
+
+            padding: 10px 17px;
+
+            border-radius: 9px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #8e2de2);
+
+            font-weight: 700;
+        }
+
+
+        .table-container {
+
+            overflow-x: auto;
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 950px;
+        }
+
+
+        th {
+
+            text-align: left;
+
+            padding: 14px 18px;
+
+            color: #8f9bb3;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+            background:
+                rgba(0, 0, 0, 0.15);
+        }
+
+
+        td {
+
+            padding: 15px 18px;
+
+            border-top:
+                1px solid rgba(255, 255, 255, 0.05);
+
+            font-size: 13px;
+
+            color: #dce2ef;
+        }
+
+
+        tr:hover td {
+
+            background:
+                rgba(255, 255, 255, 0.025);
+        }
+
+
+        .company-name {
+
+            font-weight: 700;
+
+            color: #ffffff;
+        }
+
+
+        .muted {
+
+            color: #8792a9;
+
+            font-size: 12px;
+
+            margin-top: 3px;
+        }
+
+
+        .badge {
+
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 20px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+
+        .new {
+
+            background:
+                rgba(0, 240, 255, 0.12);
+
+            color: #00f0ff;
+        }
+
+
+        .contacted {
+
+            background:
+                rgba(255, 193, 7, 0.12);
+
+            color: #ffc107;
+        }
+
+
+        .interested {
+
+            background:
+                rgba(156, 39, 176, 0.15);
+
+            color: #d58cff;
+        }
+
+
+        .converted {
+
+            background:
+                rgba(0, 200, 83, 0.12);
+
+            color: #00d26a;
+        }
+
+
+        .not-interested {
+
+            background:
+                rgba(244, 67, 54, 0.12);
+
+            color: #ff6b61;
+        }
+
+
+        .actions {
+
+            display: flex;
+
+            gap: 7px;
+        }
+
+
+        .action-button {
+
+            border: none;
+
+            padding: 7px 10px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                rgba(255, 255, 255, 0.07);
+        }
+
+
+        .action-button:hover {
+
+            background:
+                rgba(0, 240, 255, 0.12);
+        }
+
+
+        .delete-button:hover {
+
+            background:
+                rgba(255, 70, 70, 0.15);
+        }
+
+
+        .empty {
+
+            padding: 60px 20px;
+
+            text-align: center;
+
+            color: #8490a8;
+        }
+
+
+        .empty-icon {
+
+            font-size: 40px;
+
+            margin-bottom: 12px;
+        }
+
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0, 0, 0, 0.72);
+
+            backdrop-filter: blur(8px);
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 1000;
+
+            padding: 20px;
+        }
+
+
+        .modal.active {
+
+            display: flex;
+        }
+
+
+        .modal-box {
+
+            width: 100%;
+
+            max-width: 700px;
+
+            max-height: 90vh;
+
+            overflow-y: auto;
+
+            background: #111827;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.1);
+
+            border-radius: 18px;
+
+            padding: 25px;
+        }
+
+
+        .modal-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 22px;
+        }
+
+
+        .modal-header h2 {
+
+            font-size: 21px;
+        }
+
+
+        .close {
+
+            background: none;
+
+            border: none;
+
+            color: #9ba6bd;
+
+            font-size: 26px;
+
+            cursor: pointer;
+        }
+
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+
+        .form-group {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+        }
+
+
+        .form-group.full {
+
+            grid-column: 1 / -1;
+        }
+
+
+        .form-group label {
+
+            font-size: 12px;
+
+            color: #9ba6bd;
+        }
+
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+
+            padding: 12px;
+
+            background: #090e1c;
+
+            color: white;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.1);
+
+            border-radius: 8px;
+
+            outline: none;
+        }
+
+
+        .form-group textarea {
+
+            min-height: 90px;
+
+            resize: vertical;
+        }
+
+
+        .form-actions {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 10px;
+
+            margin-top: 20px;
+        }
+
+
+        .cancel-button {
+
+            padding: 11px 18px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            color: white;
+        }
+
+
+        .save-button {
+
+            padding: 11px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            color: white;
+
+            font-weight: 700;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #8e2de2);
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media(max-width: 1100px) {
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+            .search-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+
+
+        @media(max-width: 800px) {
+
+            .sidebar {
+
+                position: relative;
+
+                width: 100%;
+
+                height: auto;
+            }
+
+
+            .main {
+
+                margin-left: 0;
+
+                padding: 18px;
+            }
+
+
+            .topbar {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+
+                gap: 15px;
+            }
+
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+        }
+
+
+        @media(max-width: 550px) {
+
+            .search-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .stats {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .form-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .form-group.full {
+
+                grid-column: auto;
+            }
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+     SIDEBAR
+========================================= -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                A
+            </div>
+
+            <div class="brand-text">
+                Altair Business Suite
+            </div>
+
+        </div>
+
+
+        <nav class="nav">
+
+            <a href="{{ url_for('dashboard') }}">
+                📊
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('customer') }}">
+                👥
+                Customers
+            </a>
+
+            <a href="{{ url_for('invoice') }}">
+                🧾
+                Invoices
+            </a>
+
+            <a href="{{ url_for('items') }}">
+                📦
+                Inventory
+            </a>
+
+            <a href="#">
+                💰
+                Transactions
+            </a>
+
+            <a href="{{ url_for('ai_leads') }}" class="active">
+                🤖
+                AI Lead Finder
+            </a>
+
+            <a href="#">
+                📘
+                Facebook Analytics
+            </a>
+
+            <a href="#">
+                💬
+                WhatsApp Analytics
+            </a>
+
+            <a href="{{ url_for('settings') }}">
+                ⚙️
+                Settings
+            </a>
+
+            <a href="{{ url_for('logout') }}">
+                🚪
+                Logout
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+
+    <!-- =========================================
+     MAIN
+========================================= -->
+
+    <main class="main">
+
+
+        <!-- HEADER -->
+
+        <div class="topbar">
+
+            <div>
+
+                <h1>
+                    🤖 AI Lead Finder
+                </h1>
+
+                <p>
+                    Discover, manage and analyse potential customers.
+                </p>
+
+            </div>
+
+
+            <div class="user-box">
+
+                <div class="avatar">
+
+                    {{
+                    user_name[0]|upper
+                    if user_name
+                    else "U"
+                    }}
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ user_name or "User" }}
+                    </strong>
+
+                    <div class="muted">
+                        {{ user_email or "" }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================================
+         SEARCH PANEL
+    ========================================== -->
+
+        <section class="search-panel">
+
+            <div class="search-title">
+
+                <div class="ai-icon">
+                    ✨
+                </div>
+
+                <div>
+
+                    <h2>
+                        Find Potential Leads
+                    </h2>
+
+                    <p>
+                        Define the type of business you want to target.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="search-grid">
+
+                <div class="field">
+
+                    <label>
+                        Industry
+                    </label>
+
+                    <input type="text" id="searchIndustry" placeholder="e.g. Construction">
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Location
+                    </label>
+
+                    <input type="text" id="searchLocation" placeholder="e.g. Johannesburg">
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Keywords
+                    </label>
+
+                    <input type="text" id="searchKeyword" placeholder="e.g. roofing">
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        Lead Status
+                    </label>
+
+                    <select id="searchStatus">
+
+                        <option value="">
+                            All statuses
+                        </option>
+
+                        <option value="New">
+                            New
+                        </option>
+
+                        <option value="Contacted">
+                            Contacted
+                        </option>
+
+                        <option value="Interested">
+                            Interested
+                        </option>
+
+                        <option value="Converted">
+                            Converted
+                        </option>
+
+                        <option value="Not Interested">
+                            Not Interested
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <button class="search-button" onclick="filterLeads()">
+                🔎 Search Saved Leads
+            </button>
+
+        </section>
+
+
+
+        <!-- =========================================
+         STATISTICS
+    ========================================== -->
+
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total Leads
+                </div>
+
+                <div class="stat-number">
+                    {{ total_leads }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    New
+                </div>
+
+                <div class="stat-number">
+                    {{ new_leads }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Contacted
+                </div>
+
+                <div class="stat-number">
+                    {{ contacted_leads }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Interested
+                </div>
+
+                <div class="stat-number">
+                    {{ interested_leads }}
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Converted
+                </div>
+
+                <div class="stat-number">
+                    {{ converted_leads }}
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =========================================
+         LEADS
+    ========================================== -->
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <h2>
+                    Saved Leads
+                </h2>
+
+                <button class="add-button" onclick="openModal()">
+                    + Add Lead
+                </button>
+
+            </div>
+
+
+            <div class="table-container">
+
+                {% if leads %}
+
+                <table id="leadsTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Company
+                            </th>
+
+                            <th>
+                                Industry
+                            </th>
+
+                            <th>
+                                Location
+                            </th>
+
+                            <th>
+                                Contact
+                            </th>
+
+                            <th>
+                                Score
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for lead in leads %}
+
+                        <tr class="lead-row" data-industry="{{ lead.industry or '' }}"
+                            data-location="{{ lead.location or '' }}" data-company="{{ lead.company_name or '' }}"
+                            data-status="{{ lead.lead_status or '' }}">
+
+                            <td>
+
+                                <div class="company-name">
+
+                                    {{ lead.company_name }}
+
+                                </div>
+
+                                {% if lead.website %}
+
+                                <div class="muted">
+
+                                    {{ lead.website }}
+
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.industry or "—" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.location or "—" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if lead.contact_person %}
+
+                                {{ lead.contact_person }}
+
+                                {% else %}
+
+                                —
+
+                                {% endif %}
+
+                                {% if lead.email %}
+
+                                <div class="muted">
+
+                                    {{ lead.email }}
+
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.lead_score or 0 }}
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="badge
+                                {% if lead.lead_status == 'New' %}
+                                    new
+                                {% elif lead.lead_status == 'Contacted' %}
+                                    contacted
+                                {% elif lead.lead_status == 'Interested' %}
+                                    interested
+                                {% elif lead.lead_status == 'Converted' %}
+                                    converted
+                                {% else %}
+                                    not-interested
+                                {% endif %}">
+
+                                    {{ lead.lead_status }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <form method="POST" action="{{
+                                        url_for(
+                                            'update_lead_status',
+                                            lead_id=lead.id
+                                        )
+                                    }}">
+
+                                        <select name="status" onchange="this.form.submit()" class="action-button">
+
+                                            <option value="New" {% if lead.lead_status=='New' %} selected {% endif %}>
+                                                New
+                                            </option>
+
+                                            <option value="Contacted" {% if lead.lead_status=='Contacted' %} selected {%
+                                                endif %}>
+                                                Contacted
+                                            </option>
+
+                                            <option value="Interested" {% if lead.lead_status=='Interested' %} selected
+                                                {% endif %}>
+                                                Interested
+                                            </option>
+
+                                            <option value="Converted" {% if lead.lead_status=='Converted' %} selected {%
+                                                endif %}>
+                                                Converted
+                                            </option>
+
+                                            <option value="Not Interested" {% if lead.lead_status=='Not Interested' %}
+                                                selected {% endif %}>
+                                                Not Interested
+                                            </option>
+
+                                        </select>
+
+                                    </form>
+
+
+                                    <form method="POST" action="{{
+                                        url_for(
+                                            'delete_ai_lead',
+                                            lead_id=lead.id
+                                        )
+                                    }}" onsubmit="
+                                        return confirm(
+                                            'Delete this lead?'
+                                        );
+                                    ">
+
+                                        <button type="submit" class="action-button delete-button">
+                                            🗑
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+                {% else %}
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        🤖
+                    </div>
+
+                    <h3>
+                        No leads yet
+                    </h3>
+
+                    <p>
+                        Add your first potential customer to start building your lead database.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =========================================
+     ADD LEAD MODAL
+========================================= -->
+
+    <div class="modal" id="leadModal">
+
+        <div class="modal-box">
+
+            <div class="modal-header">
+
+                <h2>
+                    Add New Lead
+                </h2>
+
+                <button class="close" onclick="closeModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_ai_lead') }}">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Company Name *
+                        </label>
+
+                        <input type="text" name="company_name" required placeholder="Company name">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Industry
+                        </label>
+
+                        <input type="text" name="industry" placeholder="e.g. Construction">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Location
+                        </label>
+
+                        <input type="text" name="location" placeholder="e.g. Johannesburg">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Contact Person
+                        </label>
+
+                        <input type="text" name="contact_person" placeholder="Contact person">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Email
+                        </label>
+
+                        <input type="email" name="email" placeholder="company@example.com">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Phone
+                        </label>
+
+                        <input type="text" name="phone" placeholder="+27...">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Website
+                        </label>
+
+                        <input type="url" name="website" placeholder="https://example.com">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Source
+                        </label>
+
+                        <select name="source">
+
+                            <option value="Manual">
+                                Manual
+                            </option>
+
+                            <option value="Google">
+                                Google
+                            </option>
+
+                            <option value="Website">
+                                Website
+                            </option>
+
+                            <option value="Referral">
+                                Referral
+                            </option>
+
+                            <option value="Social Media">
+                                Social Media
+                            </option>
+
+                            <option value="AI Search">
+                                AI Search
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Notes
+                        </label>
+
+                        <textarea name="notes" placeholder="Add notes about this lead..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                    <button type="button" class="cancel-button" onclick="closeModal()">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="save-button">
+                        Save Lead
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        function openModal() {
+
+            document
+                .getElementById("leadModal")
+                .classList.add("active");
+
+        }
+
+
+        function closeModal() {
+
+            document
+                .getElementById("leadModal")
+                .classList.remove("active");
+
+        }
+
+
+        document
+            .getElementById("leadModal")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === this
+                    ) {
+
+                        closeModal();
+
+                    }
+
+                }
+            );
+
+
+        /* =========================================
+           SEARCH SAVED LEADS
+        ========================================= */
+
+        function filterLeads() {
+
+            const industry =
+                document
+                    .getElementById("searchIndustry")
+                    .value
+                    .toLowerCase();
+
+            const location =
+                document
+                    .getElementById("searchLocation")
+                    .value
+                    .toLowerCase();
+
+            const keyword =
+                document
+                    .getElementById("searchKeyword")
+                    .value
+                    .toLowerCase();
+
+            const status =
+                document
+                    .getElementById("searchStatus")
+                    .value
+                    .toLowerCase();
+
+
+            const rows =
+                document.querySelectorAll(
+                    ".lead-row"
+                );
+
+
+            rows.forEach(
+                function (row) {
+
+                    const rowIndustry =
+                        row.dataset.industry
+                            .toLowerCase();
+
+                    const rowLocation =
+                        row.dataset.location
+                            .toLowerCase();
+
+                    const rowCompany =
+                        row.dataset.company
+                            .toLowerCase();
+
+                    const rowStatus =
+                        row.dataset.status
+                            .toLowerCase();
+
+
+                    const matchesIndustry =
+                        !industry ||
+                        rowIndustry.includes(
+                            industry
+                        );
+
+
+                    const matchesLocation =
+                        !location ||
+                        rowLocation.includes(
+                            location
+                        );
+
+
+                    const matchesKeyword =
+                        !keyword ||
+                        rowCompany.includes(
+                            keyword
+                        ) ||
+                        rowIndustry.includes(
+                            keyword
+                        );
+
+
+                    const matchesStatus =
+                        !status ||
+                        rowStatus === status;
+
+
+                    if (
+                        matchesIndustry &&
+                        matchesLocation &&
+                        matchesKeyword &&
+                        matchesStatus
+                    ) {
+
+                        row.style.display = "";
+
+                    } else {
+
+                        row.style.display = "none";
+
+                    }
+
+                }
+            );
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>

@@ -4546,7 +4546,424 @@ def settings():
         db.close()
 
 
+#The AI part of this application is currently under development and will be available in future updates. Stay tuned for more information and features related to AI integration in the Altair Business Suits application.
 
+
+
+@app.route("/ai-leads")
+def ai_leads():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        # -------------------------------------------------
+        # COMPANY
+        # -------------------------------------------------
+
+        cursor.execute("""
+            SELECT *
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+        """, (user_id,))
+
+        company = cursor.fetchone()
+
+        # -------------------------------------------------
+        # ALL LEADS
+        # -------------------------------------------------
+
+        cursor.execute("""
+            SELECT *
+            FROM leads
+            WHERE user_id = %s
+            ORDER BY id DESC
+        """, (user_id,))
+
+        leads = cursor.fetchall()
+
+        # -------------------------------------------------
+        # STATISTICS
+        # -------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                COUNT(*) AS total_leads,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN lead_status = 'New'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS new_leads,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN lead_status = 'Contacted'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS contacted_leads,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN lead_status = 'Interested'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS interested_leads,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN lead_status = 'Converted'
+                            THEN 1
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS converted_leads
+
+            FROM leads
+            WHERE user_id = %s
+        """, (user_id,))
+
+        stats = cursor.fetchone()
+
+        return render_template(
+            "ai_leads.html",
+            company=company,
+            leads=leads,
+            total_leads=stats["total_leads"],
+            new_leads=stats["new_leads"],
+            contacted_leads=stats["contacted_leads"],
+            interested_leads=stats["interested_leads"],
+            converted_leads=stats["converted_leads"],
+            user_name=session.get("user_name"),
+            user_email=session.get("user_email")
+        )
+
+    except Exception as e:
+
+        print("AI LEADS ERROR:", e)
+
+        flash(
+            "Unable to load AI Lead Finder.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+     
+@app.route("/ai-leads/add", methods=["POST"])
+def add_ai_lead():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    company_name = request.form.get(
+        "company_name",
+        ""
+    ).strip()
+
+    industry = request.form.get(
+        "industry",
+        ""
+    ).strip()
+
+    location = request.form.get(
+        "location",
+        ""
+    ).strip()
+
+    website = request.form.get(
+        "website",
+        ""
+    ).strip()
+
+    email = request.form.get(
+        "email",
+        ""
+    ).strip()
+
+    phone = request.form.get(
+        "phone",
+        ""
+    ).strip()
+
+    contact_person = request.form.get(
+        "contact_person",
+        ""
+    ).strip()
+
+    source = request.form.get(
+        "source",
+        "Manual"
+    ).strip()
+
+    notes = request.form.get(
+        "notes",
+        ""
+    ).strip()
+
+    if not company_name:
+
+        flash(
+            "Company name is required.",
+            "error"
+        )
+
+        return redirect(url_for("ai_leads"))
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            INSERT INTO leads
+            (
+                user_id,
+                company_name,
+                industry,
+                location,
+                website,
+                email,
+                phone,
+                contact_person,
+                source,
+                lead_status,
+                lead_score,
+                notes
+            )
+
+            VALUES
+            (
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s,
+                'New',
+                0,
+                %s
+            )
+        """, (
+            user_id,
+            company_name,
+            industry,
+            location,
+            website,
+            email,
+            phone,
+            contact_person,
+            source,
+            notes
+        ))
+
+        db.commit()
+
+        flash(
+            "Lead added successfully!",
+            "success"
+        )
+
+    except Exception as e:
+
+        if db:
+            db.rollback()
+
+        print("ADD LEAD ERROR:", e)
+
+        flash(
+            "Unable to add lead.",
+            "error"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+    return redirect(url_for("ai_leads"))
+@app.route(
+    "/ai-leads/<int:lead_id>/status",
+    methods=["POST"]
+)
+def update_lead_status(lead_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    status = request.form.get(
+        "status",
+        "New"
+    ).strip()
+
+    allowed_statuses = [
+        "New",
+        "Contacted",
+        "Interested",
+        "Converted",
+        "Not Interested"
+    ]
+
+    if status not in allowed_statuses:
+
+        flash(
+            "Invalid lead status.",
+            "error"
+        )
+
+        return redirect(url_for("ai_leads"))
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            UPDATE leads
+
+            SET lead_status = %s
+
+            WHERE id = %s
+            AND user_id = %s
+        """, (
+            status,
+            lead_id,
+            user_id
+        ))
+
+        db.commit()
+
+        flash(
+            "Lead status updated.",
+            "success"
+        )
+
+    except Exception as e:
+
+        if db:
+            db.rollback()
+
+        print(
+            "UPDATE LEAD STATUS ERROR:",
+            e
+        )
+
+        flash(
+            "Unable to update lead.",
+            "error"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+    return redirect(url_for("ai_leads"))
+
+    #to delete the lead
+@app.route(
+    "/ai-leads/<int:lead_id>/delete",
+    methods=["POST"]
+)
+def delete_ai_lead(lead_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            DELETE FROM leads
+
+            WHERE id = %s
+            AND user_id = %s
+        """, (
+            lead_id,
+            user_id
+        ))
+
+        db.commit()
+
+        flash(
+            "Lead deleted successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        if db:
+            db.rollback()
+
+        print(
+            "DELETE LEAD ERROR:",
+            e
+        )
+
+        flash(
+            "Unable to delete lead.",
+            "error"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+    return redirect(url_for("ai_leads"))
+
+            
 # RUN APP
 
 
