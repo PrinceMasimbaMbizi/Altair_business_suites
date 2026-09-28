@@ -26,22 +26,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {
     "png",
     "jpg",
-    "jpeg",
-    "PNG"
-}
-
-
-def allowed_file(filename):
-
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in ALLOWED_EXTENSIONS
-    )
-
-ALLOWED_EXTENSIONS = {
-    "png",
-    "jpg",
     "jpeg"
 }
 
