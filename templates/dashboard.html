@@ -496,6 +496,13 @@
             color: #777;
         }
 
+        .company-logo-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
 
         /* 
            CHART
@@ -1061,21 +1068,17 @@
 
             <!-- COMPANY LOGO -->
 
-            <div class="company-logo">
+            {% if company and company.logo %}
 
-                {% if company and company.logo %}
+            <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image">
 
-                <img src="{{ url_for('static', filename='uploads/' ~ company.logo) }}" alt="{{ company.company_name }}">
+            {% else %}
 
-                {% else %}
-
-                <div class="company-logo-placeholder">
-                    {{ company.company_name[0] if company and company.company_name else 'A' }}
-                </div>
-
-                {% endif %}
-
+            <div class="company-logo-placeholder">
+                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
             </div>
+
+            {% endif %}
 
 
             <!-- MAIN MENU -->

@@ -1478,8 +1478,8 @@
             }
 
 
-            
-         
+
+
 
             .financial-section {
 
@@ -1845,18 +1845,14 @@
 
                 <div class="company-section">
 
-
                     {% if company and company.logo %}
 
-                    <img class="company-logo" src="{{ url_for('static', filename='uploads/' + company.logo) }}"
-                        alt="{{ company.company_name }}">
+                    <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo">
 
                     {% else %}
 
-                    <div class="company-placeholder">
-                        {{ company.company_name[0]|upper
-                        if company and company.company_name
-                        else "C" }}
+                    <div class="company-logo-placeholder">
+                        {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
                     </div>
 
                     {% endif %}

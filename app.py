@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import (Flask,render_template,request,redirect,url_for,flash,session,send_from_directory,abort)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
@@ -8,8 +8,6 @@ import os
 
 
 # FLASK APP
-
-
 app = Flask(__name__)
 
 app.secret_key = "altair-secret-key"
@@ -17,7 +15,6 @@ app.secret_key = "altair-secret-key"
 
 
 # COMPANY LOGO UPLOAD SETTINGS
-
 UPLOAD_FOLDER = os.path.join(
     app.root_path,
     "static",
@@ -119,7 +116,68 @@ def get_db_connection():
         ssl_verify_cert=False
     )
 
+@app.route("/company-logo")
+def company_logo():
 
+    if "user_id" not in session:
+        abort(404)
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT logo
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+
+        company = cursor.fetchone()
+
+        if not company or not company.get("logo"):
+            abort(404)
+
+        # Only use the filename
+        # This protects against paths stored in the database.
+        filename = os.path.basename(
+            company["logo"]
+        )
+
+        logo_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
+
+        print("COMPANY LOGO FROM DATABASE:", company["logo"])
+        print("COMPANY LOGO FILE:", logo_path)
+        print("LOGO EXISTS:", os.path.isfile(logo_path))
+
+        if not os.path.isfile(logo_path):
+            abort(404)
+
+        return send_from_directory(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
 
 # REGISTER
 
