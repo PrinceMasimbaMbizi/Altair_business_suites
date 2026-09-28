@@ -18,10 +18,29 @@ app.secret_key = "altair-secret-key"
 
 # COMPANY LOGO UPLOAD SETTINGS
 
-
-UPLOAD_FOLDER = "static/uploads"
+UPLOAD_FOLDER = os.path.join(
+    app.root_path,
+    "static",
+    "uploads"
+)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+ALLOWED_EXTENSIONS = {
+    "png",
+    "jpg",
+    "jpeg",
+    "PNG"
+}
+
+
+def allowed_file(filename):
+
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in ALLOWED_EXTENSIONS
+    )
 
 ALLOWED_EXTENSIONS = {
     "png",

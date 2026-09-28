@@ -1061,28 +1061,19 @@
 
             <!-- COMPANY LOGO -->
 
-            <div class="logo">
+            <div class="company-logo">
 
-                {% if company.logo %}
+                {% if company and company.logo %}
 
-                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" alt="{{ company.company_name }}">
+                <img src="{{ url_for('static', filename='uploads/' ~ company.logo) }}" alt="{{ company.company_name }}">
 
                 {% else %}
 
                 <div class="company-logo-placeholder">
-                    {{ company.company_name[0] }}
+                    {{ company.company_name[0] if company and company.company_name else 'A' }}
                 </div>
 
                 {% endif %}
-
-
-                <div>
-
-                    <span>
-                        {{ company.company_name }}
-                    </span>
-
-                </div>
 
             </div>
 
