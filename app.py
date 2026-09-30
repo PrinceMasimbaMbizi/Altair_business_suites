@@ -1,4 +1,4 @@
-from flask import (Flask,render_template,request,redirect,url_for,flash,session,send_from_directory,abort)
+from flask import (Flask,render_template,request,redirect,url_for,flash,session,send_from_directory,abort,jsonify)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
@@ -2578,12 +2578,6 @@ def delete_recurring_payment(payment_id):
 
         cursor = db.cursor()
 
-        # Delete the recurring rule.
-        #
-        # Historical expenses remain in the
-        # expenses table because they represent
-        # actual money that was already recorded.
-
         cursor.execute(
             """
             DELETE FROM recurring_payments
@@ -2630,29 +2624,6 @@ def delete_recurring_payment(payment_id):
     return redirect(
         url_for("items")
     )
-
-
-
-# PROCESS RECURRING PAYMENTS
-
-#
-# This function checks recurring payments every time
-# the /items page is opened.
-#
-# Example:
-#
-# Rent = R5,000
-# Start = 01 September
-# Next payment = 01 September
-#
-# When the user opens Items on 26 September:
-#
-# 01 September -> recorded
-# 01 October   -> next payment
-#
-# If several months have passed, every missing
-# occurrence is automatically created.
-#
 
 
 def process_recurring_payments(
@@ -4680,7 +4651,7 @@ def ai_leads():
         if db:
             db.close()
 
-     
+ #AI Lead finder    
 @app.route("/ai-leads/add", methods=["POST"])
 def add_ai_lead():
 
@@ -4817,6 +4788,7 @@ def add_ai_lead():
             db.close()
 
     return redirect(url_for("ai_leads"))
+
 @app.route(
     "/ai-leads/<int:lead_id>/status",
     methods=["POST"]
@@ -5159,47 +5131,18 @@ def search_ai_leads():
             )
         )
 
-        google_results.append({
+        types = place.get("types", [])
 
-            "google_place_id":
-                place.get("id"),
+        industry = ""
 
-            "company_name":
-                company_name,
+        ignored_types = {"point_of_interest","establishment","store","premise","political","locality","geocode"}
 
-            "address":
-                place.get(
-                    "formattedAddress",
-                    ""
-                ),
+        for place_type in types:
+            if place_type not in ignored_types:
+                industry = place_type.replace("_", " ").title()
+                break
 
-            "website":
-                place.get(
-                    "websiteUri",
-                    ""
-                ),
-
-            "phone":
-                phone or "",
-
-            "types":
-                place.get(
-                    "types",
-                    []
-                ),
-
-            "business_status":
-                place.get(
-                    "businessStatus",
-                    ""
-                ),
-
-            "google_maps_url":
-                place.get(
-                    "googleMapsUri",
-                    ""
-                )
-        })
+        google_results.append({"google_place_id": place.get("id"),"company_name": company_name,"address": place.get("formattedAddress", ""),"website": place.get("websiteUri", ""),"phone": phone or "","industry":industry, "types": types,"business_status": place.get("businessStatus", ""),"google_maps_url": place.get("googleMapsUri", "")})
 
     
     # SEND RESULTS BACK TO PAGE
@@ -5407,9 +5350,9 @@ def save_google_lead():
             dictionary=True
         )
 
-        # ---------------------------------------------
+        
         # CHECK FOR DUPLICATE GOOGLE LEAD
-        # ---------------------------------------------
+        
 
         cursor.execute("""
             SELECT id
@@ -5435,9 +5378,7 @@ def save_google_lead():
                 url_for("ai_leads")
             )
 
-        # ---------------------------------------------
         # SAVE
-        # ---------------------------------------------
 
         cursor.execute("""
             INSERT INTO leads
@@ -5507,6 +5448,147 @@ def save_google_lead():
     return redirect(
         url_for("ai_leads")
     )
+
+#saving the google leads
+@app.route("/save-google-lead", methods=["POST"])
+def save_google_lead():
+
+    if "user_id" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Please login first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    company_name = request.form.get("company_name", "").strip()
+    industry = request.form.get("industry", "").strip()
+    location = request.form.get("location", "").strip()
+    website = request.form.get("website", "").strip()
+    phone = request.form.get("phone", "").strip()
+    google_place_id = request.form.get("google_place_id", "").strip()
+
+    if not company_name:
+        return jsonify({
+            "success": False,
+            "message": "Company name is required."
+        }), 400
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        
+        # CHECK IF THIS GOOGLE LEAD IS ALREADY SAVED
+        
+
+        cursor.execute("""
+            SELECT id
+            FROM leads
+            WHERE user_id = %s
+            AND google_place_id = %s
+            LIMIT 1
+        """, (
+            user_id,
+            google_place_id
+        ))
+
+        existing = cursor.fetchone()
+
+        if existing:
+
+            cursor.close()
+            db.close()
+
+            return jsonify({
+                "success": True,
+                "already_saved": True,
+                "lead_id": existing["id"],
+                "message": "Lead already saved."
+            })
+
+
+        
+        # SAVE NEW LEAD
+        
+
+        cursor.execute("""
+            INSERT INTO leads
+            (
+                user_id,
+                company_name,
+                industry,
+                location,
+                website,
+                phone,
+                source,
+                lead_status,
+                lead_score,
+                google_place_id
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                'Google',
+                'New',
+                0,
+                %s
+            )
+        """, (
+            user_id,
+            company_name,
+            industry,
+            location,
+            website,
+            phone,
+            google_place_id
+        ))
+
+        lead_id = cursor.lastrowid
+
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+
+        
+        # RETURN JSON
+        
+
+        return jsonify({
+            "success": True,
+            "already_saved": False,
+            "lead_id": lead_id,
+            "message": "Lead saved successfully!",
+            "lead": {
+                "id": lead_id,
+                "company_name": company_name,
+                "industry": industry,
+                "location": location,
+                "phone": phone,
+                "website": website,
+                "lead_status": "New",
+                "lead_score": 0
+            }
+        })
+
+
+    except Exception as e:
+
+        print("SAVE GOOGLE LEAD ERROR:", e)
+
+        return jsonify({
+            "success": False,
+            "message": "Could not save lead."
+        }), 500
+    
 
 # RUN APP
 if __name__ == "__main__":

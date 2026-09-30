@@ -37,9 +37,9 @@
         }
 
 
-        /* =========================================
+        /* 
            SIDEBAR
-        ========================================= */
+         */
 
         .sidebar {
 
@@ -160,9 +160,9 @@
         }
 
 
-        /* =========================================
+        /* 
            MAIN
-        ========================================= */
+         */
 
         .main {
 
@@ -174,9 +174,9 @@
         }
 
 
-        /* =========================================
+        /* 
            HEADER
-        ========================================= */
+         */
 
         .topbar {
 
@@ -247,9 +247,9 @@
         }
 
 
-        /* =========================================
+        /* 
            SEARCH PANEL
-        ========================================= */
+         */
 
         .search-panel {
 
@@ -398,9 +398,9 @@
         }
 
 
-        /* =========================================
+        /* 
            STATISTICS
-        ========================================= */
+         */
 
         .stats {
 
@@ -447,9 +447,9 @@
         }
 
 
-        /* =========================================
+        /* 
            LEADS SECTION
-        ========================================= */
+         */
 
         .section {
 
@@ -696,9 +696,9 @@
         }
 
 
-        /* =========================================
+        /* 
            MODAL
-        ========================================= */
+         */
 
         .modal {
 
@@ -894,9 +894,9 @@
         }
 
 
-        /* =========================================
+        /* 
            MOBILE
-        ========================================= */
+         */
 
         @media(max-width: 1100px) {
 
@@ -985,9 +985,9 @@
 <body>
 
 
-    <!-- =========================================
+    <!-- 
      SIDEBAR
-========================================= -->
+ -->
 
     <aside class="sidebar">
 
@@ -1062,9 +1062,9 @@
 
 
 
-    <!-- =========================================
+    <!-- 
      MAIN
-========================================= -->
+ -->
 
     <main class="main">
 
@@ -1116,9 +1116,9 @@
 
 
 
-        <!-- =========================================
+        <!-- 
          SEARCH PANEL
-    ========================================== -->
+    = -->
 
         <section class="search-panel">
 
@@ -1339,28 +1339,14 @@
                                 {{ lead.business_status or "Unknown" }}
 
                             </td>
-
-
                             <td>
-
-                                <form method="POST" action="{{ url_for('save_google_lead') }}">
-
-                                    <input type="hidden" name="company_name" value="{{ lead.company_name }}">
-
-                                    <input type="hidden" name="location" value="{{ lead.address }}">
-
-                                    <input type="hidden" name="website" value="{{ lead.website }}">
-
-                                    <input type="hidden" name="phone" value="{{ lead.phone }}">
-
-                                    <input type="hidden" name="google_place_id" value="{{ lead.google_place_id }}">
-
-                                    <button type="submit" class="action-button">
-                                        + Save
-                                    </button>
-
-                                </form>
-
+                                <button type="button" class="action-button save-google-lead"
+                                    data-company="{{ lead.company_name }}" data-industry="{{ lead.industry }}"
+                                    data-location="{{ lead.address }}" data-phone="{{ lead.phone }}"
+                                    data-website="{{ lead.website }}" data-google-place-id="{{ lead.google_place_id }}"
+                                    onclick="saveGoogleLead(this)">
+                                    + Save
+                                </button>
                             </td>
 
                         </tr>
@@ -1399,9 +1385,9 @@
 
 
 
-        <!-- =========================================
+        <!-- 
          STATISTICS
-    ========================================== -->
+    = -->
 
         <section class="stats">
 
@@ -1473,9 +1459,9 @@
 
 
 
-        <!-- =========================================
+        <!-- 
          LEADS
-    ========================================== -->
+    = -->
 
         <section class="section">
 
@@ -1731,9 +1717,9 @@
 
 
 
-    <!-- =========================================
+    <!-- 
      ADD LEAD MODAL
-========================================= -->
+ -->
 
     <div class="modal" id="leadModal">
 
@@ -1906,9 +1892,9 @@
 
     <script>
 
-        /* =========================================
+        /* 
            MODAL
-        ========================================= */
+         */
 
         function openModal() {
 
@@ -1946,9 +1932,9 @@
             );
 
 
-        /* =========================================
+        /* 
            SEARCH SAVED LEADS
-        ========================================= */
+         */
 
         function filterLeads() {
 
@@ -2049,6 +2035,244 @@
 
                 }
             );
+
+        }
+
+
+        async function saveGoogleLead(button) {
+
+            // Prevent double clicking
+            if (button.dataset.saving === "true") {
+                return;
+            }
+
+            button.dataset.saving = "true";
+
+            const originalText = button.innerHTML;
+
+            button.innerHTML = "Saving...";
+            button.disabled = true;
+
+
+            const formData = new FormData();
+
+            formData.append(
+                "company_name",
+                button.dataset.company
+            );
+
+            formData.append(
+                "industry",
+                button.dataset.industry
+            );
+
+            formData.append(
+                "location",
+                button.dataset.location
+            );
+
+            formData.append(
+                "phone",
+                button.dataset.phone
+            );
+
+            formData.append(
+                "website",
+                button.dataset.website
+            );
+
+            formData.append(
+                "google_place_id",
+                button.dataset.googlePlaceId
+            );
+
+
+            try {
+
+                const response = await fetch(
+                    "{{ url_for('save_google_lead') }}",
+                    {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                if (data.success) {
+
+                    button.innerHTML = "✓ Saved";
+
+                    button.style.background =
+                        "rgba(0, 200, 83, 0.18)";
+
+                    button.style.color = "#00d26a";
+
+                    button.disabled = true;
+
+
+                    if (!data.already_saved) {
+
+                        addLeadToSavedTable(data.lead);
+
+                    }
+
+                } else {
+
+                    button.innerHTML = originalText;
+
+                    button.disabled = false;
+
+                    button.dataset.saving = "false";
+
+                    alert(data.message || "Could not save lead.");
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Save Google Lead Error:",
+                    error
+                );
+
+                button.innerHTML = originalText;
+
+                button.disabled = false;
+
+                button.dataset.saving = "false";
+
+                alert("Something went wrong while saving the lead.");
+
+            }
+
+        }
+
+    </script>
+    <script>
+
+        function addLeadToSavedTable(lead) {
+
+            const table = document.querySelector("#leadsTable");
+
+            if (!table) {
+                return;
+            }
+
+            const tbody = table.querySelector("tbody");
+
+            if (!tbody) {
+                return;
+            }
+
+
+            const row = document.createElement("tr");
+
+            row.className = "lead-row";
+
+            row.dataset.industry =
+                lead.industry || "";
+
+            row.dataset.location =
+                lead.location || "";
+
+            row.dataset.company =
+                lead.company_name || "";
+
+            row.dataset.status =
+                lead.lead_status || "New";
+
+
+            row.innerHTML = `
+
+        <td>
+
+            <div class="company-name">
+                ${escapeHtml(lead.company_name || "—")}
+            </div>
+
+            ${lead.website
+                    ?
+                    `<div class="muted">
+                    ${escapeHtml(lead.website)}
+                </div>`
+                    :
+                    ""
+                }
+
+        </td>
+
+
+        <td>
+            ${escapeHtml(lead.industry || "—")}
+        </td>
+
+
+        <td>
+            ${escapeHtml(lead.location || "—")}
+        </td>
+
+
+        <td>
+            ${escapeHtml(lead.phone || "—")}
+        </td>
+
+
+        <td>
+            ${lead.lead_score || 0}
+        </td>
+
+
+        <td>
+
+            <span class="badge new">
+                New
+            </span>
+
+        </td>
+
+
+        <td>
+
+            <div class="actions">
+
+                <button
+                    class="action-button"
+                    type="button"
+                >
+                    View
+                </button>
+
+            </div>
+
+        </td>
+
+    `;
+
+
+            tbody.prepend(row);
+
+        }
+
+    </script>
+
+
+    <!--the security helper-->
+
+    <script>
+
+        function escapeHtml(value) {
+
+            const div = document.createElement("div");
+
+            div.textContent = value;
+
+            return div.innerHTML;
 
         }
 
