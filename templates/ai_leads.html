@@ -11,29 +11,58 @@
         AI Lead Finder | Altair Business Suite
     </title>
 
+    <!-- GOOGLE FONT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
     <style>
+        /* 
+           RESET
+         */
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+
         body {
 
-            font-family:
-                Inter,
-                Arial,
-                sans-serif;
+            font-family: "Inter", sans-serif;
 
-            background:
-                linear-gradient(135deg,
-                    #070b18,
-                    #0d1224,
-                    #090d1b);
+            background: #f5f6fa;
 
-            color: #ffffff;
+            color: #171722;
 
-            min-height: 100vh;
+            overflow: hidden;
+        }
+
+
+        /* 
+           APP
+         */
+
+        .app {
+
+            display: flex;
+
+            width: 100%;
+
+            height: 100vh;
+
+            overflow: hidden;
         }
 
 
@@ -43,89 +72,53 @@
 
         .sidebar {
 
+            width: 250px;
+
+            height: 100vh;
+
+            background: #11111c;
+
+            color: white;
+
+            padding: 25px 18px;
+
             position: fixed;
 
             left: 0;
+
             top: 0;
 
-            width: 250px;
-            height: 100vh;
-
-            background: #0d111f;
-
-            border-right:
-                1px solid rgba(255, 255, 255, 0.08);
-
-            padding: 22px 15px;
-
             overflow-y: auto;
+
+            overflow-x: hidden;
+
+            z-index: 1000;
         }
 
 
-        .brand {
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 12px;
-
-            margin-bottom: 28px;
-
-            padding: 10px;
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
         }
 
 
-        .brand-logo {
-
-            width: 45px;
-            height: 45px;
-
-            border-radius: 50%;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            background:
-                linear-gradient(135deg,
-                    #00f0ff,
-                    #ff00d4);
-
-            font-size: 22px;
-
-            font-weight: 800;
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
         }
 
 
-        .brand-text {
+        .sidebar::-webkit-scrollbar-thumb {
 
-            font-size: 17px;
-
-            font-weight: 700;
-        }
-
-
-        .nav {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 7px;
-        }
-
-
-        .nav a {
-
-            text-decoration: none;
-
-            color: #aeb7cc;
-
-            padding: 12px 14px;
+            background: #35354b;
 
             border-radius: 10px;
+        }
+
+
+        /* 
+           COMPANY LOGO
+         */
+
+        .logo {
 
             display: flex;
 
@@ -133,30 +126,171 @@
 
             gap: 10px;
 
+            margin-bottom: 40px;
+
+            padding-left: 10px;
+
+            min-width: 0;
+        }
+
+
+        .company-logo-image,
+        .company-logo-placeholder {
+
+            width: 40px;
+
+            height: 40px;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+        }
+
+
+        .company-logo-image {
+
+            object-fit: contain;
+
+            display: block;
+
+            background: #242435;
+
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+
+        .company-logo-placeholder {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            font-size: 18px;
+
+            font-weight: 800;
+        }
+
+
+        .logo-name {
+
+            min-width: 0;
+        }
+
+
+        .logo-name span {
+
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+
+        /* 
+           MENU
+         */
+
+        .menu-title {
+
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+
+        .nav-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
+        }
+
+
+        .nav-item:hover {
+
+            background: #242435;
+
+            color: white;
+        }
+
+
+        .nav-item.active {
+
+            background: #242435;
+
+            color: white;
+
+            border-left: 3px solid #8b5cf6;
+        }
+
+
+        /* 
+           LOGOUT
+         */
+
+        .logout-link {
+
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
             transition: 0.2s;
         }
 
 
-        .nav a:hover {
+        .logout-link:hover {
 
-            background:
-                rgba(0, 240, 255, 0.08);
-
-            color: #ffffff;
-        }
-
-
-        .nav a.active {
-
-            background:
-                linear-gradient(90deg,
-                    rgba(0, 240, 255, 0.14),
-                    rgba(255, 0, 212, 0.10));
-
-            color: #00f0ff;
-
-            border:
-                1px solid rgba(0, 240, 255, 0.15);
+            color: white;
         }
 
 
@@ -168,14 +302,44 @@
 
             margin-left: 250px;
 
-            padding: 30px;
+            width: calc(100% - 250px);
 
-            min-height: 100vh;
+            height: 100vh;
+
+            padding: 28px 35px;
+
+            overflow-y: auto;
+
+            overflow-x: hidden;
+        }
+
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f6fa;
+        }
+
+
+        .main::-webkit-scrollbar-thumb {
+
+            background: #c9c9d4;
+
+            border-radius: 10px;
+        }
+
+
+        .main::-webkit-scrollbar-thumb:hover {
+
+            background: #a7a7b6;
         }
 
 
         /* 
-           HEADER
+           TOPBAR
          */
 
         .topbar {
@@ -190,132 +354,234 @@
         }
 
 
-        .topbar h1 {
+        .welcome h1 {
 
-            font-size: 30px;
+            font-size: 25px;
 
-            margin-bottom: 7px;
+            font-weight: 800;
         }
 
 
-        .topbar p {
+        .welcome p {
 
-            color: #8f9bb3;
+            color: #777789;
 
-            font-size: 14px;
+            font-size: 13px;
+
+            margin-top: 5px;
         }
 
 
-        .user-box {
+        /* 
+           PROFILE
+         */
+
+        .top-actions {
 
             display: flex;
 
             align-items: center;
 
-            gap: 12px;
+            gap: 15px;
+        }
 
-            background:
-                rgba(255, 255, 255, 0.04);
 
-            border:
-                1px solid rgba(255, 255, 255, 0.08);
+        .profile {
 
-            padding: 9px 14px;
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: white;
+
+            padding: 6px 12px 6px 6px;
 
             border-radius: 12px;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.04);
         }
 
 
         .avatar {
 
-            width: 38px;
-            height: 38px;
+            width: 34px;
 
-            border-radius: 50%;
+            height: 34px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
 
             display: flex;
 
             align-items: center;
+
             justify-content: center;
 
-            background:
-                linear-gradient(135deg,
-                    #00f0ff,
-                    #ff00d4);
-
             font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+
+        .profile small {
+
+            display: block;
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 2px;
         }
 
 
         /* 
-           SEARCH PANEL
+           PAGE HEADER CARD
          */
 
-        .search-panel {
+        .page-intro {
 
-            background:
-                rgba(255, 255, 255, 0.04);
+            background: white;
 
-            border:
-                1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
 
-            border-radius: 18px;
+            padding: 22px;
 
-            padding: 25px;
+            margin-bottom: 20px;
 
-            margin-bottom: 25px;
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
         }
 
 
-        .search-title {
+        .page-intro-left {
 
             display: flex;
 
             align-items: center;
 
-            gap: 12px;
-
-            margin-bottom: 20px;
+            gap: 15px;
         }
 
 
         .ai-icon {
 
-            width: 45px;
-            height: 45px;
+            width: 50px;
 
-            border-radius: 12px;
+            height: 50px;
+
+            border-radius: 14px;
 
             display: flex;
 
             align-items: center;
-            justify-content: center;
 
-            font-size: 22px;
+            justify-content: center;
 
             background:
                 linear-gradient(135deg,
-                    rgba(0, 240, 255, 0.18),
-                    rgba(255, 0, 212, 0.18));
+                    #ede9fe,
+                    #ddd6fe);
 
-            border:
-                1px solid rgba(0, 240, 255, 0.2);
+            font-size: 24px;
+
+            flex-shrink: 0;
         }
 
 
-        .search-title h2 {
+        .page-intro h2 {
 
-            font-size: 20px;
+            font-size: 18px;
+
+            margin-bottom: 5px;
         }
 
 
-        .search-title p {
+        .page-intro p {
 
-            color: #8f9bb3;
+            color: #777789;
 
-            font-size: 13px;
+            font-size: 12px;
+        }
 
-            margin-top: 4px;
+
+        .ai-label {
+
+            background: #8b5cf6;
+
+            color: white;
+
+            padding: 7px 11px;
+
+            border-radius: 8px;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        /* 
+           SEARCH CARD
+         */
+
+        .search-card {
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 22px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+        }
+
+
+        .card-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        .card-header h3 {
+
+            font-size: 15px;
+        }
+
+
+        .card-header span {
+
+            color: #777;
+
+            font-size: 11px;
         }
 
 
@@ -326,7 +592,7 @@
             grid-template-columns:
                 repeat(4, 1fr);
 
-            gap: 14px;
+            gap: 15px;
         }
 
 
@@ -342,9 +608,11 @@
 
         .field label {
 
-            color: #9ba6bd;
+            color: #777789;
 
-            font-size: 12px;
+            font-size: 11px;
+
+            font-weight: 600;
         }
 
 
@@ -355,46 +623,74 @@
 
             padding: 12px 13px;
 
-            background: #090e1c;
+            background: #f8f8fb;
 
-            color: #ffffff;
+            color: #171722;
 
             border:
-                1px solid rgba(255, 255, 255, 0.1);
+                1px solid #e5e5ec;
 
             border-radius: 9px;
 
             outline: none;
+
+            font-family: inherit;
+
+            font-size: 12px;
         }
 
 
         .field input:focus,
         .field select:focus {
 
-            border-color: #00f0ff;
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.08);
+        }
+
+
+        .search-actions {
+
+            margin-top: 18px;
+
+            display: flex;
+
+            justify-content: flex-end;
         }
 
 
         .search-button {
 
-            margin-top: 18px;
-
-            padding: 12px 22px;
-
             border: none;
+
+            padding: 11px 18px;
 
             border-radius: 9px;
 
             cursor: pointer;
 
-            color: #ffffff;
+            color: white;
 
             font-weight: 700;
 
+            font-size: 12px;
+
             background:
                 linear-gradient(135deg,
-                    #00bcd4,
-                    #8e2de2);
+                    #7c3aed,
+                    #4f46e5);
+
+            transition: 0.2s;
+        }
+
+
+        .search-button:hover {
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 6px 16px rgba(124, 58, 237, 0.20);
         }
 
 
@@ -409,57 +705,95 @@
             grid-template-columns:
                 repeat(5, 1fr);
 
-            gap: 16px;
+            gap: 18px;
 
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
 
         .stat-card {
 
-            background:
-                rgba(255, 255, 255, 0.04);
+            background: white;
 
-            border:
-                1px solid rgba(255, 255, 255, 0.08);
+            padding: 18px;
 
-            border-radius: 15px;
+            border-radius: 16px;
 
-            padding: 20px;
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+        }
+
+
+        .stat-top {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
         }
 
 
         .stat-label {
 
-            color: #8f9bb3;
+            color: #777789;
 
-            font-size: 12px;
-
-            margin-bottom: 8px;
+            font-size: 11px;
         }
 
 
-        .stat-number {
+        .stat-icon {
 
-            font-size: 26px;
+            width: 34px;
 
-            font-weight: 800;
+            height: 34px;
+
+            border-radius: 10px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 15px;
+        }
+
+
+        .stat-card h2 {
+
+            margin-top: 12px;
+
+            font-size: 23px;
+        }
+
+
+        .stat-description {
+
+            margin-top: 6px;
+
+            color: #999;
+
+            font-size: 10px;
         }
 
 
         /* 
-           LEADS SECTION
+           GOOGLE RESULTS / SAVED LEADS CARD
          */
 
-        .section {
+        .section-card {
 
-            background:
-                rgba(255, 255, 255, 0.04);
+            background: white;
 
-            border:
-                1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
 
-            border-radius: 18px;
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
 
             overflow: hidden;
         }
@@ -475,22 +809,38 @@
 
             align-items: center;
 
+            gap: 15px;
+
             border-bottom:
-                1px solid rgba(255, 255, 255, 0.07);
+                1px solid #eeeef3;
         }
 
 
-        .section-header h2 {
+        .section-title h3 {
 
-            font-size: 19px;
+            font-size: 15px;
+
+            margin-bottom: 4px;
         }
 
 
-        .add-button {
+        .section-title p {
+
+            color: #888;
+
+            font-size: 10px;
+        }
+
+
+        /* 
+           BUTTONS
+         */
+
+        .primary-button {
 
             border: none;
 
-            padding: 10px 17px;
+            padding: 10px 15px;
 
             border-radius: 9px;
 
@@ -500,14 +850,75 @@
 
             background:
                 linear-gradient(135deg,
-                    #00f0ff,
-                    #8e2de2);
+                    #7c3aed,
+                    #4f46e5);
 
             font-weight: 700;
+
+            font-size: 11px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
         }
 
 
+        .primary-button:hover {
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 6px 14px rgba(124, 58, 237, 0.20);
+        }
+
+
+        .action-button {
+
+            border: none;
+
+            padding: 7px 10px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            color: #555;
+
+            background: #f1f1f6;
+
+            font-family: inherit;
+
+            font-size: 10px;
+
+            font-weight: 600;
+
+            transition: 0.2s;
+        }
+
+
+        .action-button:hover {
+
+            background: #e8e3ff;
+
+            color: #6d28d9;
+        }
+
+
+        .delete-button:hover {
+
+            background: #fee2e2;
+
+            color: #dc2626;
+        }
+
+
+        /* 
+           TABLE
+         */
+
         .table-container {
+
+            width: 100%;
 
             overflow-x: auto;
         }
@@ -527,38 +938,38 @@
 
             text-align: left;
 
-            padding: 14px 18px;
+            padding: 13px 18px;
 
-            color: #8f9bb3;
+            color: #777789;
 
-            font-size: 11px;
+            font-size: 10px;
 
             text-transform: uppercase;
 
             letter-spacing: 0.5px;
 
-            background:
-                rgba(0, 0, 0, 0.15);
+            background: #fafafd;
         }
 
 
         td {
 
-            padding: 15px 18px;
+            padding: 14px 18px;
 
             border-top:
-                1px solid rgba(255, 255, 255, 0.05);
+                1px solid #eeeef3;
 
-            font-size: 13px;
+            font-size: 11px;
 
-            color: #dce2ef;
+            color: #444451;
+
+            vertical-align: middle;
         }
 
 
         tr:hover td {
 
-            background:
-                rgba(255, 255, 255, 0.025);
+            background: #fafaff;
         }
 
 
@@ -566,19 +977,43 @@
 
             font-weight: 700;
 
-            color: #ffffff;
+            color: #171722;
+
+            font-size: 12px;
         }
 
 
         .muted {
 
-            color: #8792a9;
+            color: #888;
 
-            font-size: 12px;
+            font-size: 10px;
 
             margin-top: 3px;
         }
 
+
+        .website-link {
+
+            color: #7c3aed;
+
+            text-decoration: none;
+
+            font-size: 10px;
+
+            font-weight: 600;
+        }
+
+
+        .website-link:hover {
+
+            text-decoration: underline;
+        }
+
+
+        /* 
+           BADGES
+         */
 
         .badge {
 
@@ -588,7 +1023,7 @@
 
             border-radius: 20px;
 
-            font-size: 11px;
+            font-size: 9px;
 
             font-weight: 700;
         }
@@ -596,103 +1031,154 @@
 
         .new {
 
-            background:
-                rgba(0, 240, 255, 0.12);
+            background: #ede9fe;
 
-            color: #00f0ff;
+            color: #7c3aed;
         }
 
 
         .contacted {
 
-            background:
-                rgba(255, 193, 7, 0.12);
+            background: #fef3c7;
 
-            color: #ffc107;
+            color: #b45309;
         }
 
 
         .interested {
 
-            background:
-                rgba(156, 39, 176, 0.15);
+            background: #f3e8ff;
 
-            color: #d58cff;
+            color: #9333ea;
         }
 
 
         .converted {
 
-            background:
-                rgba(0, 200, 83, 0.12);
+            background: #dcfce7;
 
-            color: #00d26a;
+            color: #16a34a;
         }
 
 
         .not-interested {
 
-            background:
-                rgba(244, 67, 54, 0.12);
+            background: #fee2e2;
 
-            color: #ff6b61;
+            color: #dc2626;
         }
 
 
-        .actions {
+        .google-status {
 
-            display: flex;
+            color: #16a34a;
 
-            gap: 7px;
+            font-size: 10px;
+
+            font-weight: 600;
         }
 
 
-        .action-button {
-
-            border: none;
-
-            padding: 7px 10px;
-
-            border-radius: 7px;
-
-            cursor: pointer;
-
-            color: white;
-
-            background:
-                rgba(255, 255, 255, 0.07);
-        }
-
-
-        .action-button:hover {
-
-            background:
-                rgba(0, 240, 255, 0.12);
-        }
-
-
-        .delete-button:hover {
-
-            background:
-                rgba(255, 70, 70, 0.15);
-        }
-
+        /* 
+           EMPTY STATE
+         */
 
         .empty {
 
-            padding: 60px 20px;
+            padding: 55px 20px;
 
             text-align: center;
 
-            color: #8490a8;
+            color: #888;
         }
 
 
         .empty-icon {
 
-            font-size: 40px;
+            width: 55px;
 
-            margin-bottom: 12px;
+            height: 55px;
+
+            border-radius: 15px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin: 0 auto 15px;
+
+            font-size: 25px;
+        }
+
+
+        .empty h3 {
+
+            color: #444451;
+
+            font-size: 14px;
+
+            margin-bottom: 5px;
+        }
+
+
+        .empty p {
+
+            font-size: 11px;
+
+            color: #999;
+        }
+
+
+        /* 
+           SAVED LEAD ACTIONS
+         */
+
+        .actions {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+
+        .status-form {
+
+            margin: 0;
+        }
+
+
+        .status-select {
+
+            border: none;
+
+            padding: 7px 9px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            color: #555;
+
+            background: #f1f1f6;
+
+            font-family: inherit;
+
+            font-size: 10px;
+
+            outline: none;
+        }
+
+
+        .status-select:focus {
+
+            box-shadow:
+                0 0 0 2px rgba(139, 92, 246, 0.15);
         }
 
 
@@ -709,15 +1195,15 @@
             inset: 0;
 
             background:
-                rgba(0, 0, 0, 0.72);
+                rgba(0, 0, 0, 0.55);
 
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(5px);
 
             align-items: center;
 
             justify-content: center;
 
-            z-index: 1000;
+            z-index: 9999;
 
             padding: 20px;
         }
@@ -739,14 +1225,14 @@
 
             overflow-y: auto;
 
-            background: #111827;
-
-            border:
-                1px solid rgba(255, 255, 255, 0.1);
+            background: white;
 
             border-radius: 18px;
 
             padding: 25px;
+
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.20);
         }
 
 
@@ -764,21 +1250,45 @@
 
         .modal-header h2 {
 
-            font-size: 21px;
+            font-size: 19px;
+        }
+
+
+        .modal-header p {
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 4px;
         }
 
 
         .close {
 
-            background: none;
+            width: 35px;
+
+            height: 35px;
+
+            background: #f3f3f7;
 
             border: none;
 
-            color: #9ba6bd;
+            border-radius: 9px;
 
-            font-size: 26px;
+            color: #777;
+
+            font-size: 22px;
 
             cursor: pointer;
+        }
+
+
+        .close:hover {
+
+            background: #fee2e2;
+
+            color: #dc2626;
         }
 
 
@@ -811,9 +1321,11 @@
 
         .form-group label {
 
-            font-size: 12px;
+            font-size: 11px;
 
-            color: #9ba6bd;
+            color: #777789;
+
+            font-weight: 600;
         }
 
 
@@ -821,18 +1333,33 @@
         .form-group textarea,
         .form-group select {
 
-            padding: 12px;
+            padding: 11px 12px;
 
-            background: #090e1c;
+            background: #f8f8fb;
 
-            color: white;
+            color: #171722;
 
             border:
-                1px solid rgba(255, 255, 255, 0.1);
+                1px solid #e5e5ec;
 
             border-radius: 8px;
 
             outline: none;
+
+            font-family: inherit;
+
+            font-size: 11px;
+        }
+
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.08);
         }
 
 
@@ -858,7 +1385,7 @@
 
         .cancel-button {
 
-            padding: 11px 18px;
+            padding: 10px 17px;
 
             border: none;
 
@@ -866,16 +1393,17 @@
 
             cursor: pointer;
 
-            background:
-                rgba(255, 255, 255, 0.08);
+            background: #f1f1f6;
 
-            color: white;
+            color: #555;
+
+            font-weight: 600;
         }
 
 
         .save-button {
 
-            padding: 11px 20px;
+            padding: 10px 20px;
 
             border: none;
 
@@ -889,16 +1417,16 @@
 
             background:
                 linear-gradient(135deg,
-                    #00f0ff,
-                    #8e2de2);
+                    #7c3aed,
+                    #4f46e5);
         }
 
 
         /* 
-           MOBILE
+           MOBILE / TABLET
          */
 
-        @media(max-width: 1100px) {
+        @media (max-width: 1100px) {
 
             .stats {
 
@@ -906,41 +1434,59 @@
                     repeat(3, 1fr);
             }
 
+
             .search-grid {
 
                 grid-template-columns:
                     repeat(2, 1fr);
             }
+
         }
 
 
-        @media(max-width: 800px) {
+        @media (max-width: 800px) {
 
             .sidebar {
 
-                position: relative;
+                width: 70px;
 
-                width: 100%;
+                padding: 20px 10px;
+            }
 
-                height: auto;
+
+            .logo span,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+
+                display: none;
+            }
+
+
+            .logo {
+
+                justify-content: center;
+
+                padding: 0;
+            }
+
+
+            .nav-item {
+
+                justify-content: center;
+
+                padding: 12px 8px;
             }
 
 
             .main {
 
-                margin-left: 0;
+                margin-left: 70px;
 
-                padding: 18px;
-            }
+                width:
+                    calc(100% - 70px);
 
-
-            .topbar {
-
-                flex-direction: column;
-
-                align-items: flex-start;
-
-                gap: 15px;
+                padding: 20px;
             }
 
 
@@ -949,10 +1495,35 @@
                 grid-template-columns:
                     repeat(2, 1fr);
             }
+
+
+            .topbar {
+
+                align-items: flex-start;
+            }
+
+
+            .profile div {
+
+                display: none;
+            }
+
+
+            .profile {
+
+                padding: 3px;
+            }
+
+
+            .page-intro {
+
+                align-items: flex-start;
+            }
+
         }
 
 
-        @media(max-width: 550px) {
+        @media (max-width: 600px) {
 
             .search-grid {
 
@@ -976,6 +1547,79 @@
 
                 grid-column: auto;
             }
+
+
+            .page-intro {
+
+                flex-direction: column;
+            }
+
+
+            .section-header {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+
+            .primary-button {
+
+                width: 100%;
+            }
+
+
+            .search-actions {
+
+                justify-content: stretch;
+            }
+
+
+            .search-button {
+
+                width: 100%;
+            }
+
+        }
+
+
+        @media (max-width: 450px) {
+
+            .main {
+
+                padding: 15px;
+            }
+
+
+            .welcome h1 {
+
+                font-size: 18px;
+            }
+
+
+            .profile {
+
+                display: none;
+            }
+
+
+            .page-intro {
+
+                padding: 17px;
+            }
+
+
+            .search-card {
+
+                padding: 17px;
+            }
+
+
+            .section-header {
+
+                padding: 17px;
+            }
+
         }
     </style>
 
@@ -985,763 +1629,1302 @@
 <body>
 
 
-    <!-- 
-     SIDEBAR
- -->
-
-    <aside class="sidebar">
-
-        <div class="brand">
-
-            <div class="brand-logo">
-                A
-            </div>
-
-            <div class="brand-text">
-                Altair Business Suite
-            </div>
-
-        </div>
-
-
-        <nav class="nav">
-
-            <a href="{{ url_for('dashboard') }}">
-                📊
-                Dashboard
-            </a>
-
-            <a href="{{ url_for('customer') }}">
-                👥
-                Customers
-            </a>
-
-            <a href="{{ url_for('invoice') }}">
-                🧾
-                Invoices
-            </a>
-
-            <a href="{{ url_for('items') }}">
-                📦
-                Inventory
-            </a>
-
-            <a href="#">
-                💰
-                Transactions
-            </a>
-
-            <a href="{{ url_for('ai_leads') }}" class="active">
-                🤖
-                AI Lead Finder
-            </a>
-
-            <a href="#">
-                📘
-                Facebook Analytics
-            </a>
-
-            <a href="#">
-                💬
-                WhatsApp Analytics
-            </a>
-
-            <a href="{{ url_for('settings') }}">
-                ⚙️
-                Settings
-            </a>
-
-            <a href="{{ url_for('logout') }}">
-                🚪
-                Logout
-            </a>
-
-        </nav>
-
-    </aside>
-
-
-
-    <!-- 
-     MAIN
- -->
-
-    <main class="main">
-
-
-        <!-- HEADER -->
-
-        <div class="topbar">
-
-            <div>
-
-                <h1>
-                    🤖 AI Lead Finder
-                </h1>
-
-                <p>
-                    Discover, manage and analyse potential customers.
-                </p>
-
-            </div>
-
-
-            <div class="user-box">
-
-                <div class="avatar">
-
-                    {{
-                    user_name[0]|upper
-                    if user_name
-                    else "U"
-                    }}
-
-                </div>
-
-                <div>
-
-                    <strong>
-                        {{ user_name or "User" }}
-                    </strong>
-
-                    <div class="muted">
-                        {{ user_email or "" }}
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
+    <div class="app">
 
 
         <!-- 
-         SEARCH PANEL
+         SIDEBAR
     = -->
 
-        <section class="search-panel">
+        <aside class="sidebar">
 
-            <div class="search-title">
 
-                <div class="ai-icon">
-                    ✨
-                </div>
+            <!-- COMPANY -->
 
-                <div>
+            <div class="logo">
 
-                    <h2>
-                        Find Potential Customers
-                    </h2>
 
-                    <p>
-                        Search Google for businesses matching your target customer.
-                    </p>
+                {% if company and company.logo %}
 
-                </div>
-
-            </div>
-
-
-            <form method="POST" action="{{ url_for('search_ai_leads') }}">
-
-                <div class="search-grid">
-
-
-                    <div class="field">
-
-                        <label>
-                            Business Type
-                        </label>
-
-                        <input type="text" name="business_type" placeholder="e.g. Construction companies" required>
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label>
-                            Location
-                        </label>
-
-                        <input type="text" name="location" placeholder="e.g. Johannesburg, South Africa" required>
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label>
-                            Keywords
-                        </label>
-
-                        <input type="text" name="keywords" placeholder="e.g. roofing, renovation">
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label>
-                            Number of Leads
-                        </label>
-
-                        <select name="max_results">
-
-                            <option value="5">
-                                5
-                            </option>
-
-                            <option value="10" selected>
-                                10
-                            </option>
-
-                            <option value="15">
-                                15
-                            </option>
-
-                            <option value="20">
-                                20
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <button type="submit" class="search-button">
-                    🤖 Find Potential Customers
-                </button>
-
-            </form>
-
-        </section>
-
-
-
-
-
-        {% if search_performed %}
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <div>
-
-                    <h2>
-                        🔎 Google Results
-                    </h2>
-
-                    <p class="muted">
-                        Search:
-                        {{ search_query }}
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            {% if google_results %}
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Business
-                            </th>
-
-                            <th>
-                                Address
-                            </th>
-
-                            <th>
-                                Phone
-                            </th>
-
-                            <th>
-                                Website
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Action
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        {% for lead in google_results %}
-
-                        <tr>
-
-                            <td>
-
-                                <div class="company-name">
-                                    {{ lead.company_name }}
-                                </div>
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.address or "—" }}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.phone or "—" }}
-
-                            </td>
-
-
-                            <td>
-
-                                {% if lead.website %}
-
-                                <a href="{{ lead.website }}" target="_blank" style="
-                                color:#00f0ff;
-                                text-decoration:none;
-                            ">
-                                    Website
-                                </a>
-
-                                {% else %}
-
-                                —
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.business_status or "Unknown" }}
-
-                            </td>
-                            <td>
-                                <button type="button" class="action-button save-google-lead"
-                                    data-company="{{ lead.company_name }}" data-industry="{{ lead.industry }}"
-                                    data-location="{{ lead.address }}" data-phone="{{ lead.phone }}"
-                                    data-website="{{ lead.website }}" data-google-place-id="{{ lead.google_place_id }}"
-                                    onclick="saveGoogleLead(this)">
-                                    + Save
-                                </button>
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            {% else %}
-
-            <div class="empty">
-
-                <div class="empty-icon">
-                    🔎
-                </div>
-
-                <h3>
-                    No businesses found
-                </h3>
-
-                <p>
-                    Try changing the business type or location.
-                </p>
-
-            </div>
-
-            {% endif %}
-
-        </section>
-
-        {% endif %}
-
-
-
-        <!-- 
-         STATISTICS
-    = -->
-
-        <section class="stats">
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Total Leads
-                </div>
-
-                <div class="stat-number">
-                    {{ total_leads }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    New
-                </div>
-
-                <div class="stat-number">
-                    {{ new_leads }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Contacted
-                </div>
-
-                <div class="stat-number">
-                    {{ contacted_leads }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Interested
-                </div>
-
-                <div class="stat-number">
-                    {{ interested_leads }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Converted
-                </div>
-
-                <div class="stat-number">
-                    {{ converted_leads }}
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- 
-         LEADS
-    = -->
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <h2>
-                    Saved Leads
-                </h2>
-
-                <button class="add-button" onclick="openModal()">
-                    + Add Lead
-                </button>
-
-            </div>
-
-
-            <div class="table-container">
-
-                {% if leads %}
-
-                <table id="leadsTable">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Company
-                            </th>
-
-                            <th>
-                                Industry
-                            </th>
-
-                            <th>
-                                Location
-                            </th>
-
-                            <th>
-                                Contact
-                            </th>
-
-                            <th>
-                                Score
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Actions
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        {% for lead in leads %}
-
-                        <tr class="lead-row" data-industry="{{ lead.industry or '' }}"
-                            data-location="{{ lead.location or '' }}" data-company="{{ lead.company_name or '' }}"
-                            data-status="{{ lead.lead_status or '' }}">
-
-                            <td>
-
-                                <div class="company-name">
-
-                                    {{ lead.company_name }}
-
-                                </div>
-
-                                {% if lead.website %}
-
-                                <div class="muted">
-
-                                    {{ lead.website }}
-
-                                </div>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.industry or "—" }}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.location or "—" }}
-
-                            </td>
-
-
-                            <td>
-
-                                {% if lead.phone %}
-
-                                {{ lead.phone }}
-
-                                {% else %}
-
-                                —
-
-                                {% endif %}
-
-                                {% if lead.email %}
-
-                                <div class="muted">
-
-                                    {{ lead.email }}
-
-                                </div>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ lead.lead_score or 0 }}
-
-                            </td>
-
-
-                            <td>
-
-                                <span class="badge
-                                {% if lead.lead_status == 'New' %}
-                                    new
-                                {% elif lead.lead_status == 'Contacted' %}
-                                    contacted
-                                {% elif lead.lead_status == 'Interested' %}
-                                    interested
-                                {% elif lead.lead_status == 'Converted' %}
-                                    converted
-                                {% else %}
-                                    not-interested
-                                {% endif %}">
-
-                                    {{ lead.lead_status }}
-
-                                </span>
-
-                            </td>
-
-
-                            <td>
-
-                                <div class="actions">
-
-                                    <form method="POST" action="{{
-                                        url_for(
-                                            'update_lead_status',
-                                            lead_id=lead.id
-                                        )
-                                    }}">
-
-                                        <select name="status" onchange="this.form.submit()" class="action-button">
-
-                                            <option value="New" {% if lead.lead_status=='New' %} selected {% endif %}>
-                                                New
-                                            </option>
-
-                                            <option value="Contacted" {% if lead.lead_status=='Contacted' %} selected {%
-                                                endif %}>
-                                                Contacted
-                                            </option>
-
-                                            <option value="Interested" {% if lead.lead_status=='Interested' %} selected
-                                                {% endif %}>
-                                                Interested
-                                            </option>
-
-                                            <option value="Converted" {% if lead.lead_status=='Converted' %} selected {%
-                                                endif %}>
-                                                Converted
-                                            </option>
-
-                                            <option value="Not Interested" {% if lead.lead_status=='Not Interested' %}
-                                                selected {% endif %}>
-                                                Not Interested
-                                            </option>
-
-                                        </select>
-
-                                    </form>
-
-
-                                    <form method="POST" action="{{
-                                        url_for(
-                                            'delete_ai_lead',
-                                            lead_id=lead.id
-                                        )
-                                    }}" onsubmit="
-                                        return confirm(
-                                            'Delete this lead?'
-                                        );
-                                    ">
-
-                                        <button type="submit" class="action-button delete-button">
-                                            🗑
-                                        </button>
-
-                                    </form>
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image">
 
                 {% else %}
 
-                <div class="empty">
+                <div class="company-logo-placeholder">
 
-                    <div class="empty-icon">
-                        🤖
-                    </div>
-
-                    <h3>
-                        No leads yet
-                    </h3>
-
-                    <p>
-                        Add your first potential customer to start building your lead database.
-                    </p>
+                    {{
+                    company.company_name[0]|upper
+                    if company and company.company_name
+                    else 'A'
+                    }}
 
                 </div>
 
                 {% endif %}
 
+
+                <div class="logo-name">
+
+                    <span>
+
+                        {{
+                        company.company_name
+                        if company and company.company_name
+                        else "Altair Business Suite"
+                        }}
+
+                    </span>
+
+                </div>
+
             </div>
 
-        </section>
 
-    </main>
+
+            <!-- MAIN MENU -->
+
+            <div class="menu-title">
+                Main
+            </div>
+
+
+            <!-- DASHBOARD -->
+
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+
+                📊
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <!-- CUSTOMERS -->
+
+            <a href="{{ url_for('customer') }}" class="nav-item">
+
+                👥
+
+                <span>
+                    Customers
+                </span>
+
+            </a>
+
+
+            <!-- INVOICES -->
+
+            <a href="{{ url_for('invoice') }}" class="nav-item">
+
+                🧾
+
+                <span>
+                    Invoices
+                </span>
+
+            </a>
+
+
+            <!-- INVENTORY -->
+
+            <a href="{{ url_for('items') }}" class="nav-item">
+
+                📦
+
+                <span>
+                    Inventory
+                </span>
+
+            </a>
+
+
+            <!-- TRANSACTIONS -->
+
+            <a href="#" class="nav-item">
+
+                💳
+
+                <span>
+                    Transactions
+                </span>
+
+            </a>
+
+
+
+            <!-- INTELLIGENCE -->
+
+            <div class="menu-title">
+                Intelligence
+            </div>
+
+
+            <!-- AI LEADS -->
+
+            <a href="{{ url_for('ai_leads') }}" class="nav-item active">
+
+                🤖
+
+                <span>
+                    AI Lead Finder
+                </span>
+
+            </a>
+
+
+            <!-- FACEBOOK -->
+
+            <a href="#" class="nav-item">
+
+                🇫
+
+                <span>
+                    Facebook Analytics
+                </span>
+
+            </a>
+
+
+            <!-- WHATSAPP -->
+
+            <a href="#" class="nav-item">
+
+                🟢
+
+                <span>
+                    WhatsApp Analytics
+                </span>
+
+            </a>
+
+
+            <!-- COMPANY PROFILE -->
+
+            <a href="#" class="nav-item">
+
+                💼
+
+                <span>
+                    Company Profile
+                </span>
+
+            </a>
+
+
+            <!-- BUSINESS ANALYTICS -->
+
+            <a href="#" class="nav-item">
+
+                📈
+
+                <span>
+                    Business Analytics
+                </span>
+
+            </a>
+
+
+            <!-- FORECASTING -->
+
+            <a href="#" class="nav-item">
+
+                📊
+
+                <span>
+                    Forecasting
+                </span>
+
+            </a>
+
+
+            <!-- SETTINGS -->
+
+            <a href="{{ url_for('settings') }}" class="nav-item
+            {% if request.endpoint == 'settings' %}
+                active
+            {% endif %}">
+
+                ⚙️
+
+                <span>
+                    Settings
+                </span>
+
+            </a>
+
+
+            <!-- LOGOUT -->
+
+            <a href="{{ url_for('logout') }}" class="logout-link">
+
+                Logout
+
+            </a>
+
+
+        </aside>
+
+
+
+        <!-- 
+         MAIN CONTENT
+    = -->
+
+        <main class="main">
+
+
+            <!-- 
+             TOP BAR
+        = -->
+
+            <div class="topbar">
+
+
+                <div class="welcome">
+
+                    <h1>
+                        AI Lead Finder 🤖
+                    </h1>
+
+                    <p>
+                        Discover and manage potential customers for your business.
+                    </p>
+
+                </div>
+
+
+                <div class="top-actions">
+
+
+                    <div class="profile">
+
+
+                        <div class="avatar">
+
+                            {{
+                            user_name[0]
+                            if user_name
+                            else "U"
+                            }}
+
+                        </div>
+
+
+                        <div>
+
+                            <strong style="font-size:12px;">
+
+                                {{
+                                user_name
+                                or
+                                "User"
+                                }}
+
+                            </strong>
+
+                            <small>
+                                Administrator
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- 
+             PAGE INTRO
+        = -->
+
+            <section class="page-intro">
+
+
+                <div class="page-intro-left">
+
+
+                    <div class="ai-icon">
+                        🤖
+                    </div>
+
+
+                    <div>
+
+                        <h2>
+                            AI Lead Finder
+                        </h2>
+
+                        <p>
+                            Find businesses on Google that could become your next customers.
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="ai-label">
+                    ALTAIR AI
+                </div>
+
+
+            </section>
+
+
+
+            <!-- 
+             SEARCH
+        = -->
+
+            <section class="search-card">
+
+
+                <div class="card-header">
+
+
+                    <div>
+
+                        <h3>
+                            Find Potential Customers
+                        </h3>
+
+                        <span>
+                            Search Google Places
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <form method="POST" action="{{ url_for('search_ai_leads') }}">
+
+
+                    <div class="search-grid">
+
+
+                        <!-- BUSINESS TYPE -->
+
+                        <div class="field">
+
+                            <label>
+                                Business Type
+                            </label>
+
+                            <input type="text" name="business_type" placeholder="e.g. Construction companies" required>
+
+                        </div>
+
+
+                        <!-- LOCATION -->
+
+                        <div class="field">
+
+                            <label>
+                                Location
+                            </label>
+
+                            <input type="text" name="location" placeholder="e.g. Johannesburg, South Africa" required>
+
+                        </div>
+
+
+                        <!-- KEYWORDS -->
+
+                        <div class="field">
+
+                            <label>
+                                Keywords
+                            </label>
+
+                            <input type="text" name="keywords" placeholder="e.g. roofing, renovation">
+
+                        </div>
+
+
+                        <!-- NUMBER -->
+
+                        <div class="field">
+
+                            <label>
+                                Number of Leads
+                            </label>
+
+                            <select name="max_results">
+
+                                <option value="5">
+                                    5 Leads
+                                </option>
+
+                                <option value="10" selected>
+                                    10 Leads
+                                </option>
+
+                                <option value="15">
+                                    15 Leads
+                                </option>
+
+                                <option value="20">
+                                    20 Leads
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="search-actions">
+
+                        <button type="submit" class="search-button">
+
+                            🤖 Find Potential Customers
+
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+
+            </section>
+
+
+
+            <!-- 
+             GOOGLE RESULTS
+        = -->
+
+            {% if search_performed %}
+
+
+            <section class="section-card">
+
+
+                <div class="section-header">
+
+
+                    <div class="section-title">
+
+                        <h3>
+                            🔎 Google Results
+                        </h3>
+
+                        <p>
+                            Search:
+                            {{ search_query }}
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                {% if google_results %}
+
+
+                <div class="table-container">
+
+
+                    <table>
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Business
+                                </th>
+
+                                <th>
+                                    Industry
+                                </th>
+
+                                <th>
+                                    Address
+                                </th>
+
+                                <th>
+                                    Phone
+                                </th>
+
+                                <th>
+                                    Website
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% for lead in google_results %}
+
+
+                            <tr>
+
+
+                                <!-- BUSINESS -->
+
+                                <td>
+
+                                    <div class="company-name">
+
+                                        {{
+                                        lead.company_name
+                                        }}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- INDUSTRY -->
+
+                                <td>
+
+                                    {{
+                                    lead.industry
+                                    or
+                                    "—"
+                                    }}
+
+                                </td>
+
+
+                                <!-- ADDRESS -->
+
+                                <td>
+
+                                    {{
+                                    lead.address
+                                    or
+                                    "—"
+                                    }}
+
+                                </td>
+
+
+                                <!-- PHONE -->
+
+                                <td>
+
+                                    {{
+                                    lead.phone
+                                    or
+                                    "—"
+                                    }}
+
+                                </td>
+
+
+                                <!-- WEBSITE -->
+
+                                <td>
+
+                                    {% if lead.website %}
+
+                                    <a href="{{ lead.website }}" target="_blank" class="website-link">
+                                        Website
+                                    </a>
+
+                                    {% else %}
+
+                                    —
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    <span class="google-status">
+
+                                        {{
+                                        lead.business_status
+                                        or
+                                        "Unknown"
+                                        }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- SAVE -->
+
+                                <td>
+
+                                    <button type="button" class="action-button save-google-lead"
+                                        data-company="{{ lead.company_name }}" data-industry="{{ lead.industry }}"
+                                        data-location="{{ lead.address }}" data-phone="{{ lead.phone }}"
+                                        data-website="{{ lead.website }}"
+                                        data-google-place-id="{{ lead.google_place_id }}"
+                                        onclick="saveGoogleLead(this)">
+
+                                        + Save
+
+                                    </button>
+
+                                </td>
+
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+                {% else %}
+
+
+                <div class="empty">
+
+
+                    <div class="empty-icon">
+                        🔎
+                    </div>
+
+
+                    <h3>
+                        No businesses found
+                    </h3>
+
+
+                    <p>
+                        Try changing the business type or location.
+                    </p>
+
+
+                </div>
+
+
+                {% endif %}
+
+
+            </section>
+
+
+            {% endif %}
+
+
+
+            <!-- 
+             STATISTICS
+        = -->
+
+            <section class="stats">
+
+
+                <!-- TOTAL -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-label">
+                            Total Leads
+                        </span>
+
+                        <div class="stat-icon">
+                            👥
+                        </div>
+
+                    </div>
+
+
+                    <h2>
+                        {{ total_leads }}
+                    </h2>
+
+
+                    <div class="stat-description">
+                        All saved leads
+                    </div>
+
+                </div>
+
+
+
+                <!-- NEW -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-label">
+                            New
+                        </span>
+
+                        <div class="stat-icon">
+                            ✨
+                        </div>
+
+                    </div>
+
+
+                    <h2>
+                        {{ new_leads }}
+                    </h2>
+
+
+                    <div class="stat-description">
+                        New opportunities
+                    </div>
+
+                </div>
+
+
+
+                <!-- CONTACTED -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-label">
+                            Contacted
+                        </span>
+
+                        <div class="stat-icon">
+                            📞
+                        </div>
+
+                    </div>
+
+
+                    <h2>
+                        {{ contacted_leads }}
+                    </h2>
+
+
+                    <div class="stat-description">
+                        Leads contacted
+                    </div>
+
+                </div>
+
+
+
+                <!-- INTERESTED -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-label">
+                            Interested
+                        </span>
+
+                        <div class="stat-icon">
+                            🎯
+                        </div>
+
+                    </div>
+
+
+                    <h2>
+                        {{ interested_leads }}
+                    </h2>
+
+
+                    <div class="stat-description">
+                        Interested prospects
+                    </div>
+
+                </div>
+
+
+
+                <!-- CONVERTED -->
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-label">
+                            Converted
+                        </span>
+
+                        <div class="stat-icon">
+                            ✅
+                        </div>
+
+                    </div>
+
+
+                    <h2>
+                        {{ converted_leads }}
+                    </h2>
+
+
+                    <div class="stat-description">
+                        Converted customers
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- 
+             SAVED LEADS
+        = -->
+
+            <section class="section-card">
+
+
+                <div class="section-header">
+
+
+                    <div class="section-title">
+
+                        <h3>
+                            Saved Leads
+                        </h3>
+
+                        <p>
+                            Manage your potential customers
+                        </p>
+
+                    </div>
+
+
+                    <button class="primary-button" onclick="openModal()">
+
+                        + Add Lead
+
+                    </button>
+
+
+                </div>
+
+
+
+                <div class="table-container">
+
+
+                    {% if leads %}
+
+
+                    <table id="leadsTable">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Company
+                                </th>
+
+                                <th>
+                                    Industry
+                                </th>
+
+                                <th>
+                                    Location
+                                </th>
+
+                                <th>
+                                    Contact
+                                </th>
+
+                                <th>
+                                    Score
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            {% for lead in leads %}
+
+
+                            <tr class="lead-row" data-industry="{{ lead.industry or '' }}"
+                                data-location="{{ lead.location or '' }}" data-company="{{ lead.company_name or '' }}"
+                                data-status="{{ lead.lead_status or '' }}">
+
+
+                                <!-- COMPANY -->
+
+                                <td>
+
+                                    <div class="company-name">
+
+                                        {{
+                                        lead.company_name
+                                        }}
+
+                                    </div>
+
+
+                                    {% if lead.website %}
+
+                                    <div class="muted">
+
+                                        {{
+                                        lead.website
+                                        }}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- INDUSTRY -->
+
+                                <td>
+
+                                    {{
+                                    lead.industry
+                                    or
+                                    "—"
+                                    }}
+
+                                </td>
+
+
+
+                                <!-- LOCATION -->
+
+                                <td>
+
+                                    {{
+                                    lead.location
+                                    or
+                                    "—"
+                                    }}
+
+                                </td>
+
+
+
+                                <!-- CONTACT / PHONE -->
+
+                                <td>
+
+                                    {% if lead.phone %}
+
+                                    {{ lead.phone }}
+
+                                    {% else %}
+
+                                    —
+
+                                    {% endif %}
+
+
+                                    {% if lead.email %}
+
+                                    <div class="muted">
+
+                                        {{
+                                        lead.email
+                                        }}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- SCORE -->
+
+                                <td>
+
+                                    {{
+                                    lead.lead_score
+                                    or
+                                    0
+                                    }}
+
+                                </td>
+
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+
+                                    <span class="badge
+
+                                    {% if lead.lead_status == 'New' %}
+
+                                        new
+
+                                    {% elif lead.lead_status == 'Contacted' %}
+
+                                        contacted
+
+                                    {% elif lead.lead_status == 'Interested' %}
+
+                                        interested
+
+                                    {% elif lead.lead_status == 'Converted' %}
+
+                                        converted
+
+                                    {% else %}
+
+                                        not-interested
+
+                                    {% endif %}">
+
+                                        {{
+                                        lead.lead_status
+                                        }}
+
+                                    </span>
+
+
+                                </td>
+
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+
+                                    <div class="actions">
+
+
+                                        <!-- STATUS -->
+
+                                        <form method="POST" action="{{
+                                            url_for(
+                                                'update_lead_status',
+                                                lead_id=lead.id
+                                            )
+                                        }}" class="status-form">
+
+
+                                            <select name="status" onchange="this.form.submit()" class="status-select">
+
+
+                                                <option value="New" {% if lead.lead_status=='New' %} selected {% endif
+                                                    %}>
+                                                    New
+                                                </option>
+
+
+                                                <option value="Contacted" {% if lead.lead_status=='Contacted' %}
+                                                    selected {% endif %}>
+                                                    Contacted
+                                                </option>
+
+
+                                                <option value="Interested" {% if lead.lead_status=='Interested' %}
+                                                    selected {% endif %}>
+                                                    Interested
+                                                </option>
+
+
+                                                <option value="Converted" {% if lead.lead_status=='Converted' %}
+                                                    selected {% endif %}>
+                                                    Converted
+                                                </option>
+
+
+                                                <option value="Not Interested" {% if lead.lead_status=='Not Interested'
+                                                    %} selected {% endif %}>
+                                                    Not Interested
+                                                </option>
+
+
+                                            </select>
+
+
+                                        </form>
+
+
+
+                                        <!-- DELETE -->
+
+                                        <form method="POST" action="{{
+                                            url_for(
+                                                'delete_ai_lead',
+                                                lead_id=lead.id
+                                            )
+                                        }}" onsubmit="
+                                            return confirm(
+                                                'Delete this lead?'
+                                            );
+                                        ">
+
+
+                                            <button type="submit" class="action-button delete-button">
+
+                                                🗑
+
+                                            </button>
+
+
+                                        </form>
+
+
+                                    </div>
+
+
+                                </td>
+
+
+                            </tr>
+
+
+                            {% endfor %}
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                    {% else %}
+
+
+                    <div class="empty">
+
+
+                        <div class="empty-icon">
+                            🤖
+                        </div>
+
+
+                        <h3>
+                            No leads yet
+                        </h3>
+
+
+                        <p>
+                            Add your first potential customer to start building your lead database.
+                        </p>
+
+
+                    </div>
+
+
+                    {% endif %}
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <div style="height:40px;"></div>
+
+
+        </main>
+
+
+    </div>
 
 
 
     <!-- 
      ADD LEAD MODAL
- -->
+= -->
 
     <div class="modal" id="leadModal">
 
+
         <div class="modal-box">
+
 
             <div class="modal-header">
 
-                <h2>
-                    Add New Lead
-                </h2>
 
-                <button class="close" onclick="closeModal()">
+                <div>
+
+                    <h2>
+                        Add New Lead
+                    </h2>
+
+                    <p>
+                        Add a potential customer manually.
+                    </p>
+
+                </div>
+
+
+                <button class="close" onclick="closeModal()" type="button">
+
                     ×
+
                 </button>
+
 
             </div>
 
 
+
             <form method="POST" action="{{ url_for('add_ai_lead') }}">
+
 
                 <div class="form-grid">
 
+
+                    <!-- COMPANY -->
 
                     <div class="form-group">
 
@@ -1754,6 +2937,8 @@
                     </div>
 
 
+                    <!-- INDUSTRY -->
+
                     <div class="form-group">
 
                         <label>
@@ -1764,6 +2949,8 @@
 
                     </div>
 
+
+                    <!-- LOCATION -->
 
                     <div class="form-group">
 
@@ -1776,6 +2963,8 @@
                     </div>
 
 
+                    <!-- CONTACT -->
+
                     <div class="form-group">
 
                         <label>
@@ -1786,6 +2975,8 @@
 
                     </div>
 
+
+                    <!-- EMAIL -->
 
                     <div class="form-group">
 
@@ -1798,6 +2989,8 @@
                     </div>
 
 
+                    <!-- PHONE -->
+
                     <div class="form-group">
 
                         <label>
@@ -1808,6 +3001,8 @@
 
                     </div>
 
+
+                    <!-- WEBSITE -->
 
                     <div class="form-group">
 
@@ -1820,6 +3015,8 @@
                     </div>
 
 
+                    <!-- SOURCE -->
+
                     <div class="form-group">
 
                         <label>
@@ -1828,34 +3025,43 @@
 
                         <select name="source">
 
+
                             <option value="Manual">
                                 Manual
                             </option>
+
 
                             <option value="Google">
                                 Google
                             </option>
 
+
                             <option value="Website">
                                 Website
                             </option>
+
 
                             <option value="Referral">
                                 Referral
                             </option>
 
+
                             <option value="Social Media">
                                 Social Media
                             </option>
+
 
                             <option value="AI Search">
                                 AI Search
                             </option>
 
+
                         </select>
 
                     </div>
 
+
+                    <!-- NOTES -->
 
                     <div class="form-group full">
 
@@ -1867,40 +3073,58 @@
 
                     </div>
 
+
                 </div>
+
 
 
                 <div class="form-actions">
 
+
                     <button type="button" class="cancel-button" onclick="closeModal()">
+
                         Cancel
+
                     </button>
 
+
                     <button type="submit" class="save-button">
+
                         Save Lead
+
                     </button>
+
 
                 </div>
 
+
             </form>
 
+
         </div>
+
 
     </div>
 
 
 
+    <!-- 
+     JAVASCRIPT
+= -->
+
     <script>
+
 
         /* 
            MODAL
-         */
+        = */
 
         function openModal() {
 
             document
                 .getElementById("leadModal")
-                .classList.add("active");
+                .classList
+                .add("active");
 
         }
 
@@ -1909,20 +3133,23 @@
 
             document
                 .getElementById("leadModal")
-                .classList.remove("active");
+                .classList
+                .remove("active");
 
         }
 
 
-        document
-            .getElementById("leadModal")
-            .addEventListener(
+        const leadModal =
+            document.getElementById("leadModal");
+
+
+        if (leadModal) {
+
+            leadModal.addEventListener(
                 "click",
                 function (event) {
 
-                    if (
-                        event.target === this
-                    ) {
+                    if (event.target === this) {
 
                         closeModal();
 
@@ -1931,346 +3158,452 @@
                 }
             );
 
-
-        /* 
-           SEARCH SAVED LEADS
-         */
-
-        function filterLeads() {
-
-            const industry =
-                document
-                    .getElementById("searchIndustry")
-                    .value
-                    .toLowerCase();
-
-            const location =
-                document
-                    .getElementById("searchLocation")
-                    .value
-                    .toLowerCase();
-
-            const keyword =
-                document
-                    .getElementById("searchKeyword")
-                    .value
-                    .toLowerCase();
-
-            const status =
-                document
-                    .getElementById("searchStatus")
-                    .value
-                    .toLowerCase();
-
-
-            const rows =
-                document.querySelectorAll(
-                    ".lead-row"
-                );
-
-
-            rows.forEach(
-                function (row) {
-
-                    const rowIndustry =
-                        row.dataset.industry
-                            .toLowerCase();
-
-                    const rowLocation =
-                        row.dataset.location
-                            .toLowerCase();
-
-                    const rowCompany =
-                        row.dataset.company
-                            .toLowerCase();
-
-                    const rowStatus =
-                        row.dataset.status
-                            .toLowerCase();
-
-
-                    const matchesIndustry =
-                        !industry ||
-                        rowIndustry.includes(
-                            industry
-                        );
-
-
-                    const matchesLocation =
-                        !location ||
-                        rowLocation.includes(
-                            location
-                        );
-
-
-                    const matchesKeyword =
-                        !keyword ||
-                        rowCompany.includes(
-                            keyword
-                        ) ||
-                        rowIndustry.includes(
-                            keyword
-                        );
-
-
-                    const matchesStatus =
-                        !status ||
-                        rowStatus === status;
-
-
-                    if (
-                        matchesIndustry &&
-                        matchesLocation &&
-                        matchesKeyword &&
-                        matchesStatus
-                    ) {
-
-                        row.style.display = "";
-
-                    } else {
-
-                        row.style.display = "none";
-
-                    }
-
-                }
-            );
-
         }
 
 
+
+        /* 
+           SAVE GOOGLE LEAD
+           AJAX - NO PAGE REFRESH
+        = */
+
         async function saveGoogleLead(button) {
 
-            // Prevent double clicking
-            if (button.dataset.saving === "true") {
+
+            /* Prevent double click */
+
+            if (
+                button.dataset.saving === "true"
+            ) {
+
                 return;
+
             }
+
 
             button.dataset.saving = "true";
 
-            const originalText = button.innerHTML;
 
-            button.innerHTML = "Saving...";
+            const originalText =
+                button.innerHTML;
+
+
+            button.innerHTML =
+                "Saving...";
+
+
             button.disabled = true;
 
 
-            const formData = new FormData();
+
+            /* Form data */
+
+            const formData =
+                new FormData();
+
 
             formData.append(
                 "company_name",
-                button.dataset.company
+                button.dataset.company || ""
             );
+
 
             formData.append(
                 "industry",
-                button.dataset.industry
+                button.dataset.industry || ""
             );
+
 
             formData.append(
                 "location",
-                button.dataset.location
+                button.dataset.location || ""
             );
+
 
             formData.append(
                 "phone",
-                button.dataset.phone
+                button.dataset.phone || ""
             );
+
 
             formData.append(
                 "website",
-                button.dataset.website
+                button.dataset.website || ""
             );
+
 
             formData.append(
                 "google_place_id",
-                button.dataset.googlePlaceId
+                button.dataset.googlePlaceId || ""
             );
+
 
 
             try {
 
-                const response = await fetch(
-                    "{{ url_for('save_google_lead') }}",
-                    {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
+
+                const response =
+                    await fetch(
+                        "{{ url_for('save_google_lead') }}",
+                        {
+                            method: "POST",
+
+                            body: formData,
+
+                            headers: {
+                                "X-Requested-With":
+                                    "XMLHttpRequest"
+                            }
                         }
-                    }
-                );
+                    );
 
 
-                const data = await response.json();
+
+                const data =
+                    await response.json();
+
 
 
                 if (data.success) {
 
-                    button.innerHTML = "✓ Saved";
+
+                    button.innerHTML =
+                        "✓ Saved";
+
 
                     button.style.background =
-                        "rgba(0, 200, 83, 0.18)";
+                        "#dcfce7";
 
-                    button.style.color = "#00d26a";
+
+                    button.style.color =
+                        "#16a34a";
+
 
                     button.disabled = true;
 
 
-                    if (!data.already_saved) {
 
-                        addLeadToSavedTable(data.lead);
+                    /* Add immediately to saved table */
+
+                    if (
+                        !data.already_saved &&
+                        data.lead
+                    ) {
+
+                        addLeadToSavedTable(
+                            data.lead
+                        );
 
                     }
 
+
                 } else {
 
-                    button.innerHTML = originalText;
 
-                    button.disabled = false;
+                    button.innerHTML =
+                        originalText;
 
-                    button.dataset.saving = "false";
 
-                    alert(data.message || "Could not save lead.");
+                    button.disabled =
+                        false;
+
+
+                    button.dataset.saving =
+                        "false";
+
+
+                    alert(
+                        data.message ||
+                        "Could not save lead."
+                    );
 
                 }
 
+
             } catch (error) {
+
 
                 console.error(
                     "Save Google Lead Error:",
                     error
                 );
 
-                button.innerHTML = originalText;
 
-                button.disabled = false;
+                button.innerHTML =
+                    originalText;
 
-                button.dataset.saving = "false";
 
-                alert("Something went wrong while saving the lead.");
+                button.disabled =
+                    false;
+
+
+                button.dataset.saving =
+                    "false";
+
+
+                alert(
+                    "Something went wrong while saving the lead."
+                );
 
             }
 
         }
 
-    </script>
-    <script>
+
+
+        /* 
+           ADD GOOGLE LEAD TO TABLE WITHOUT REFRESH
+        = */
 
         function addLeadToSavedTable(lead) {
 
-            const table = document.querySelector("#leadsTable");
+
+            let table =
+                document.querySelector(
+                    "#leadsTable"
+                );
+
+
+            /*
+             * If there was no saved lead before,
+             * create the table dynamically.
+             */
 
             if (!table) {
-                return;
+
+
+                const sectionCards =
+                    document.querySelectorAll(
+                        ".section-card"
+                    );
+
+
+                const savedSection =
+                    sectionCards[
+                    sectionCards.length - 1
+                    ];
+
+
+                if (!savedSection) {
+                    return;
+                }
+
+
+                const tableContainer =
+                    savedSection.querySelector(
+                        ".table-container"
+                    );
+
+
+                if (!tableContainer) {
+                    return;
+                }
+
+
+                tableContainer.innerHTML = `
+
+                <table id="leadsTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Company</th>
+
+                            <th>Industry</th>
+
+                            <th>Location</th>
+
+                            <th>Contact</th>
+
+                            <th>Score</th>
+
+                            <th>Status</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody></tbody>
+
+                </table>
+
+            `;
+
+
+                table =
+                    document.querySelector(
+                        "#leadsTable"
+                    );
+
             }
 
-            const tbody = table.querySelector("tbody");
+
+            const tbody =
+                table.querySelector(
+                    "tbody"
+                );
+
 
             if (!tbody) {
                 return;
             }
 
 
-            const row = document.createElement("tr");
 
-            row.className = "lead-row";
+            /* Create row */
+
+            const row =
+                document.createElement("tr");
+
+
+            row.className =
+                "lead-row";
+
 
             row.dataset.industry =
                 lead.industry || "";
 
+
             row.dataset.location =
                 lead.location || "";
 
+
             row.dataset.company =
                 lead.company_name || "";
+
 
             row.dataset.status =
                 lead.lead_status || "New";
 
 
+
             row.innerHTML = `
 
-        <td>
+            <td>
 
-            <div class="company-name">
-                ${escapeHtml(lead.company_name || "—")}
-            </div>
+                <div class="company-name">
 
-            ${lead.website
+                    ${escapeHtml(
+                lead.company_name ||
+                "—"
+            )}
+
+                </div>
+
+                ${lead.website
+
                     ?
-                    `<div class="muted">
-                    ${escapeHtml(lead.website)}
-                </div>`
+
+                    `
+                    <div class="muted">
+
+                        ${escapeHtml(
+                        lead.website
+                    )}
+
+                    </div>
+                    `
+
                     :
+
                     ""
                 }
 
-        </td>
+            </td>
 
 
-        <td>
-            ${escapeHtml(lead.industry || "—")}
-        </td>
+            <td>
+
+                ${escapeHtml(
+                    lead.industry ||
+                    "—"
+                )}
+
+            </td>
 
 
-        <td>
-            ${escapeHtml(lead.location || "—")}
-        </td>
+            <td>
+
+                ${escapeHtml(
+                    lead.location ||
+                    "—"
+                )}
+
+            </td>
 
 
-        <td>
-            ${escapeHtml(lead.phone || "—")}
-        </td>
+            <td>
+
+                ${escapeHtml(
+                    lead.phone ||
+                    "—"
+                )}
+
+            </td>
 
 
-        <td>
-            ${lead.lead_score || 0}
-        </td>
+            <td>
+
+                ${lead.lead_score ||
+                0
+                }
+
+            </td>
 
 
-        <td>
+            <td>
 
-            <span class="badge new">
-                New
-            </span>
+                <span class="badge new">
 
-        </td>
+                    New
+
+                </span>
+
+            </td>
 
 
-        <td>
+            <td>
 
-            <div class="actions">
+                <div class="actions">
 
-                <button
-                    class="action-button"
-                    type="button"
-                >
-                    View
-                </button>
+                    <span class="muted">
 
-            </div>
+                        Saved
 
-        </td>
+                    </span>
 
-    `;
+                </div>
+
+            </td>
+
+        `;
 
 
             tbody.prepend(row);
 
         }
 
-    </script>
 
 
-    <!--the security helper-->
-
-    <script>
+        /* 
+           SECURITY HELPER
+        = */
 
         function escapeHtml(value) {
 
-            const div = document.createElement("div");
 
-            div.textContent = value;
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.textContent =
+                value;
+
 
             return div.innerHTML;
 
