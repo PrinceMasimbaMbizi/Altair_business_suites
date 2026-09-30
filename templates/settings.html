@@ -16,16 +16,12 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
-    <link rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 
     <style>
-
         /* 
            RESET
          */
@@ -178,11 +174,9 @@
             justify-content: center;
 
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     #7c3aed,
-                    #4f46e5
-                );
+                    #4f46e5);
 
             color: white;
 
@@ -192,7 +186,7 @@
         }
 
 
-        .logo > div:last-child {
+        .logo>div:last-child {
 
             min-width: 0;
         }
@@ -464,11 +458,9 @@
             border-radius: 10px;
 
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     #7c3aed,
-                    #4f46e5
-                );
+                    #4f46e5);
 
             color: white;
 
@@ -681,12 +673,10 @@
             border-color: #8b5cf6;
 
             box-shadow:
-                0 0 0 3px rgba(
-                    139,
+                0 0 0 3px rgba(139,
                     92,
                     246,
-                    0.08
-                );
+                    0.08);
         }
 
 
@@ -721,11 +711,9 @@
         .banking-box {
 
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     #faf9ff,
-                    #f8f7fc
-                );
+                    #f8f7fc);
 
             border:
                 1px solid #ebe7f7;
@@ -757,11 +745,9 @@
             border-radius: 11px;
 
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     #7c3aed,
-                    #4f46e5
-                );
+                    #4f46e5);
 
             display: flex;
 
@@ -874,12 +860,10 @@
                 translateY(-1px);
 
             box-shadow:
-                0 8px 20px rgba(
-                    124,
+                0 8px 20px rgba(124,
                     58,
                     237,
-                    0.22
-                );
+                    0.22);
         }
 
 
@@ -1121,7 +1105,6 @@
             }
 
         }
-
     </style>
 
 </head>
@@ -1131,581 +1114,358 @@
 <body>
 
 
-<div class="app">
+    <div class="app">
 
 
-    <!-- 
+        <!-- 
          SIDEBAR
      -->
 
-    <aside class="sidebar">
+        <aside class="sidebar">
 
 
-        <!-- COMPANY LOGO -->
+            <!-- COMPANY LOGO -->
 
-        <div class="logo">
+            <div class="logo">
 
-            {% if company.logo %}
+                {% if company.logo %}
 
-            <img
-                src="{{ url_for('static', filename='uploads/' + company.logo) }}"
-                alt="{{ company.company_name }}"
-            >
+                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" alt="{{ company.company_name }}">
 
-            {% else %}
+                {% else %}
 
-            <div class="company-logo-placeholder">
+                <div class="company-logo-placeholder">
 
-                {{ company.company_name[0] if company.company_name else 'A' }}
+                    {{ company.company_name[0] if company.company_name else 'A' }}
+
+                </div>
+
+                {% endif %}
+
+
+                <div>
+
+                    <span>
+                        {{ company.company_name or 'Altair Business Suite' }}
+                    </span>
+
+                </div>
 
             </div>
 
-            {% endif %}
 
 
-            <div>
+            <!-- MAIN MENU -->
+
+            <div class="menu-title">
+                Main
+            </div>
+
+
+            <!-- DASHBOARD -->
+
+            <a href="{{ url_for('dashboard') }}" class="nav-item">
+
+                📊
 
                 <span>
-                    {{ company.company_name or 'Altair Business Suite' }}
+                    Dashboard
                 </span>
 
+            </a>
+
+
+            <!-- CUSTOMERS -->
+
+            <a href="{{ url_for('customer') }}" class="nav-item">
+
+                👥
+
+                <span>
+                    Customers
+                </span>
+
+            </a>
+
+
+            <!-- INVOICES -->
+
+            <a href="{{ url_for('invoice') }}" class="nav-item">
+
+                🧾
+
+                <span>
+                    Invoices
+                </span>
+
+            </a>
+
+
+            <!-- INVENTORY -->
+
+            <a href="{{ url_for('items') }}" class="nav-item">
+
+                📦
+
+                <span>
+                    Inventory
+                </span>
+
+            </a>
+
+
+            <!-- TRANSACTIONS -->
+
+            <a href="#" class="nav-item">
+
+                💳
+
+                <span>
+                    Transactions
+                </span>
+
+            </a>
+
+
+
+            <!-- INTELLIGENCE -->
+
+            <div class="menu-title">
+                Intelligence
             </div>
 
-        </div>
 
+            <a href="{{ url_for('ai_leads') }}" class="nav-item">
+                🤖
+                <span>AI Lead Finder</span>
+            </a>
 
 
-        <!-- MAIN MENU -->
+            <a href="#" class="nav-item">
 
-        <div class="menu-title">
-            Main
-        </div>
+                🇫
 
+                <span>
+                    Facebook Analytics
+                </span>
 
-        <!-- DASHBOARD -->
+            </a>
 
-        <a href="{{ url_for('dashboard') }}" class="nav-item">
 
-            📊
+            <a href="#" class="nav-item">
 
-            <span>
-                Dashboard
-            </span>
+                🟢
 
-        </a>
+                <span>
+                    WhatsApp Analytics
+                </span>
 
+            </a>
 
-        <!-- CUSTOMERS -->
 
-        <a href="{{ url_for('customer') }}" class="nav-item">
+            <a href="#" class="nav-item">
 
-            👥
+                💼
 
-            <span>
-                Customers
-            </span>
+                <span>
+                    Company Profile
+                </span>
 
-        </a>
+            </a>
 
 
-        <!-- INVOICES -->
+            <a href="#" class="nav-item">
 
-        <a href="{{ url_for('invoice') }}" class="nav-item">
+                📈
 
-            🧾
+                <span>
+                    Business Analytics
+                </span>
 
-            <span>
-                Invoices
-            </span>
+            </a>
 
-        </a>
 
+            <a href="#" class="nav-item">
 
-        <!-- INVENTORY -->
+                📊
 
-        <a href="{{ url_for('items') }}" class="nav-item">
+                <span>
+                    Forecasting
+                </span>
 
-            📦
+            </a>
 
-            <span>
-                Inventory
-            </span>
 
-        </a>
 
+            <!-- SYSTEM -->
 
-        <!-- TRANSACTIONS -->
+            <div class="menu-title">
+                System
+            </div>
 
-        <a href="#" class="nav-item">
 
-            💳
+            <!-- SETTINGS -->
 
-            <span>
-                Transactions
-            </span>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
 
-        </a>
+                ⚙️
 
+                <span>
+                    Settings
+                </span>
 
+            </a>
 
-        <!-- INTELLIGENCE -->
 
-        <div class="menu-title">
-            Intelligence
-        </div>
+            <!-- LOGOUT -->
 
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                Logout
+            </a>
 
-        <a href="#" class="nav-item">
 
-            🤖
+        </aside>
 
-            <span>
-                AI Lead Finder
-            </span>
 
-        </a>
 
-
-        <a href="#" class="nav-item">
-
-            🇫
-
-            <span>
-                Facebook Analytics
-            </span>
-
-        </a>
-
-
-        <a href="#" class="nav-item">
-
-            🟢
-
-            <span>
-                WhatsApp Analytics
-            </span>
-
-        </a>
-
-
-        <a href="#" class="nav-item">
-
-            💼
-
-            <span>
-                Company Profile
-            </span>
-
-        </a>
-
-
-        <a href="#" class="nav-item">
-
-            📈
-
-            <span>
-                Business Analytics
-            </span>
-
-        </a>
-
-
-        <a href="#" class="nav-item">
-
-            📊
-
-            <span>
-                Forecasting
-            </span>
-
-        </a>
-
-
-
-        <!-- SYSTEM -->
-
-        <div class="menu-title">
-            System
-        </div>
-
-
-        <!-- SETTINGS -->
-
-        <a
-            href="{{ url_for('settings') }}"
-            class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}"
-        >
-
-            ⚙️
-
-            <span>
-                Settings
-            </span>
-
-        </a>
-
-
-        <!-- LOGOUT -->
-
-        <a
-            href="{{ url_for('logout') }}"
-            class="logout-link"
-        >
-            Logout
-        </a>
-
-
-    </aside>
-
-
-
-    <!-- 
+        <!-- 
          MAIN CONTENT
      -->
 
-    <main class="main">
+        <main class="main">
 
 
-        <!-- 
+            <!-- 
              TOP BAR
          -->
 
-        <div class="topbar">
+            <div class="topbar">
 
 
-            <div class="welcome">
+                <div class="welcome">
 
-                <h1>
-                    Settings ⚙️
-                </h1>
+                    <h1>
+                        Settings ⚙️
+                    </h1>
 
-                <p>
-                    Manage your company information and invoice settings.
-                </p>
+                    <p>
+                        Manage your company information and invoice settings.
+                    </p>
+
+                </div>
+
+
+                <div class="top-actions">
+
+
+                    <!-- NOTIFICATION -->
+
+                    <div class="notification">
+                        🔔
+                    </div>
+
+
+                    <!-- PROFILE -->
+
+                    <div class="profile">
+
+
+                        <div class="avatar">
+
+                            {{ user_name[0]|upper if user_name else 'A' }}
+
+                        </div>
+
+
+                        <div>
+
+                            <strong style="font-size:12px;">
+
+                                {{ user_name }}
+
+                            </strong>
+
+                            <small>
+                                Administrator
+                            </small>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
 
             </div>
 
 
-            <div class="top-actions">
 
-
-                <!-- NOTIFICATION -->
-
-                <div class="notification">
-                    🔔
-                </div>
-
-
-                <!-- PROFILE -->
-
-                <div class="profile">
-
-
-                    <div class="avatar">
-
-                        {{ user_name[0]|upper if user_name else 'A' }}
-
-                    </div>
-
-
-                    <div>
-
-                        <strong style="font-size:12px;">
-
-                            {{ user_name }}
-
-                        </strong>
-
-                        <small>
-                            Administrator
-                        </small>
-
-                    </div>
-
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- 
+            <!-- 
              FLASH MESSAGE
          -->
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
 
             {% if messages %}
 
-                {% for category, message in messages %}
+            {% for category, message in messages %}
 
-                    <div class="flash">
+            <div class="flash">
 
-                        {{ message }}
+                {{ message }}
 
-                    </div>
+            </div>
 
-                {% endfor %}
+            {% endfor %}
 
             {% endif %}
 
-        {% endwith %}
+            {% endwith %}
 
 
 
-        <!-- 
+            <!-- 
              SETTINGS
          -->
 
-        <form
-            method="POST"
-            action="{{ url_for('settings') }}"
-        >
+            <form method="POST" action="{{ url_for('settings') }}">
 
 
-            <div class="settings-container">
+                <div class="settings-container">
 
 
 
-                <!-- 
+                    <!-- 
                      COMPANY INFORMATION
                  -->
 
-                <section class="settings-card">
+                    <section class="settings-card">
 
 
-                    <div class="card-header">
+                        <div class="card-header">
 
 
-                        <div class="card-header-left">
+                            <div class="card-header-left">
 
 
-                            <div class="section-icon">
-                                🏢
-                            </div>
+                                <div class="section-icon">
+                                    🏢
+                                </div>
 
 
-                            <div>
+                                <div>
 
-                                <h2>
-                                    Company Information
-                                </h2>
+                                    <h2>
+                                        Company Information
+                                    </h2>
 
-                                <p>
-                                    Information used throughout Altair Business Suite.
-                                </p>
+                                    <p>
+                                        Information used throughout Altair Business Suite.
+                                    </p>
 
-                            </div>
+                                </div>
 
-
-                        </div>
-
-
-                    </div>
-
-
-
-                    <div class="form-grid">
-
-
-                        <!-- COMPANY NAME -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Company Name
-                            </label>
-
-                            <input
-                                type="text"
-                                name="company_name"
-                                value="{{ company.company_name or '' }}"
-                                placeholder="Company name"
-                            >
-
-                        </div>
-
-
-
-                        <!-- INDUSTRY -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Industry
-                            </label>
-
-                            <input
-                                type="text"
-                                name="industry"
-                                value="{{ company.industry or '' }}"
-                                placeholder="e.g. Technology"
-                            >
-
-                        </div>
-
-
-
-                        <!-- PHONE -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Phone
-                            </label>
-
-                            <input
-                                type="text"
-                                name="phone"
-                                value="{{ company.phone or '' }}"
-                                placeholder="+27..."
-                            >
-
-                        </div>
-
-
-
-                        <!-- EMAIL -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Company Email
-                            </label>
-
-                            <input
-                                type="email"
-                                name="email"
-                                value="{{ company.email or '' }}"
-                                placeholder="company@example.com"
-                            >
-
-                        </div>
-
-
-
-                        <!-- WEBSITE -->
-
-                        <div class="form-group">
-
-                            <label>
-                                Website
-                            </label>
-
-                            <input
-                                type="text"
-                                name="website"
-                                value="{{ company.website or '' }}"
-                                placeholder="https://example.com"
-                            >
-
-                        </div>
-
-
-
-                        <!-- CITY -->
-
-                        <div class="form-group">
-
-                            <label>
-                                City
-                            </label>
-
-                            <input
-                                type="text"
-                                name="city"
-                                value="{{ company.city or '' }}"
-                                placeholder="City"
-                            >
-
-                        </div>
-
-
-
-                        <!-- ADDRESS -->
-
-                        <div class="form-group full">
-
-                            <label>
-                                Business Address
-                            </label>
-
-                            <input
-                                type="text"
-                                name="address"
-                                value="{{ company.address or '' }}"
-                                placeholder="Full business address"
-                            >
-
-                        </div>
-
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- 
-                     BANKING DETAILS
-                 -->
-
-                <section class="settings-card">
-
-
-                    <div class="card-header">
-
-
-                        <div class="card-header-left">
-
-
-                            <div class="section-icon">
-                                🏦
-                            </div>
-
-
-                            <div>
-
-                                <h2>
-                                    Banking Details
-                                </h2>
-
-                                <p>
-                                    Payment information displayed on your invoices.
-                                </p>
-
-                            </div>
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-                    <div class="banking-box">
-
-
-                        <div class="banking-header">
-
-
-                            <div class="bank-icon">
-                                🏦
-                            </div>
-
-
-                            <div>
-
-                                <h3>
-                                    Company Payment Information
-                                </h3>
-
-                                <p>
-                                    Enter your business bank account information.
-                                </p>
 
                             </div>
 
@@ -1717,149 +1477,144 @@
                         <div class="form-grid">
 
 
-                            <!-- BANK NAME -->
+                            <!-- COMPANY NAME -->
 
                             <div class="form-group">
 
                                 <label>
-                                    Bank Name
+                                    Company Name
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="bank_name"
-                                    value="{{ company.bank_name or '' }}"
-                                    placeholder="e.g. Standard Bank"
-                                >
+                                <input type="text" name="company_name" value="{{ company.company_name or '' }}"
+                                    placeholder="Company name">
 
                             </div>
 
 
 
-                            <!-- ACCOUNT NAME -->
+                            <!-- INDUSTRY -->
 
                             <div class="form-group">
 
                                 <label>
-                                    Account Name
+                                    Industry
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="account_name"
-                                    value="{{ company.account_name or '' }}"
-                                    placeholder="Name registered on bank account"
-                                >
+                                <input type="text" name="industry" value="{{ company.industry or '' }}"
+                                    placeholder="e.g. Technology">
 
                             </div>
 
 
 
-                            <!-- ACCOUNT NUMBER -->
+                            <!-- PHONE -->
 
                             <div class="form-group">
 
                                 <label>
-                                    Account Number
+                                    Phone
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="account_number"
-                                    value="{{ company.account_number or '' }}"
-                                    placeholder="Account number"
-                                >
+                                <input type="text" name="phone" value="{{ company.phone or '' }}" placeholder="+27...">
 
                             </div>
 
 
 
-                            <!-- BRANCH CODE -->
+                            <!-- EMAIL -->
 
                             <div class="form-group">
 
                                 <label>
-                                    Branch Code
+                                    Company Email
                                 </label>
 
-                                <input
-                                    type="text"
-                                    name="branch_code"
-                                    value="{{ company.branch_code or '' }}"
-                                    placeholder="Branch code"
-                                >
+                                <input type="email" name="email" value="{{ company.email or '' }}"
+                                    placeholder="company@example.com">
 
                             </div>
 
 
 
-                            <!-- PAYMENT TERMS -->
+                            <!-- WEBSITE -->
 
                             <div class="form-group">
 
                                 <label>
-                                    Default Payment Terms
+                                    Website
                                 </label>
 
-                                <select name="payment_terms">
+                                <input type="text" name="website" value="{{ company.website or '' }}"
+                                    placeholder="https://example.com">
+
+                            </div>
 
 
-                                    <option value="">
-                                        Select payment terms
-                                    </option>
+
+                            <!-- CITY -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    City
+                                </label>
+
+                                <input type="text" name="city" value="{{ company.city or '' }}" placeholder="City">
+
+                            </div>
 
 
-                                    <option
-                                        value="Due on receipt"
-                                        {% if company.payment_terms == "Due on receipt" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        Due on receipt
-                                    </option>
+
+                            <!-- ADDRESS -->
+
+                            <div class="form-group full">
+
+                                <label>
+                                    Business Address
+                                </label>
+
+                                <input type="text" name="address" value="{{ company.address or '' }}"
+                                    placeholder="Full business address">
+
+                            </div>
 
 
-                                    <option
-                                        value="7 days"
-                                        {% if company.payment_terms == "7 days" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        7 days
-                                    </option>
+                        </div>
+
+                    </section>
 
 
-                                    <option
-                                        value="14 days"
-                                        {% if company.payment_terms == "14 days" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        14 days
-                                    </option>
+
+                    <!-- 
+                     BANKING DETAILS
+                 -->
+
+                    <section class="settings-card">
 
 
-                                    <option
-                                        value="30 days"
-                                        {% if company.payment_terms == "30 days" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        30 days
-                                    </option>
+                        <div class="card-header">
 
 
-                                    <option
-                                        value="60 days"
-                                        {% if company.payment_terms == "60 days" %}
-                                            selected
-                                        {% endif %}
-                                    >
-                                        60 days
-                                    </option>
+                            <div class="card-header-left">
 
 
-                                </select>
+                                <div class="section-icon">
+                                    🏦
+                                </div>
+
+
+                                <div>
+
+                                    <h2>
+                                        Banking Details
+                                    </h2>
+
+                                    <p>
+                                        Payment information displayed on your invoices.
+                                    </p>
+
+                                </div>
+
 
                             </div>
 
@@ -1868,62 +1623,205 @@
 
 
 
-                        <!-- BANK NOTE -->
+                        <div class="banking-box">
 
-                        <div class="bank-note">
 
-                            💡
+                            <div class="banking-header">
 
-                            <strong>
-                                Automatic invoice information:
-                            </strong>
 
-                            Once these banking details are saved,
-                            they will automatically be available
-                            on your company's invoices.
+                                <div class="bank-icon">
+                                    🏦
+                                </div>
 
-                            You only need to enter them here once.
+
+                                <div>
+
+                                    <h3>
+                                        Company Payment Information
+                                    </h3>
+
+                                    <p>
+                                        Enter your business bank account information.
+                                    </p>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <div class="form-grid">
+
+
+                                <!-- BANK NAME -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Bank Name
+                                    </label>
+
+                                    <input type="text" name="bank_name" value="{{ company.bank_name or '' }}"
+                                        placeholder="e.g. Standard Bank">
+
+                                </div>
+
+
+
+                                <!-- ACCOUNT NAME -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Account Name
+                                    </label>
+
+                                    <input type="text" name="account_name" value="{{ company.account_name or '' }}"
+                                        placeholder="Name registered on bank account">
+
+                                </div>
+
+
+
+                                <!-- ACCOUNT NUMBER -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Account Number
+                                    </label>
+
+                                    <input type="text" name="account_number" value="{{ company.account_number or '' }}"
+                                        placeholder="Account number">
+
+                                </div>
+
+
+
+                                <!-- BRANCH CODE -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Branch Code
+                                    </label>
+
+                                    <input type="text" name="branch_code" value="{{ company.branch_code or '' }}"
+                                        placeholder="Branch code">
+
+                                </div>
+
+
+
+                                <!-- PAYMENT TERMS -->
+
+                                <div class="form-group">
+
+                                    <label>
+                                        Default Payment Terms
+                                    </label>
+
+                                    <select name="payment_terms">
+
+
+                                        <option value="">
+                                            Select payment terms
+                                        </option>
+
+
+                                        <option value="Due on receipt" {% if company.payment_terms=="Due on receipt" %}
+                                            selected {% endif %}>
+                                            Due on receipt
+                                        </option>
+
+
+                                        <option value="7 days" {% if company.payment_terms=="7 days" %} selected {%
+                                            endif %}>
+                                            7 days
+                                        </option>
+
+
+                                        <option value="14 days" {% if company.payment_terms=="14 days" %} selected {%
+                                            endif %}>
+                                            14 days
+                                        </option>
+
+
+                                        <option value="30 days" {% if company.payment_terms=="30 days" %} selected {%
+                                            endif %}>
+                                            30 days
+                                        </option>
+
+
+                                        <option value="60 days" {% if company.payment_terms=="60 days" %} selected {%
+                                            endif %}>
+                                            60 days
+                                        </option>
+
+
+                                    </select>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <!-- BANK NOTE -->
+
+                            <div class="bank-note">
+
+                                💡
+
+                                <strong>
+                                    Automatic invoice information:
+                                </strong>
+
+                                Once these banking details are saved,
+                                they will automatically be available
+                                on your company's invoices.
+
+                                You only need to enter them here once.
+
+                            </div>
+
 
                         </div>
 
-
-                    </div>
-
-                </section>
+                    </section>
 
 
 
-                <!-- 
+                    <!-- 
                      SAVE BUTTON
                  -->
 
-                <div class="save-area">
+                    <div class="save-area">
 
-                    <button
-                        type="submit"
-                        class="save-btn"
-                    >
+                        <button type="submit" class="save-btn">
 
-                        💾 Save Settings
+                            💾 Save Settings
 
-                    </button>
+                        </button>
+
+                    </div>
+
 
                 </div>
 
 
-            </div>
+            </form>
 
 
-        </form>
+            <div style="height:40px;"></div>
 
 
-        <div style="height:40px;"></div>
+        </main>
 
 
-    </main>
-
-
-</div>
+    </div>
 
 
 </body>
