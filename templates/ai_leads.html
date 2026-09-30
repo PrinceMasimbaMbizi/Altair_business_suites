@@ -1131,11 +1131,11 @@
                 <div>
 
                     <h2>
-                        Find Potential Leads
+                        Find Potential Customers
                     </h2>
 
                     <p>
-                        Define the type of business you want to target.
+                        Search Google for businesses matching your target customer.
                     </p>
 
                 </div>
@@ -1143,85 +1143,259 @@
             </div>
 
 
-            <div class="search-grid">
+            <form method="POST" action="{{ url_for('search_ai_leads') }}">
 
-                <div class="field">
+                <div class="search-grid">
 
-                    <label>
-                        Industry
-                    </label>
 
-                    <input type="text" id="searchIndustry" placeholder="e.g. Construction">
+                    <div class="field">
+
+                        <label>
+                            Business Type
+                        </label>
+
+                        <input type="text" name="business_type" placeholder="e.g. Construction companies" required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Location
+                        </label>
+
+                        <input type="text" name="location" placeholder="e.g. Johannesburg, South Africa" required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Keywords
+                        </label>
+
+                        <input type="text" name="keywords" placeholder="e.g. roofing, renovation">
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Number of Leads
+                        </label>
+
+                        <select name="max_results">
+
+                            <option value="5">
+                                5
+                            </option>
+
+                            <option value="10" selected>
+                                10
+                            </option>
+
+                            <option value="15">
+                                15
+                            </option>
+
+                            <option value="20">
+                                20
+                            </option>
+
+                        </select>
+
+                    </div>
 
                 </div>
 
 
-                <div class="field">
+                <button type="submit" class="search-button">
+                    🤖 Find Potential Customers
+                </button>
 
-                    <label>
-                        Location
-                    </label>
+            </form>
 
-                    <input type="text" id="searchLocation" placeholder="e.g. Johannesburg">
-
-                </div>
+        </section>
 
 
-                <div class="field">
-
-                    <label>
-                        Keywords
-                    </label>
-
-                    <input type="text" id="searchKeyword" placeholder="e.g. roofing">
-
-                </div>
 
 
-                <div class="field">
 
-                    <label>
-                        Lead Status
-                    </label>
+        {% if search_performed %}
 
-                    <select id="searchStatus">
+        <section class="section">
 
-                        <option value="">
-                            All statuses
-                        </option>
+            <div class="section-header">
 
-                        <option value="New">
-                            New
-                        </option>
+                <div>
 
-                        <option value="Contacted">
-                            Contacted
-                        </option>
+                    <h2>
+                        🔎 Google Results
+                    </h2>
 
-                        <option value="Interested">
-                            Interested
-                        </option>
-
-                        <option value="Converted">
-                            Converted
-                        </option>
-
-                        <option value="Not Interested">
-                            Not Interested
-                        </option>
-
-                    </select>
+                    <p class="muted">
+                        Search:
+                        {{ search_query }}
+                    </p>
 
                 </div>
 
             </div>
 
 
-            <button class="search-button" onclick="filterLeads()">
-                🔎 Search Saved Leads
-            </button>
+            {% if google_results %}
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Business
+                            </th>
+
+                            <th>
+                                Address
+                            </th>
+
+                            <th>
+                                Phone
+                            </th>
+
+                            <th>
+                                Website
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for lead in google_results %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="company-name">
+                                    {{ lead.company_name }}
+                                </div>
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.address or "—" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.phone or "—" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if lead.website %}
+
+                                <a href="{{ lead.website }}" target="_blank" style="
+                                color:#00f0ff;
+                                text-decoration:none;
+                            ">
+                                    Website
+                                </a>
+
+                                {% else %}
+
+                                —
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ lead.business_status or "Unknown" }}
+
+                            </td>
+
+
+                            <td>
+
+                                <form method="POST" action="{{ url_for('save_google_lead') }}">
+
+                                    <input type="hidden" name="company_name" value="{{ lead.company_name }}">
+
+                                    <input type="hidden" name="location" value="{{ lead.address }}">
+
+                                    <input type="hidden" name="website" value="{{ lead.website }}">
+
+                                    <input type="hidden" name="phone" value="{{ lead.phone }}">
+
+                                    <input type="hidden" name="google_place_id" value="{{ lead.google_place_id }}">
+
+                                    <button type="submit" class="action-button">
+                                        + Save
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🔎
+                </div>
+
+                <h3>
+                    No businesses found
+                </h3>
+
+                <p>
+                    Try changing the business type or location.
+                </p>
+
+            </div>
+
+            {% endif %}
 
         </section>
+
+        {% endif %}
 
 
 

@@ -5,12 +5,12 @@ from datetime import datetime, date
 import mysql.connector
 import os
 
-
+GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
 
 # FLASK APP
 app = Flask(__name__)
 
-app.secret_key = "altair-secret-key"
+app.secret_key = "AIzaSyCzrz_RdKRGlon0Wt6ve2QHFSTJA2-IcJ0"
 
 
 
@@ -4566,9 +4566,9 @@ def ai_leads():
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
 
-        # -------------------------------------------------
+        
         # COMPANY
-        # -------------------------------------------------
+        
 
         cursor.execute("""
             SELECT *
@@ -4579,9 +4579,9 @@ def ai_leads():
 
         company = cursor.fetchone()
 
-        # -------------------------------------------------
+        
         # ALL LEADS
-        # -------------------------------------------------
+        
 
         cursor.execute("""
             SELECT *
@@ -4592,9 +4592,9 @@ def ai_leads():
 
         leads = cursor.fetchall()
 
-        # -------------------------------------------------
+        
         # STATISTICS
-        # -------------------------------------------------
+        
 
         cursor.execute("""
             SELECT
@@ -4963,10 +4963,550 @@ def delete_ai_lead(lead_id):
 
     return redirect(url_for("ai_leads"))
 
-            
+@app.route("/ai-leads/search", methods=["POST"])
+def search_ai_leads():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    business_type = request.form.get(
+        "business_type",
+        ""
+    ).strip()
+
+    location = request.form.get(
+        "location",
+        ""
+    ).strip()
+
+    keywords = request.form.get(
+        "keywords",
+        ""
+    ).strip()
+
+    try:
+        max_results = int(
+            request.form.get(
+                "max_results",
+                10
+            )
+        )
+    except ValueError:
+        max_results = 10
+
+    # Keep requests reasonable
+    max_results = max(
+        1,
+        min(max_results, 20)
+    )
+
+    if not business_type:
+
+        flash(
+            "Please enter the type of customer you want to find.",
+            "error"
+        )
+
+        return redirect(url_for("ai_leads"))
+
+    if not location:
+
+        flash(
+            "Please enter a location.",
+            "error"
+        )
+
+        return redirect(url_for("ai_leads"))
+
+    if not GOOGLE_PLACES_API_KEY:
+
+        flash(
+            "Google Places API key is not configured.",
+            "error"
+        )
+
+        return redirect(url_for("ai_leads"))
+
+    
+    # BUILD GOOGLE SEARCH QUERY
+    
+
+    search_query = business_type
+
+    if keywords:
+        search_query += " " + keywords
+
+    search_query += " in " + location
+
+    
+    # GOOGLE PLACES API
+    
+
+    url = (
+        "https://places.googleapis.com/v1/"
+        "places:searchText"
+    )
+
+    headers = {
+
+        "Content-Type":
+            "application/json",
+
+        "X-Goog-Api-Key":
+            GOOGLE_PLACES_API_KEY,
+
+        "X-Goog-FieldMask":
+            ",".join([
+                "places.id",
+                "places.displayName",
+                "places.formattedAddress",
+                "places.websiteUri",
+                "places.nationalPhoneNumber",
+                "places.internationalPhoneNumber",
+                "places.types",
+                "places.businessStatus",
+                "places.googleMapsUri"
+            ])
+    }
+
+    payload = {
+
+        "textQuery":
+            search_query,
+
+        "pageSize":
+            min(max_results, 20)
+    }
+
+    try:
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        print(
+            "GOOGLE STATUS:",
+            response.status_code
+        )
+
+        print(
+            "GOOGLE RESPONSE:",
+            response.text
+        )
+
+        if response.status_code != 200:
+
+            flash(
+                "Google Places search failed. "
+                "Check your API key and Places API configuration.",
+                "error"
+            )
+
+            return redirect(
+                url_for("ai_leads")
+            )
+
+        data = response.json()
+
+    except requests.RequestException as e:
+
+        print(
+            "GOOGLE API ERROR:",
+            e
+        )
+
+        flash(
+            "Unable to connect to Google Places.",
+            "error"
+        )
+
+        return redirect(
+            url_for("ai_leads")
+        )
+
+    
+    # CONVERT GOOGLE RESULTS
+    
+
+    google_results = []
+
+    for place in data.get("places", []):
+
+        display_name = place.get(
+            "displayName",
+            {}
+        )
+
+        company_name = display_name.get(
+            "text",
+            "Unknown Business"
+        )
+
+        phone = (
+            place.get(
+                "nationalPhoneNumber"
+            )
+            or
+            place.get(
+                "internationalPhoneNumber"
+            )
+        )
+
+        google_results.append({
+
+            "google_place_id":
+                place.get("id"),
+
+            "company_name":
+                company_name,
+
+            "address":
+                place.get(
+                    "formattedAddress",
+                    ""
+                ),
+
+            "website":
+                place.get(
+                    "websiteUri",
+                    ""
+                ),
+
+            "phone":
+                phone or "",
+
+            "types":
+                place.get(
+                    "types",
+                    []
+                ),
+
+            "business_status":
+                place.get(
+                    "businessStatus",
+                    ""
+                ),
+
+            "google_maps_url":
+                place.get(
+                    "googleMapsUri",
+                    ""
+                )
+        })
+
+    
+    # SEND RESULTS BACK TO PAGE
+    
+
+    return render_template(
+        "ai_leads.html",
+
+        company=get_company_for_user(
+            user_id
+        ),
+
+        leads=get_leads_for_user(
+            user_id
+        ),
+
+        total_leads=get_lead_count(
+            user_id
+        ),
+
+        new_leads=get_lead_status_count(
+            user_id,
+            "New"
+        ),
+
+        contacted_leads=get_lead_status_count(
+            user_id,
+            "Contacted"
+        ),
+
+        interested_leads=get_lead_status_count(
+            user_id,
+            "Interested"
+        ),
+
+        converted_leads=get_lead_status_count(
+            user_id,
+            "Converted"
+        ),
+
+        google_results=google_results,
+
+        search_performed=True,
+
+        search_query=search_query,
+
+        user_name=session.get(
+            "user_name"
+        ),
+
+        user_email=session.get(
+            "user_email"
+        )
+    )
+
+
+def get_company_for_user(user_id):
+
+    db = get_db_connection()
+
+    cursor = db.cursor(
+        dictionary=True
+    )
+
+    cursor.execute("""
+        SELECT *
+        FROM companies
+        WHERE user_id = %s
+        LIMIT 1
+    """, (user_id,))
+
+    company = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return company
+
+def get_leads_for_user(user_id):
+
+    db = get_db_connection()
+
+    cursor = db.cursor(
+        dictionary=True
+    )
+
+    cursor.execute("""
+        SELECT *
+        FROM leads
+        WHERE user_id = %s
+        ORDER BY id DESC
+    """, (user_id,))
+
+    leads = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return leads
+
+def get_lead_count(user_id):
+
+    db = get_db_connection()
+
+    cursor = db.cursor(
+        dictionary=True
+    )
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM leads
+        WHERE user_id = %s
+    """, (user_id,))
+
+    result = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return result["total"]
+
+def get_lead_status_count(
+    user_id,
+    status
+):
+
+    db = get_db_connection()
+
+    cursor = db.cursor(
+        dictionary=True
+    )
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM leads
+        WHERE user_id = %s
+        AND lead_status = %s
+    """, (
+        user_id,
+        status
+    ))
+
+    result = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    return result["total"]
+
+@app.route(
+    "/ai-leads/save-google",
+    methods=["POST"]
+)
+def save_google_lead():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    company_name = request.form.get(
+        "company_name",
+        ""
+    ).strip()
+
+    location = request.form.get(
+        "location",
+        ""
+    ).strip()
+
+    website = request.form.get(
+        "website",
+        ""
+    ).strip()
+
+    phone = request.form.get(
+        "phone",
+        ""
+    ).strip()
+
+    google_place_id = request.form.get(
+        "google_place_id",
+        ""
+    ).strip()
+
+    if not company_name:
+
+        flash(
+            "Business name is missing.",
+            "error"
+        )
+
+        return redirect(
+            url_for("ai_leads")
+        )
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        # ---------------------------------------------
+        # CHECK FOR DUPLICATE GOOGLE LEAD
+        # ---------------------------------------------
+
+        cursor.execute("""
+            SELECT id
+            FROM leads
+            WHERE user_id = %s
+            AND google_place_id = %s
+            LIMIT 1
+        """, (
+            user_id,
+            google_place_id
+        ))
+
+        existing = cursor.fetchone()
+
+        if existing:
+
+            flash(
+                "This business is already saved.",
+                "error"
+            )
+
+            return redirect(
+                url_for("ai_leads")
+            )
+
+        # ---------------------------------------------
+        # SAVE
+        # ---------------------------------------------
+
+        cursor.execute("""
+            INSERT INTO leads
+            (
+                user_id,
+                company_name,
+                location,
+                website,
+                phone,
+                source,
+                lead_status,
+                lead_score,
+                google_place_id
+            )
+
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                'Google',
+                'New',
+                0,
+                %s
+            )
+        """, (
+            user_id,
+            company_name,
+            location,
+            website,
+            phone,
+            google_place_id
+        ))
+
+        db.commit()
+
+        flash(
+            "Google lead saved successfully!",
+            "success"
+        )
+
+    except Exception as e:
+
+        if db:
+            db.rollback()
+
+        print(
+            "SAVE GOOGLE LEAD ERROR:",
+            e
+        )
+
+        flash(
+            "Unable to save Google lead.",
+            "error"
+        )
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+    return redirect(
+        url_for("ai_leads")
+    )
+
 # RUN APP
-
-
 if __name__ == "__main__":
 
     app.run(
