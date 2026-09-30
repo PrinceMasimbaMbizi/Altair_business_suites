@@ -2,8 +2,10 @@ from flask import (Flask,render_template,request,redirect,url_for,flash,session,
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
+
 import mysql.connector
 import os
+import requests
 
 GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
 
