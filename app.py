@@ -1359,6 +1359,63 @@ def invoice():
 
 
 
+@app.route("/invoice")
+def invoice():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get this user's invoices only
+    cursor.execute("""
+        SELECT *
+        FROM invoices
+        WHERE user_id = %s
+        ORDER BY id DESC
+    """, (user_id,))
+
+    invoices = cursor.fetchall()
+
+   
+    # INVOICE STATISTICS
+   
+
+    total_invoices = len(invoices)
+
+    paid_invoices = sum(
+        1 for invoice in invoices
+        if str(invoice.get("status", "")).lower() == "paid"
+    )
+
+    pending_invoices = sum(
+        1 for invoice in invoices
+        if str(invoice.get("status", "")).lower() == "pending"
+    )
+
+    overdue_invoices = sum(
+        1 for invoice in invoices
+        if str(invoice.get("status", "")).lower() == "overdue"
+    )
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "invoice.html",
+
+        invoices=invoices,
+
+        total_invoices=total_invoices,
+        paid_invoices=paid_invoices,
+        pending_invoices=pending_invoices,
+        overdue_invoices=overdue_invoices
+    )
+
+
 # VIEW INVOICE
 
 

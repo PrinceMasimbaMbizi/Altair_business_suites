@@ -6,13 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Customers | Altair Business Suite</title>
+    <title>Inventory & Money Management | Altair Business Suite</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <style>
         /* 
@@ -25,35 +24,30 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
-            width: 100%;
-            height: 100%;
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: "Inter", sans-serif;
+            font-family: Arial, sans-serif;
+            background: #0b0b14;
+            color: #ffffff;
+            min-height: 100vh;
+        }
 
-            background: #f5f6fa;
-
-            color: #171722;
-
+        body.modal-open {
             overflow: hidden;
         }
 
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
 
-        /* 
-           APP
-         */
-
-        .app {
-            display: flex;
-
-            width: 100%;
-
-            height: 100vh;
-
-            overflow: hidden;
+        button {
+            cursor: pointer;
         }
 
 
@@ -63,27 +57,1502 @@
 
         .sidebar {
             position: fixed;
-
             left: 0;
             top: 0;
-
             width: 250px;
-
             height: 100vh;
-
             background: #11111c;
-
-            color: white;
-
+            border-right: 1px solid #242438;
             padding: 25px 18px;
-
             overflow-y: auto;
-
-            overflow-x: hidden;
-
             z-index: 1000;
         }
 
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+
+        .brand-name {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: #77778a;
+            margin-top: 3px;
+        }
+
+        .nav-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666678;
+            margin: 25px 10px 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            margin-bottom: 5px;
+            color: #9c9cad;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #1b1b2b;
+            color: #ffffff;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg,
+                    rgba(0, 240, 255, 0.15),
+                    rgba(255, 0, 212, 0.08));
+            color: #00f0ff;
+            border-left: 3px solid #00f0ff;
+        }
+
+
+        /* 
+           MAIN
+         */
+
+        .main {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+
+        /* 
+           TOPBAR
+         */
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .title-area {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .page-title {
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: #77778a;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .company-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            max-width: 320px;
+        }
+
+        .company-logo,
+        .company-logo-placeholder {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 12px;
+        }
+
+        .company-logo {
+            object-fit: cover;
+            border: 1px solid #33334a;
+        }
+
+        .company-logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-name {
+            color: #77778a;
+            font-size: 12px;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+
+        /* 
+           FLASH
+         */
+
+        .flash {
+            padding: 13px 17px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: #171725;
+            border: 1px solid #303049;
+            font-size: 14px;
+        }
+
+        .flash.success {
+            border-color: #00dc82;
+            color: #00dc82;
+        }
+
+        .flash.error {
+            border-color: #ff4d67;
+            color: #ff4d67;
+        }
+
+        .flash.warning {
+            border-color: #ffb020;
+            color: #ffb020;
+        }
+
+
+        /* 
+           TABS
+         */
+
+        .inventory-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            padding: 8px;
+            background: #13131f;
+            border: 1px solid #242438;
+            border-radius: 14px;
+        }
+
+        .inventory-tab {
+            border: none;
+            background: transparent;
+            color: #88889a;
+            padding: 12px 16px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .inventory-tab:hover {
+            background: #1b1b2b;
+            color: #ffffff;
+        }
+
+        .inventory-tab.active {
+            background: linear-gradient(135deg,
+                    rgba(0, 240, 255, 0.16),
+                    rgba(157, 78, 221, 0.16));
+            color: #00f0ff;
+            border: 1px solid rgba(0, 240, 255, 0.25);
+        }
+
+
+        /* 
+           SECTIONS
+         */
+
+        .inventory-section {
+            display: none;
+            animation: sectionFade 0.25s ease;
+        }
+
+        .inventory-section.active {
+            display: block;
+        }
+
+        @keyframes sectionFade {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* 
+           STATS
+         */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .money-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card,
+        .money-card {
+            background: #13131f;
+            border: 1px solid #242438;
+            border-radius: 15px;
+            padding: 20px;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover,
+        .money-card:hover {
+            border-color: #343450;
+            transform: translateY(-2px);
+        }
+
+        .stat-label,
+        .money-card-label {
+            color: #77778a;
+            font-size: 13px;
+            margin-bottom: 11px;
+        }
+
+        .stat-value,
+        .money-card-value {
+            font-size: 26px;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .stat-warning {
+            color: #ffb020;
+        }
+
+        .stat-danger {
+            color: #ff4d67;
+        }
+
+        .stat-money {
+            color: #00f0ff;
+        }
+
+        .money-out {
+            color: #ff4d67;
+        }
+
+        .money-investment {
+            color: #9d4edd;
+        }
+
+        .money-recurring {
+            color: #00f0ff;
+        }
+
+        .money-total {
+            color: #00dc82;
+        }
+
+
+        /* 
+           SECTION HEADER
+         */
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .section-heading {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .section-description {
+            color: #77778a;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        /* 
+           TOOLBAR
+         */
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 450px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #13131f;
+            border: 1px solid #292940;
+            border-radius: 10px;
+            padding: 13px 15px;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #00f0ff;
+        }
+
+
+        /* 
+           BUTTONS
+         */
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 13px 18px;
+            background: linear-gradient(135deg, #00f0ff, #9d4edd);
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4d67, #9d2040);
+        }
+
+        .btn-secondary {
+            background: #252535;
+            border: 1px solid #33334a;
+        }
+
+
+        /* 
+           TABLES
+         */
+
+        .table-container {
+            background: #13131f;
+            border: 1px solid #242438;
+            border-radius: 15px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            color: #77778a;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 17px;
+            border-bottom: 1px solid #242438;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 17px;
+            border-bottom: 1px solid #1f1f30;
+            color: #d8d8e2;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #171725;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #ffffff;
+            max-width: 280px;
+            word-break: break-word;
+        }
+
+        .sku {
+            font-size: 11px;
+            color: #666678;
+            margin-top: 4px;
+            max-width: 280px;
+            word-break: break-word;
+        }
+
+
+        /* 
+           BADGES
+         */
+
+        .type,
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .type {
+            background: rgba(0, 240, 255, 0.1);
+            color: #00f0ff;
+        }
+
+        .type.service {
+            background: rgba(255, 0, 212, 0.1);
+            color: #ff55df;
+        }
+
+        .status.active {
+            background: rgba(0, 220, 130, 0.12);
+            color: #00dc82;
+        }
+
+        .status.inactive {
+            background: rgba(150, 150, 150, 0.12);
+            color: #aaa;
+        }
+
+        .status.paused {
+            background: rgba(255, 176, 32, 0.12);
+            color: #ffb020;
+        }
+
+        .status.completed {
+            background: rgba(157, 78, 221, 0.15);
+            color: #b980ff;
+        }
+
+        .status.ended {
+            background: rgba(255, 77, 103, 0.12);
+            color: #ff4d67;
+        }
+
+
+        /* 
+           STOCK
+         */
+
+        .stock-good {
+            color: #00dc82;
+        }
+
+        .stock-low {
+            color: #ffb020;
+        }
+
+        .stock-out {
+            color: #ff4d67;
+        }
+
+        .amount-out {
+            color: #ff4d67;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .amount-investment {
+            color: #9d4edd;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .amount-positive {
+            color: #00dc82;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+
+        /* 
+           ACTIONS
+         */
+
+        .actions {
+            display: flex;
+            gap: 7px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        .action-btn {
+            border: 1px solid #303049;
+            background: #1a1a29;
+            color: #aaa;
+            border-radius: 7px;
+            padding: 7px 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            color: #ffffff;
+            border-color: #00f0ff;
+        }
+
+        .delete-btn:hover {
+            border-color: #ff4d67;
+            color: #ff4d67;
+        }
+
+
+        /* 
+           EMPTY
+         */
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #77778a;
+        }
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .empty-title {
+            color: #ffffff;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .empty-text {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        /* 
+           MODAL
+         */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #151522;
+            border: 1px solid #303049;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .modal-header h2 {
+            font-size: 21px;
+        }
+
+        .modal-header p {
+            color: #77778a;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .close {
+            border: none;
+            background: none;
+            color: #77778a;
+            font-size: 27px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .close:hover {
+            color: #ffffff;
+        }
+
+
+        /* 
+           FORMS
+         */
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+            color: #aaaabd;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 9px;
+            border: 1px solid #303049;
+            background: #0e0e18;
+            color: #ffffff;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.05);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #555568;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .cancel-btn {
+            background: #252535;
+            border: 1px solid #33334a;
+            color: #aaa;
+            border-radius: 9px;
+            padding: 12px 18px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            color: #ffffff;
+        }
+
+
+        /* 
+           INFO BOX
+         */
+
+        .info-box {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            color: #9c9cad;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #00f0ff;
+        }
+
+
+        /* 
+           RECURRING
+         */
+
+        .recurring-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .recurring-card {
+            background: #13131f;
+            border: 1px solid #242438;
+            border-radius: 15px;
+            padding: 20px;
+            transition: 0.2s;
+        }
+
+        .recurring-card:hover {
+            border-color: #343450;
+            transform: translateY(-2px);
+        }
+
+        .recurring-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .recurring-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .recurring-category {
+            color: #77778a;
+            font-size: 12px;
+        }
+
+        .recurring-amount {
+            color: #00f0ff;
+            font-size: 20px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .recurring-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-top: 15px;
+            border-top: 1px solid #242438;
+        }
+
+        .detail-label {
+            color: #666678;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #d8d8e2;
+            font-size: 13px;
+            word-break: break-word;
+        }
+
+
+        /* 
+           MOBILE
+         */
+
+        @media (max-width: 1200px) {
+
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .money-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #242438;
+                padding: 20px;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .company-area {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .recurring-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            .main {
+                padding: 18px;
+            }
+
+            .stats,
+            .money-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-tabs {
+                flex-direction: column;
+            }
+
+            .inventory-tab {
+                width: 100%;
+                text-align: left;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .toolbar .btn {
+                width: 100%;
+            }
+
+            .section-header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .section-header .btn {
+                width: 100%;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .modal {
+                padding: 10px;
+            }
+
+            .modal-content {
+                padding: 18px;
+                max-height: 94vh;
+            }
+
+        }
+
+
+        @media (max-width: 500px) {
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .page-subtitle {
+                font-size: 13px;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer button {
+                width: 100%;
+            }
+
+            .recurring-details {
+                grid-template-columns: 1fr;
+            }
+
+            .recurring-top {
+                flex-direction: column;
+            }
+
+            .recurring-amount {
+                font-size: 18px;
+            }
+
+        }
+
+        /* ALTAIR SHARED LIGHT PAGE THEME */
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f5f6fa;
+            color: #171722;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: #11111c;
+            color: #fff;
+            border-right: 1px solid #202032;
+            box-shadow: 2px 0 14px rgba(0, 0, 0, .04);
+        }
+
+        .brand {
+            padding-left: 8px;
+            margin-bottom: 38px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            box-shadow: none;
+            font-size: 18px;
+        }
+
+        .brand-name {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .brand-subtitle {
+            color: #9999aa;
+        }
+
+        .nav-title {
+            color: #77778a;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            padding: 12px;
+            gap: 13px;
+            color: #aaaabb;
+            font-size: 13px;
+            border-radius: 10px;
+        }
+
+        .nav-link:hover {
+            background: #242435;
+            color: #fff;
+            transform: translateX(2px);
+        }
+
+        .nav-link.active {
+            background: #242435;
+            color: #fff;
+            border-left: 3px solid #8b5cf6;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            height: 100vh;
+            padding: 30px 35px;
+            background: #f5f6fa;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f6fa;
+        }
+
+        .main::-webkit-scrollbar-thumb {
+            background: #c7c7d1;
+            border-radius: 10px;
+        }
+
+        .page-title {
+            color: #171722;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .page-subtitle {
+            color: #777789;
+        }
+
+        .company-logo,
+        .company-logo-placeholder {
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 12px;
+        }
+
+        .company-logo {
+            border: 1px solid #e1e1ea;
+            background: #fff;
+        }
+
+        .company-logo-placeholder {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        }
+
+        .company-name {
+            color: #171722;
+        }
+
+        .user-name {
+            color: #777789;
+        }
+
+        .flash {
+            background: #fff;
+            border: 1px solid #e4e4ec;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, .03);
+        }
+
+        .inventory-tabs {
+            background: #fff;
+            border: 1px solid #e6e6ee;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, .035);
+            padding: 7px;
+        }
+
+        .inventory-tab {
+            color: #707080;
+        }
+
+        .inventory-tab:hover {
+            background: #f3f1fa;
+            color: #4f46e5;
+        }
+
+        .inventory-tab.active {
+            background: #f0ebff;
+            color: #7c3aed;
+            border: 1px solid #ddd1ff;
+        }
+
+        .stat-card,
+        .money-card {
+            background: #fff;
+            border: 1px solid #e6e6ee;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .04);
+        }
+
+        .stat-card:hover,
+        .money-card:hover,
+        .recurring-card:hover {
+            border-color: #d9d4e8;
+            transform: translateY(-2px);
+        }
+
+        .stat-label,
+        .money-card-label {
+            color: #777789;
+        }
+
+        .stat-value,
+        .money-card-value {
+            color: #171722;
+        }
+
+        .stat-warning {
+            color: #d97706;
+        }
+
+        .stat-danger,
+        .money-out {
+            color: #dc2626;
+        }
+
+        .stat-money,
+        .money-recurring,
+        .money-investment {
+            color: #7c3aed;
+        }
+
+        .money-total {
+            color: #16a34a;
+        }
+
+        .section-heading {
+            color: #171722;
+        }
+
+        .section-description {
+            color: #777789;
+        }
+
+        .search-box input {
+            background: #fff;
+            border: 1px solid #dedee8;
+            color: #171722;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .02);
+        }
+
+        .search-box input::placeholder {
+            color: #9999a8;
+        }
+
+        .search-box input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .08);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            box-shadow: 0 5px 14px rgba(124, 58, 237, .16);
+        }
+
+        .btn-secondary {
+            background: #f1f1f5;
+            color: #555566;
+            border: 1px solid #dedee8;
+        }
+
+        .table-container {
+            background: #fff;
+            border: 1px solid #e6e6ee;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .035);
+        }
+
+        th {
+            color: #777789;
+            border-bottom: 1px solid #e9e9ef;
+            background: #fafafd;
+        }
+
+        td {
+            color: #4d4d5c;
+            border-bottom: 1px solid #eeeeF3;
+        }
+
+        tbody tr:hover {
+            background: #faf9fd;
+        }
+
+        .item-name {
+            color: #171722;
+        }
+
+        .sku {
+            color: #8a8a9a;
+        }
+
+        .action-btn {
+            background: #f7f7fa;
+            border: 1px solid #dedee8;
+            color: #666677;
+        }
+
+        .action-btn:hover {
+            color: #4f46e5;
+            border-color: #bfb2eb;
+            background: #f6f3ff;
+        }
+
+        .delete-btn:hover {
+            color: #dc2626;
+            border-color: #f0b4bd;
+            background: #fff5f6;
+        }
+
+        .empty {
+            color: #777789;
+        }
+
+        .empty-title {
+            color: #171722;
+        }
+
+        .modal {
+            background: rgba(17, 17, 28, .58);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-content {
+            background: #fff;
+            border: 1px solid #e2e2eb;
+            box-shadow: 0 25px 80px rgba(17, 17, 28, .20);
+        }
+
+        .modal-header h2 {
+            color: #171722;
+        }
+
+        .modal-header p {
+            color: #777789;
+        }
+
+        .close {
+            color: #888899;
+        }
+
+        .close:hover {
+            color: #171722;
+        }
+
+        label {
+            color: #555566;
+        }
+
+        input,
+        select,
+        textarea {
+            background: #fff;
+            border: 1px solid #dcdce6;
+            color: #171722;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .08);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9a9aaa;
+        }
+
+        .cancel-btn {
+            background: #f1f1f5;
+            border: 1px solid #dedee8;
+            color: #555566;
+        }
+
+        .cancel-btn:hover {
+            background: #e9e9ef;
+            color: #171722;
+        }
+
+        .info-box {
+            background: #f7f3ff;
+            border: 1px solid #e4d9ff;
+            color: #68627a;
+        }
+
+        .info-box strong {
+            color: #7c3aed;
+        }
+
+        .recurring-card {
+            background: #fff;
+            border: 1px solid #e6e6ee;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .035);
+        }
+
+        .recurring-name {
+            color: #171722;
+        }
+
+        .recurring-category,
+        .detail-label {
+            color: #858596;
+        }
+
+        .detail-value {
+            color: #4d4d5c;
+        }
+
+        .recurring-details {
+            border-top: 1px solid #eeeeF3;
+        }
+
+        @media(max-width:900px) {
+            .main {
+                width: 100%;
+                margin-left: 0;
+                padding: 24px;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #202032;
+            }
+
+            body {
+                overflow: auto;
+            }
+
+            .main {
+                height: auto;
+                overflow: visible;
+            }
+        }
+
+        @media(max-width:700px) {
+            .main {
+                padding: 18px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .company-area {
+                width: 100%;
+            }
+        }
+
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .inventory-tabs,
+            .btn,
+            .actions,
+            .modal {
+                display: none !important;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                height: auto;
+                padding: 0;
+                overflow: visible;
+                background: #fff;
+            }
+
+            body {
+                background: #fff;
+                overflow: visible;
+            }
+        }
+    </style>
+
+
+    <style id="altair-customer-structure">
+        /* =========================================================
+   ALTAIR CUSTOMER-STYLE INVENTORY STRUCTURE
+   Keeps all inventory functionality, but uses the same
+   light dashboard/customer visual system.
+========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif !important;
+            background: #f5f6fa !important;
+            color: #171722 !important;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 250px !important;
+            height: 100vh !important;
+            background: #11111c !important;
+            color: white !important;
+            padding: 25px 18px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            z-index: 1000 !important;
+            border-right: none !important;
+        }
 
         .sidebar::-webkit-scrollbar {
             width: 5px;
@@ -95,1014 +1564,834 @@
 
         .sidebar::-webkit-scrollbar-thumb {
             background: #36364b;
-
             border-radius: 10px;
         }
 
-
-        /* 
-           COMPANY LOGO
-         */
-
-        .logo {
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-
-            padding-left: 10px;
-
-            margin-bottom: 40px;
-
-            min-width: 0;
+        .brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding-left: 10px !important;
+            margin-bottom: 40px !important;
         }
 
-
-        .logo img,
-        .company-logo-placeholder {
-            width: 40px;
-            height: 40px;
-
-            flex-shrink: 0;
-
-            border-radius: 12px;
-
-            object-fit: cover;
+        .brand-icon {
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+            box-shadow: none !important;
+            font-size: 18px !important;
         }
 
-
-        .logo img {
-            display: block;
-
-            background: #242435;
-
-            border: 1px solid rgba(255, 255, 255, 0.10);
+        .brand-name {
+            color: white !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
         }
 
-
-        .company-logo-placeholder {
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            background:
-                linear-gradient(135deg,
-                    #7c3aed,
-                    #4f46e5);
-
-            color: white;
-
-            font-size: 18px;
-
-            font-weight: 800;
+        .brand-subtitle {
+            color: #77778a !important;
+            font-size: 10px !important;
+            margin-top: 3px !important;
         }
 
-
-        .logo-text {
-            min-width: 0;
+        .nav-title {
+            color: #77778a !important;
+            font-size: 11px !important;
+            text-transform: uppercase !important;
+            margin: 25px 10px 10px !important;
+            letter-spacing: 1px !important;
         }
 
-
-        .logo-text span {
-            display: block;
-
-            color: white;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            white-space: nowrap;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-
-            max-width: 145px;
+        .nav-link {
+            display: flex !important;
+            align-items: center !important;
+            gap: 13px !important;
+            width: 100% !important;
+            padding: 12px !important;
+            margin-bottom: 5px !important;
+            border-radius: 10px !important;
+            color: #aaaabb !important;
+            text-decoration: none !important;
+            font-size: 13px !important;
+            transition: all .2s ease !important;
+            white-space: nowrap !important;
         }
 
-
-        /* 
-           MENU
-         */
-
-        .menu-title {
-            color: #77778a;
-
-            font-size: 11px;
-
-            text-transform: uppercase;
-
-            margin: 25px 10px 10px;
-
-            letter-spacing: 1px;
-        }
-
-
-        /* 
-           NAVIGATION
-         */
-
-        .nav-item {
-            display: flex;
-
-            align-items: center;
-
-            gap: 13px;
-
-            width: 100%;
-
-            padding: 12px;
-
-            margin-bottom: 5px;
-
-            border-radius: 10px;
-
-            color: #aaaabb;
-
-            text-decoration: none;
-
-            font-size: 13px;
-
-            transition: all .2s ease;
-
-            white-space: nowrap;
-        }
-
-
-        .nav-item:hover {
-            background: #242435;
-
-            color: white;
-
+        .nav-link:hover {
+            background: #242435 !important;
+            color: white !important;
             transform: translateX(2px);
         }
 
-
-        .nav-item.active {
-            background: #242435;
-
-            color: white;
-
-            border-left: 3px solid #8b5cf6;
+        .nav-link.active {
+            background: #242435 !important;
+            color: white !important;
+            border-left: 3px solid #8b5cf6 !important;
         }
 
-
-        /* 
-           LOGOUT
-         */
-
-        .logout-link {
-            display: block;
-
-            color: #777;
-
-            text-decoration: none;
-
-            font-size: 11px;
-
-            margin: 25px 10px 10px;
-
-            transition: .2s;
-        }
-
-
-        .logout-link:hover {
-            color: white;
-        }
-
-
-        /* 
-           MAIN
-         */
-
+        /* MAIN */
         .main {
-            margin-left: 250px;
-
-            width: calc(100% - 250px);
-
-            height: 100vh;
-
-            padding: 30px 35px;
-
-            overflow-y: auto;
-
-            overflow-x: hidden;
+            margin-left: 250px !important;
+            width: calc(100% - 250px) !important;
+            height: 100vh !important;
+            padding: 30px 35px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            background: #f5f6fa !important;
         }
-
 
         .main::-webkit-scrollbar {
             width: 8px;
         }
 
-
         .main::-webkit-scrollbar-track {
             background: #f5f6fa;
         }
 
-
         .main::-webkit-scrollbar-thumb {
             background: #c7c7d1;
-
             border-radius: 10px;
         }
 
-
-        /* 
-           PAGE HEADER
-         */
-
-        .page-header {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            margin-bottom: 25px;
+        /* TOP HEADER */
+        .topbar {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 20px !important;
+            margin-bottom: 25px !important;
         }
 
-
-        .page-header h1 {
-            font-size: 26px;
-
-            font-weight: 800;
-
-            letter-spacing: -.5px;
+        .page-title {
+            font-size: 26px !important;
+            font-weight: 800 !important;
+            letter-spacing: -.5px !important;
+            color: #171722 !important;
+            margin-bottom: 0 !important;
         }
 
-
-        .page-header p {
-            color: #777789;
-
-            font-size: 13px;
-
-            margin-top: 6px;
+        .page-subtitle {
+            color: #777789 !important;
+            font-size: 13px !important;
+            margin-top: 6px !important;
         }
 
-
-        /* 
-           BUTTON
-         */
-
-        .btn {
-            border: none;
-
-            outline: none;
-
-            background:
-                linear-gradient(135deg,
-                    #7c3aed,
-                    #6366f1);
-
-            color: white;
-
-            padding: 11px 17px;
-
-            border-radius: 9px;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            cursor: pointer;
-
-            transition: all .2s ease;
-
-            box-shadow:
-                0 5px 15px rgba(124, 58, 237, .18);
+        .company-area {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            max-width: 320px !important;
         }
 
-
-        .btn:hover {
-            transform: translateY(-1px);
-
-            box-shadow:
-                0 7px 20px rgba(124, 58, 237, .25);
+        .company-logo,
+        .company-logo-placeholder {
+            width: 40px !important;
+            height: 40px !important;
+            min-width: 40px !important;
+            border-radius: 12px !important;
         }
 
-
-        .btn:active {
-            transform: translateY(0);
+        .company-logo {
+            object-fit: cover !important;
+            border: 1px solid rgba(0, 0, 0, .08) !important;
         }
 
+        .company-logo-placeholder {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+            color: white !important;
+        }
 
-        /* 
-           STATISTICS
-         */
+        .company-name {
+            color: #171722 !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+
+        .user-name {
+            color: #777789 !important;
+            font-size: 11px !important;
+            margin-top: 4px !important;
+        }
+
+        /* FLASH */
+        .flash {
+            padding: 12px 15px !important;
+            margin-bottom: 18px !important;
+            border-radius: 10px !important;
+            background: white !important;
+            border: 1px solid #e4e4ec !important;
+            color: #555563 !important;
+            font-size: 12px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .03) !important;
+        }
+
+        .flash.success {
+            border-color: #bbf7d0 !important;
+            color: #15803d !important;
+        }
+
+        .flash.error {
+            border-color: #fecaca !important;
+            color: #dc2626 !important;
+        }
+
+        .flash.warning {
+            border-color: #fde68a !important;
+            color: #b45309 !important;
+        }
+
+        /* TABS */
+        .inventory-tabs {
+            display: flex !important;
+            gap: 6px !important;
+            flex-wrap: wrap !important;
+            margin-bottom: 22px !important;
+            padding: 6px !important;
+            background: white !important;
+            border: 1px solid #e7e7ee !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .03) !important;
+        }
+
+        .inventory-tab {
+            border: none !important;
+            background: transparent !important;
+            color: #777789 !important;
+            padding: 11px 14px !important;
+            border-radius: 9px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+
+        .inventory-tab:hover {
+            background: #f5f4fb !important;
+            color: #171722 !important;
+        }
+
+        .inventory-tab.active {
+            background: #242435 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        /* SECTION */
+        .section-heading {
+            color: #171722 !important;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+        }
+
+        .section-description {
+            color: #777789 !important;
+            font-size: 12px !important;
+        }
+
+        /* STATS */
+        .stats,
+        .money-stats {
+            display: grid !important;
+            gap: 18px !important;
+            margin-bottom: 22px !important;
+        }
 
         .stats {
-            display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
-            gap: 18px;
-
-            margin-bottom: 22px;
+            grid-template-columns: repeat(5, 1fr) !important;
         }
 
-
-        .stat-card {
-            background: white;
-
-            padding: 20px;
-
-            border-radius: 16px;
-
-            box-shadow:
-                0 4px 18px rgba(0, 0, 0, .04);
-
-            transition: .2s;
+        .money-stats {
+            grid-template-columns: repeat(4, 1fr) !important;
         }
 
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-
-            box-shadow:
-                0 8px 25px rgba(0, 0, 0, .07);
+        .stat-card,
+        .money-card {
+            background: white !important;
+            border: none !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .04) !important;
+            color: #171722 !important;
+            transition: .2s !important;
         }
 
-
-        .stat-label {
-            color: #777789;
-
-            font-size: 12px;
-
-            font-weight: 500;
+        .stat-card:hover,
+        .money-card:hover {
+            border-color: transparent !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .07) !important;
         }
 
-
-        .stat-card h2 {
-            margin-top: 12px;
-
-            font-size: 24px;
-
-            font-weight: 800;
-
-            letter-spacing: -.5px;
+        .stat-label,
+        .money-card-label {
+            color: #777789 !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            margin-bottom: 0 !important;
         }
 
-
-        .growth {
-            margin-top: 7px;
-
-            font-size: 11px;
-
-            color: #16a34a;
-
-            font-weight: 600;
+        .stat-value,
+        .money-card-value {
+            margin-top: 12px !important;
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            color: #171722 !important;
         }
 
-
-        /* 
-           CARD
-         */
-
-        .card {
-            background: white;
-
-            padding: 22px;
-
-            border-radius: 16px;
-
-            box-shadow:
-                0 4px 18px rgba(0, 0, 0, .04);
-
-            margin-bottom: 20px;
+        .stat-warning {
+            color: #b45309 !important;
         }
 
+        .stat-danger,
+        .money-out {
+            color: #dc2626 !important;
+        }
 
-        /* 
-           SEARCH
-         */
+        .stat-money,
+        .money-recurring {
+            color: #7c3aed !important;
+        }
+
+        .money-investment {
+            color: #8b5cf6 !important;
+        }
+
+        .money-total {
+            color: #16a34a !important;
+        }
+
+        /* TOOLBAR */
+        .toolbar {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 15px !important;
+            margin-bottom: 18px !important;
+        }
 
         .search-box {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            gap: 15px;
-
-            margin-bottom: 20px;
+            flex: 1 !important;
+            max-width: 450px !important;
         }
 
-
-        .search {
-            width: 320px;
-
-            height: 42px;
-
-            padding: 0 14px;
-
-            border:
-                1px solid #e3e3ea;
-
-            border-radius: 9px;
-
-            outline: none;
-
-            background: #fafafd;
-
-            color: #171722;
-
-            font-family: inherit;
-
-            font-size: 12px;
-
-            transition: .2s;
+        .search-box input {
+            width: 100% !important;
+            height: 42px !important;
+            padding: 0 14px !important;
+            border: 1px solid #e3e3ea !important;
+            border-radius: 9px !important;
+            outline: none !important;
+            background: #fafafd !important;
+            color: #171722 !important;
+            font-family: inherit !important;
+            font-size: 12px !important;
         }
 
-
-        .search::placeholder {
-            color: #9999a8;
+        .search-box input:focus {
+            border-color: #8b5cf6 !important;
+            background: white !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .08) !important;
         }
 
-
-        .search:focus {
-            border-color: #8b5cf6;
-
-            background: white;
-
-            box-shadow:
-                0 0 0 3px rgba(139, 92, 246, .08);
+        /* BUTTON */
+        .btn {
+            border: none !important;
+            outline: none !important;
+            background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+            color: white !important;
+            padding: 11px 17px !important;
+            border-radius: 9px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, .18) !important;
         }
 
-
-        /* 
-           TABLE
-         */
-
-        .table-wrapper {
-            width: 100%;
-
-            overflow-x: auto;
+        .btn:hover {
+            opacity: 1 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 7px 20px rgba(124, 58, 237, .25) !important;
         }
 
-
-        .table-wrapper::-webkit-scrollbar {
-            height: 6px;
+        .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #ef4444) !important;
         }
 
-
-        .table-wrapper::-webkit-scrollbar-thumb {
-            background: #c7c7d1;
-
-            border-radius: 10px;
+        .btn-secondary,
+        .cancel-btn {
+            background: #f1f1f5 !important;
+            border: 1px solid #e1e1e8 !important;
+            color: #555563 !important;
         }
 
+        .btn-secondary:hover,
+        .cancel-btn:hover {
+            background: #e5e5eb !important;
+            color: #171722 !important;
+        }
+
+        /* TABLE CARD */
+        .table-container {
+            background: white !important;
+            border: none !important;
+            border-radius: 16px !important;
+            overflow-x: auto !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .04) !important;
+        }
 
         table {
-            width: 100%;
-
-            border-collapse: collapse;
-
-            min-width: 750px;
-
-            font-size: 12px;
+            width: 100% !important;
+            border-collapse: collapse !important;
+            min-width: 900px !important;
+            font-size: 12px !important;
         }
-
-
-        thead {
-            background: #f8f8fb;
-        }
-
 
         th {
-            text-align: left;
-
-            padding: 14px 13px;
-
-            color: #777789;
-
-            font-size: 10px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: .5px;
+            text-align: left !important;
+            background: #f8f8fb !important;
+            color: #777789 !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: .5px !important;
+            padding: 14px 13px !important;
+            border-bottom: 1px solid #eeeef3 !important;
         }
-
 
         td {
-            padding: 16px 13px;
-
-            border-bottom:
-                1px solid #eeeef3;
-
-            color: #555563;
-
-            white-space: nowrap;
+            padding: 16px 13px !important;
+            border-bottom: 1px solid #eeeef3 !important;
+            color: #555563 !important;
+            font-size: 12px !important;
+            background: white !important;
         }
-
-
-        tbody tr {
-            transition: background .2s ease;
-        }
-
 
         tbody tr:hover {
-            background: #faf9ff;
+            background: #faf9ff !important;
         }
 
-
-        tbody tr:last-child td {
-            border-bottom: none;
+        tbody tr:hover td {
+            background: #faf9ff !important;
         }
 
-
-        /* 
-           CUSTOMER
-         */
-
-        .customer {
-            color: #171722;
-
-            font-weight: 700;
+        .item-name {
+            color: #171722 !important;
+            font-weight: 700 !important;
         }
 
+        .sku {
+            color: #9999a8 !important;
+        }
 
-        /* 
-           STATUS
-         */
-
+        /* BADGES */
+        .type,
         .status {
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 5px 10px;
-
-            border-radius: 20px;
-
-            font-size: 10px;
-
-            font-weight: 700;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 5px 10px !important;
+            border-radius: 20px !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
         }
 
+        .type {
+            background: #ede9fe !important;
+            color: #7c3aed !important;
+        }
+
+        .type.service {
+            background: #fce7f3 !important;
+            color: #be185d !important;
+        }
 
         .status.active {
-            background: #dcfce7;
-
-            color: #15803d;
+            background: #dcfce7 !important;
+            color: #15803d !important;
         }
 
-
-        .status.pending {
-            background: #fef3c7;
-
-            color: #b45309;
+        .status.inactive {
+            background: #f3f4f6 !important;
+            color: #6b7280 !important;
         }
 
-
-        .status.overdue {
-            background: #fee2e2;
-
-            color: #dc2626;
+        .status.paused {
+            background: #fef3c7 !important;
+            color: #b45309 !important;
         }
 
-
-        /* 
-           EMPTY STATE
-         */
-
-        .empty-state {
-            text-align: center;
-
-            padding: 50px 20px;
-
-            color: #777789;
+        .status.completed {
+            background: #ede9fe !important;
+            color: #7c3aed !important;
         }
 
-
-        .empty-icon {
-            font-size: 35px;
-
-            margin-bottom: 12px;
+        .status.ended {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
         }
 
-
-        .empty-state h3 {
-            color: #171722;
-
-            font-size: 15px;
-
-            margin-bottom: 6px;
+        .stock-good {
+            color: #16a34a !important;
         }
 
-
-        .empty-state p {
-            font-size: 12px;
+        .stock-low {
+            color: #b45309 !important;
         }
 
-
-        /* 
-           RESPONSIVE TABLET
-         */
-
-        @media (max-width: 1100px) {
-
-            .stats {
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
+        .stock-out,
+        .amount-out {
+            color: #dc2626 !important;
         }
 
-
-        /* 
-           MOBILE
-         */
-
-        @media (max-width: 700px) {
-
-            .sidebar {
-                width: 70px;
-
-                padding: 20px 10px;
-            }
-
-
-            .logo {
-                justify-content: center;
-
-                padding: 0;
-            }
-
-
-            .logo-text,
-            .nav-item span,
-            .menu-title,
-            .logout-link {
-                display: none;
-            }
-
-
-            .nav-item {
-                justify-content: center;
-
-                padding: 12px 8px;
-            }
-
-
-            .main {
-                margin-left: 70px;
-
-                width: calc(100% - 70px);
-
-                padding: 20px;
-            }
-
-
-            .stats {
-                grid-template-columns: 1fr;
-            }
-
-
-            .page-header {
-                align-items: flex-start;
-
-                gap: 15px;
-            }
-
-
-            .page-header h1 {
-                font-size: 21px;
-            }
-
-
-            .page-header p {
-                font-size: 11px;
-            }
-
-
-            .search-box {
-                flex-direction: column;
-
-                align-items: stretch;
-            }
-
-
-            .search {
-                width: 100%;
-            }
-
-
-            .search-box .btn {
-                width: 100%;
-            }
-
-
-            .card {
-                padding: 17px;
-            }
-
+        .amount-investment {
+            color: #7c3aed !important;
         }
 
-
-        /* 
-           SMALL MOBILE
-         */
-
-        @media (max-width: 450px) {
-
-            .main {
-                padding: 15px;
-            }
-
-
-            .page-header {
-                flex-direction: column;
-            }
-
-
-            .page-header .btn {
-                width: 100%;
-            }
-
-
-            .stat-card h2 {
-                font-size: 21px;
-            }
-
+        .amount-positive {
+            color: #16a34a !important;
         }
 
-        /* 
-   CUSTOMER MODAL
- */
+        /* ACTIONS */
+        .action-btn {
+            border: 1px solid #e1e1e8 !important;
+            background: #f8f8fb !important;
+            color: #555563 !important;
+            border-radius: 7px !important;
+            padding: 7px 10px !important;
+        }
 
+        .action-btn:hover {
+            color: #7c3aed !important;
+            border-color: #8b5cf6 !important;
+            background: #faf9ff !important;
+        }
+
+        .delete-btn:hover {
+            border-color: #dc2626 !important;
+            color: #dc2626 !important;
+        }
+
+        /* EMPTY */
+        .empty {
+            text-align: center !important;
+            padding: 50px 20px !important;
+            color: #777789 !important;
+        }
+
+        .empty-title {
+            color: #171722 !important;
+            font-size: 15px !important;
+            margin-bottom: 6px !important;
+        }
+
+        .empty-text {
+            color: #777789 !important;
+            font-size: 12px !important;
+        }
+
+        /* INFO */
+        .info-box {
+            background: #faf9ff !important;
+            border: 1px solid #e8e1fb !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            color: #777789 !important;
+            font-size: 12px !important;
+        }
+
+        .info-box strong {
+            color: #7c3aed !important;
+        }
+
+        /* RECURRING */
+        .recurring-grid {
+            gap: 18px !important;
+        }
+
+        .recurring-card {
+            background: white !important;
+            border: none !important;
+            border-radius: 16px !important;
+            padding: 20px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .04) !important;
+        }
+
+        .recurring-card:hover {
+            border-color: transparent !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .07) !important;
+        }
+
+        .recurring-name {
+            color: #171722 !important;
+        }
+
+        .recurring-category,
+        .detail-label {
+            color: #777789 !important;
+        }
+
+        .recurring-amount {
+            color: #7c3aed !important;
+        }
+
+        .recurring-details {
+            border-top: 1px solid #eeeef3 !important;
+        }
+
+        .detail-value {
+            color: #555563 !important;
+        }
+
+        /* MODALS */
         .modal {
-            position: fixed;
-
-            inset: 0;
-
-            background: rgba(17, 17, 28, 0.65);
-
-            backdrop-filter: blur(6px);
-
-            display: none;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding: 20px;
-
-            z-index: 5000;
+            background: rgba(17, 17, 28, .65) !important;
+            backdrop-filter: blur(6px) !important;
         }
-
-
-        .modal.show {
-            display: flex;
-        }
-
 
         .modal-content {
-            width: 100%;
-
-            max-width: 650px;
-
-            max-height: 90vh;
-
-            overflow-y: auto;
-
-            background: white;
-
-            border-radius: 20px;
-
-            padding: 25px;
-
-            box-shadow:
-                0 25px 80px rgba(0, 0, 0, .25);
-
-            animation: modalIn .2s ease;
+            background: white !important;
+            border: none !important;
+            border-radius: 20px !important;
+            padding: 25px !important;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .25) !important;
         }
-
-
-        @keyframes modalIn {
-
-            from {
-                opacity: 0;
-                transform: translateY(15px) scale(.98);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-
-        }
-
-
-        .modal-header {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: flex-start;
-
-            margin-bottom: 25px;
-        }
-
 
         .modal-header h2 {
-            font-size: 21px;
-
-            font-weight: 800;
+            color: #171722 !important;
+            font-size: 21px !important;
         }
-
 
         .modal-header p {
-            margin-top: 5px;
-
-            color: #777789;
-
-            font-size: 12px;
+            color: #777789 !important;
         }
 
-
-        .modal-close {
-            width: 35px;
-
-            height: 35px;
-
-            border: none;
-
-            border-radius: 10px;
-
-            background: #f3f3f7;
-
-            color: #555563;
-
-            font-size: 24px;
-
-            cursor: pointer;
+        .close {
+            color: #555563 !important;
+            background: #f3f3f7 !important;
+            border-radius: 10px !important;
+            width: 35px !important;
+            height: 35px !important;
         }
 
-
-        .modal-close:hover {
-            background: #e8e8ef;
-
-            color: #171722;
+        .close:hover {
+            background: #e8e8ef !important;
+            color: #171722 !important;
         }
 
-
-        /* FORM */
-
-        .form-grid {
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 17px;
+        label {
+            color: #555563 !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
         }
-
-
-        .form-group {
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 7px;
-        }
-
-
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
-
-
-        .form-group label {
-            font-size: 11px;
-
-            font-weight: 700;
-
-            color: #555563;
-        }
-
 
         .form-group input,
         .form-group select,
-        .form-group textarea {
-            width: 100%;
-
-            border: 1px solid #e1e1e8;
-
-            border-radius: 9px;
-
-            padding: 11px 12px;
-
-            background: #fafafd;
-
-            color: #171722;
-
-            font-family: inherit;
-
-            font-size: 12px;
-
-            outline: none;
-
-            transition: .2s;
+        .form-group textarea,
+        input,
+        select,
+        textarea {
+            border: 1px solid #e1e1e8 !important;
+            border-radius: 9px !important;
+            padding: 11px 12px !important;
+            background: #fafafd !important;
+            color: #171722 !important;
+            font-size: 12px !important;
         }
-
 
         .form-group input:focus,
         .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: #8b5cf6;
-
-            background: white;
-
-            box-shadow:
-                0 0 0 3px rgba(139, 92, 246, .08);
+        .form-group textarea:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #8b5cf6 !important;
+            background: white !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .08) !important;
         }
 
-
-        .form-group textarea {
-            resize: vertical;
+        input::placeholder,
+        textarea::placeholder {
+            color: #9999a8 !important;
         }
 
-
-        /* ACTIONS */
-
-        .modal-actions {
-            display: flex;
-
-            justify-content: flex-end;
-
-            gap: 10px;
-
-            margin-top: 25px;
-
-            padding-top: 18px;
-
-            border-top: 1px solid #eeeef3;
+        .modal-footer {
+            border-top: 1px solid #eeeef3 !important;
+            padding-top: 18px !important;
         }
-
 
         .cancel-btn {
-            border: none;
-
-            background: #f1f1f5;
-
-            color: #555563;
-
-            padding: 11px 17px;
-
-            border-radius: 9px;
-
-            font-family: inherit;
-
-            font-size: 12px;
-
-            font-weight: 600;
-
-            cursor: pointer;
+            padding: 11px 17px !important;
         }
 
-
-        .cancel-btn:hover {
-            background: #e5e5eb;
-        }
-
-
-        @media (max-width: 600px) {
-
-            .modal-content {
-                padding: 20px;
-
-                max-height: 95vh;
+        /* MOBILE — same behavior as Customers page */
+        @media (max-width: 1200px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr) !important;
             }
 
+            .money-stats {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                border-right: none !important;
+                border-bottom: 1px solid #202032 !important;
+            }
+
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .topbar {
+                align-items: flex-start !important;
+                flex-direction: column !important;
+            }
+
+            .company-area {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .recurring-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 70px !important;
+                height: 100vh !important;
+                position: fixed !important;
+                padding: 20px 10px !important;
+                border-bottom: none !important;
+            }
+
+            .brand {
+                justify-content: center !important;
+                padding: 0 !important;
+            }
+
+            .brand-name,
+            .brand-subtitle,
+            .nav-title {
+                display: none !important;
+            }
+
+            .nav-link {
+                justify-content: center !important;
+                padding: 12px 8px !important;
+            }
+
+            .main {
+                margin-left: 70px !important;
+                width: calc(100% - 70px) !important;
+                height: 100vh !important;
+                padding: 20px !important;
+                overflow-y: auto !important;
+            }
+
+            .stats,
+            .money-stats {
+                grid-template-columns: 1fr !important;
+            }
+
+            .inventory-tabs {
+                flex-direction: column !important;
+            }
+
+            .inventory-tab {
+                width: 100% !important;
+                text-align: left !important;
+            }
+
+            .toolbar,
+            .section-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .search-box {
+                max-width: none !important;
+                width: 100% !important;
+            }
+
+            .toolbar .btn,
+            .section-header .btn {
+                width: 100% !important;
+            }
 
             .form-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
             }
-
 
             .form-group.full {
-                grid-column: auto;
+                grid-column: auto !important;
             }
 
-
-            .modal-actions {
-                flex-direction: column-reverse;
+            .modal {
+                padding: 10px !important;
             }
 
+            .modal-content {
+                padding: 20px !important;
+                max-height: 95vh !important;
+            }
+        }
 
-            .modal-actions button {
-                width: 100%;
+        @media (max-width: 450px) {
+            .main {
+                padding: 15px !important;
             }
 
+            .page-title {
+                font-size: 21px !important;
+            }
+
+            .company-area {
+                max-width: 100% !important;
+            }
+
+            .modal-footer {
+                flex-direction: column-reverse !important;
+            }
+
+            .modal-footer button {
+                width: 100% !important;
+            }
+        }
+
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .inventory-tabs,
+            .btn,
+            .actions,
+            .modal {
+                display: none !important;
+            }
+
+            .main {
+                margin-left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+
+            body {
+                background: white !important;
+                overflow: visible !important;
+            }
         }
     </style>
 
@@ -1112,28 +2401,155 @@
 <body>
 
 
-    <div class="app">
+    <!-- 
+     SIDEBAR
+ -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                A
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    Altair Business
+                </div>
+
+                <div class="brand-subtitle">
+                    Business Suite
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="nav-title">
+            Main
+        </div>
+
+
+        <a href="{{ url_for('dashboard') }}" class="nav-link">
+            📊 Dashboard
+        </a>
+
+
+        <a href="{{ url_for('customer') }}" class="nav-link">
+            👥 Customers
+        </a>
+
+
+        <a href="{{ url_for('invoice') }}" class="nav-link">
+            🧾 Invoices
+        </a>
+
+
+        <a href="{{ url_for('items') }}" class="nav-link active">
+            📦 Inventory
+        </a>
+
+
+        <div class="nav-title">
+            Business
+        </div>
+
+
+        <a href="#" class="nav-link">
+            💳 Transactions
+        </a>
+
+
+        <a href="{{ url_for('ai_leads') }}" class="nav-link">
+            🤖
+            <span>AI Lead Finder</span>
+        </a>
+
+
+
+        <a href="#" class="nav-link">
+            📈 Facebook Analytics
+        </a>
+
+
+        <a href="#" class="nav-link">
+            💬 WhatsApp Analytics
+        </a>
+
+
+        <div class="nav-title">
+            Settings
+        </div>
+
+
+        <a href="{{ url_for('settings') }}" class="nav-link">
+            🏢 Company Profile
+        </a>
+
+
+        <a href="#" class="nav-link">
+            📊 Business Analytics
+        </a>
+
+
+        <a href="#" class="nav-link">
+            🔮 Forecasting
+        </a>
+
+
+        <a href="{{ url_for('settings') }}" class="nav-link">
+            ⚙ Settings
+        </a>
+
+
+        <a href="{{ url_for('logout') }}" class="nav-link">
+            🚪 Logout
+        </a>
+
+    </aside>
+
+
+
+    <!-- 
+     MAIN
+ -->
+
+    <main class="main">
 
 
         <!-- 
-         SIDEBAR
+         TOPBAR
      -->
 
-        <aside class="sidebar">
+        <div class="topbar">
+
+            <div class="title-area">
+
+                <h1 class="page-title">
+                    Inventory & Money Management
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage products, services, expenses, investments and recurring payments.
+                </p>
+
+            </div>
 
 
-            <!-- COMPANY -->
-
-            <div class="logo">
+            <div class="company-area">
 
                 {% if company and company.logo %}
 
-                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" alt="{{ company.company_name }}">
+                <img src="{{ url_for('company_logo') }}" class="company-logo"
+                    alt="{{ company.company_name|default('Company') }}">
 
                 {% elif company %}
 
                 <div class="company-logo-placeholder">
-                    {{ company.company_name[0] }}
+                    {{ company.company_name[0]|upper if company.company_name else "A" }}
                 </div>
 
                 {% else %}
@@ -1145,229 +2561,98 @@
                 {% endif %}
 
 
-                <div class="logo-text">
+                <div>
 
-                    <span>
+                    <div class="company-name">
+                        {{ company.company_name if company else "Your Company" }}
+                    </div>
 
-                        {% if company %}
-
-                        {{ company.company_name }}
-
-                        {% else %}
-
-                        Altair Business Suite
-
-                        {% endif %}
-
-                    </span>
+                    <div class="user-name">
+                        {{ user_name|default("Administrator") }}
+                    </div>
 
                 </div>
 
             </div>
 
-
-            <!-- MAIN MENU -->
-
-            <div class="menu-title">
-                Main
-            </div>
-
-
-            <!-- DASHBOARD -->
-
-            <a href="{{ url_for('dashboard') }}" class="nav-item">
-
-                📊
-
-                <span>
-                    Dashboard
-                </span>
-
-            </a>
-
-
-            <!-- CUSTOMERS -->
-
-            <a href="{{ url_for('customer') }}" class="nav-item active">
-
-                👥
-
-                <span>
-                    Customers
-                </span>
-
-            </a>
-
-
-            <!-- INVOICES -->
-
-            <a href="{{ url_for('invoice') }}" class="nav-item">
-
-                🧾
-
-                <span>
-                    Invoices
-                </span>
-
-            </a>
-
-
-            <!-- INVENTORY -->
-
-            <a href="{{ url_for('items') }}" class="nav-item">
-
-                📦
-
-                <span>
-                    Inventory
-                </span>
-
-            </a>
-
-
-            <!-- TRANSACTIONS -->
-
-            <a href="#" class="nav-item">
-
-                💳
-
-                <span>
-                    Transactions
-                </span>
-
-            </a>
-
-
-            <!-- INTELLIGENCE -->
-
-            <div class="menu-title">
-                Intelligence
-            </div>
-
-
-            <a href="{{ url_for('ai_leads') }}" class="nav-item">
-                🤖
-                <span>AI Lead Finder</span>
-            </a>
-
-
-
-            <a href="#" class="nav-item">
-
-                📈
-
-                <span>
-                    Analytics
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                🔮
-
-                <span>
-                    Forecasting
-                </span>
-
-            </a>
-
-
-            <!-- SYSTEM -->
-
-            <div class="menu-title">
-                System
-            </div>
-
-
-            <a href="{{ url_for('settings') }}"
-                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
-
-                ⚙️
-
-                <span>
-                    Settings
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                🎓
-
-                <span>
-                    Academy
-                </span>
-
-            </a>
-
-
-            <!-- LOGOUT -->
-
-            <a href="{{ url_for('logout') }}" class="logout-link">
-                Logout
-            </a>
-
-
-        </aside>
+        </div>
 
 
 
         <!-- 
-         MAIN CONTENT
+         FLASH MESSAGES
      -->
 
-        <main class="main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
 
+        {% if messages %}
 
-            <!-- PAGE HEADER -->
+        {% for category, message in messages %}
 
-            <div class="page-header">
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
 
+        {% endfor %}
 
-                <div>
+        {% endif %}
 
-                    <h1>
-                        Customers
-                    </h1>
-
-                    <p>
-                        Manage your customers and relationships.
-                    </p>
-
-                </div>
-
-
-                <button type="button" class="btn" onclick="openCustomerModal()">
-                    + Add Customer
-                </button>
-
-
-            </div>
+        {% endwith %}
 
 
 
-            <!-- 
-             CUSTOMER STATISTICS
-         -->
+        <!-- 
+         TABS
+     -->
+
+        <div class="inventory-tabs">
+
+            <button type="button" class="inventory-tab active" onclick="showSection('products', this)">
+                📦 Products & Services
+            </button>
+
+
+            <button type="button" class="inventory-tab" onclick="showSection('expenses', this)">
+                💸 Expenses
+            </button>
+
+
+            <button type="button" class="inventory-tab" onclick="showSection('investments', this)">
+                📈 Investments
+            </button>
+
+
+            <button type="button" class="inventory-tab" onclick="showSection('recurring', this)">
+                🔄 Recurring Payments
+            </button>
+
+
+            <button type="button" class="inventory-tab" onclick="showSection('records', this)">
+                📋 Money Out Records
+            </button>
+
+        </div>
+
+
+
+        <!-- 
+         PRODUCTS & SERVICES
+     -->
+
+        <section id="productsSection" class="inventory-section active">
+
 
             <section class="stats">
 
 
                 <div class="stat-card">
 
-                    <span class="stat-label">
-                        Total Customers
-                    </span>
+                    <div class="stat-label">
+                        Total Items
+                    </div>
 
-                    <h2>
-                        {{ total_customers }}
-                    </h2>
-
-                    <div class="growth">
-                        Your customers
+                    <div class="stat-value">
+                        {{ total_items|default(0) }}
                     </div>
 
                 </div>
@@ -1375,16 +2660,12 @@
 
                 <div class="stat-card">
 
-                    <span class="stat-label">
-                        New Customers
-                    </span>
+                    <div class="stat-label">
+                        Products
+                    </div>
 
-                    <h2>
-                        {{ new_customers }}
-                    </h2>
-
-                    <div class="growth">
-                        This month
+                    <div class="stat-value">
+                        {{ total_products|default(0) }}
                     </div>
 
                 </div>
@@ -1392,16 +2673,12 @@
 
                 <div class="stat-card">
 
-                    <span class="stat-label">
-                        Active Customers
-                    </span>
+                    <div class="stat-label">
+                        Services
+                    </div>
 
-                    <h2>
-                        {{ active_customers }}
-                    </h2>
-
-                    <div class="growth">
-                        Currently active
+                    <div class="stat-value">
+                        {{ total_services|default(0) }}
                     </div>
 
                 </div>
@@ -1409,273 +2686,1350 @@
 
                 <div class="stat-card">
 
-                    <span class="stat-label">
-                        Average Value
-                    </span>
+                    <div class="stat-label">
+                        Low Stock
+                    </div>
 
-                    <h2>
-                        R{{ "%.2f"|format(average_value|float) }}
-                    </h2>
-
-                    <div class="growth">
-                        Customer value
+                    <div class="stat-value stat-warning">
+                        {{ low_stock|default(0) }}
                     </div>
 
                 </div>
 
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        Inventory Value
+                    </div>
+
+                    <div class="stat-value stat-money">
+                        R{{ inventory_value|default(0)|money }}
+                    </div>
+
+                </div>
 
             </section>
 
 
 
-            <!-- 
-             CUSTOMER TABLE
-         -->
-
-            <div class="card">
-
+            <div class="toolbar">
 
                 <div class="search-box">
 
-
-                    <input type="text" id="customerSearch" class="search" placeholder="Search customers..."
-                        autocomplete="off">
-
-
-                    <button type="button" class="btn" onclick="clearSearch()">
-                        Clear
-                    </button>
-
+                    <input type="text" id="searchInput" placeholder="Search products, services, SKU..."
+                        oninput="searchInventory()">
 
                 </div>
 
 
-
-                <div class="table-wrapper">
-
-
-                    <table id="customerTable">
-
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    Customer
-                                </th>
-
-                                <th>
-                                    Email
-                                </th>
-
-                                <th>
-                                    Phone
-                                </th>
-
-                                <th>
-                                    Orders
-                                </th>
-
-                                <th>
-                                    Total Spent
-                                </th>
-
-                                <th>
-                                    Status
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            {% if customers %}
-
-                            {% for customer in customers %}
-
-                            <tr>
-
-                                <td>
-                                    <div class="customer">
-                                        {{ customer.name }}
-                                    </div>
-                                </td>
-
-                                <td>
-                                    {{ customer.email or "—" }}
-                                </td>
-
-                                <td>
-                                    {{ customer.phone or "—" }}
-                                </td>
-
-                                <td>
-                                    {{ customer.orders or 0 }}
-                                </td>
-
-                                <td>
-                                    R{{ "%.2f"|format(customer.total_spent|float) }}
-                                </td>
-
-                                <td>
-
-                                    {% if customer.status == "Active" %}
-
-                                    <span class="status active">
-                                        Active
-                                    </span>
-
-                                    {% elif customer.status == "Pending" %}
-
-                                    <span class="status pending">
-                                        Pending
-                                    </span>
-
-                                    {% else %}
-
-                                    <span class="status overdue">
-                                        {{ customer.status }}
-                                    </span>
-
-                                    {% endif %}
-
-                                </td>
-
-                            </tr>
-
-                            {% endfor %}
-
-                            {% else %}
-
-                            <tr>
-
-                                <td colspan="6">
-
-                                    <div class="empty-state">
-
-                                        <div class="empty-icon">
-                                            👥
-                                        </div>
-
-                                        <h3>
-                                            No customers yet
-                                        </h3>
-
-                                        <p>
-                                            Add your first customer to start
-                                            managing your customer relationships.
-                                        </p>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                            {% endif %}
-
-                        </tbody>
-
-                    </table>
-
-
-                </div>
-
+                <button type="button" class="btn" onclick="openAddModal()">
+                    + Add Item
+                </button>
 
             </div>
 
 
-        </main>
+
+            <div class="table-container">
+
+                <table id="inventoryTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Stock</th>
+                            <th>Cost</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
 
 
-    </div>
+                    <tbody>
+
+                        {% if inventory %}
+
+                        {% for item in inventory %}
+
+                        <tr class="inventory-row">
+
+                            <td>
+
+                                <div class="item-name">
+                                    {{ item.item_name }}
+                                </div>
+
+                                {% if item.sku %}
+
+                                <div class="sku">
+                                    SKU: {{ item.sku }}
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if item.item_type == "Service" %}
+
+                                <span class="type service">
+                                    Service
+                                </span>
+
+                                {% else %}
+
+                                <span class="type">
+                                    Product
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ item.category or "—" }}
+                            </td>
+
+
+                            <td>
+
+                                {% if item.item_type == "Service" %}
+
+                                <span class="stock-good">
+                                    N/A
+                                </span>
+
+                                {% elif item.quantity|default(0)|float <= 0 %} <span class="stock-out">
+                                    Out of stock
+                                    </span>
+
+                                    {% elif item.quantity|default(0)|float <= item.low_stock_level|default(5)|float %}
+                                        <span class="stock-low">
+                                        {{ item.quantity }}
+                                        </span>
+
+                                        {% else %}
+
+                                        <span class="stock-good">
+                                            {{ item.quantity }}
+                                        </span>
+
+                                        {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                R{{ item.cost_price|default(0)|money }}
+                            </td>
+
+
+                            <td>
+                                R{{ item.selling_price|default(0)|money }}
+                            </td>
+
+
+                            <td>
+
+                                {% if item.status == "Active" %}
+
+                                <span class="status active">
+                                    Active
+                                </span>
+
+                                {% elif item.status == "Paused" %}
+
+                                <span class="status paused">
+                                    Paused
+                                </span>
+
+                                {% elif item.status == "Completed" %}
+
+                                <span class="status completed">
+                                    Completed
+                                </span>
+
+                                {% else %}
+
+                                <span class="status inactive">
+                                    {{ item.status or "Inactive" }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="actions">
+
+                                    <button type="button" class="action-btn" onclick='openEditModal({{ item|tojson }})'>
+                                        Edit
+                                    </button>
+
+
+                                    <form method="POST" action="{{ url_for('delete_item', item_id=item.id) }}"
+                                        onsubmit="return confirm('Delete this item? This action cannot be undone.');">
+
+                                        <button type="submit" class="action-btn delete-btn">
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="8">
+
+                                <div class="empty">
+
+                                    <div class="empty-icon">
+                                        📦
+                                    </div>
+
+                                    <div class="empty-title">
+                                        No inventory items yet
+                                    </div>
+
+                                    <div class="empty-text">
+                                        Add your first product or service.
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 
+         EXPENSES
+     -->
+
+        <section id="expensesSection" class="inventory-section">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2 class="section-heading">
+                        Business Expenses
+                    </h2>
+
+                    <p class="section-description">
+                        Track money spent on running your business.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn" onclick="openExpenseModal()">
+                    + Add Expense
+                </button>
+
+            </div>
+
+
+
+            <div class="money-stats">
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Total Expenses
+                    </div>
+
+                    <div class="money-card-value money-out">
+                        R{{ total_expenses|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        This Month
+                    </div>
+
+                    <div class="money-card-value money-out">
+                        R{{ month_expenses|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Expense Records
+                    </div>
+
+                    <div class="money-card-value">
+                        {{ expense_count|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Monthly Recurring
+                    </div>
+
+                    <div class="money-card-value money-recurring">
+                        R{{ monthly_recurring|default(0)|money }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="table-container">
+
+                <table id="expenseTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Expense</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Payment Method</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% if expenses %}
+
+                        {% for expense in expenses %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="item-name">
+                                    {{ expense.expense_name }}
+                                </div>
+
+                                {% if expense.description %}
+
+                                <div class="sku">
+                                    {{ expense.description }}
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ expense.category or "Other" }}
+                            </td>
+
+
+                            <td>
+                                {{ expense.expense_date or "—" }}
+                            </td>
+
+
+                            <td>
+                                {{ expense.payment_method or "—" }}
+                            </td>
+
+
+                            <td class="amount-out">
+                                R{{ expense.amount|default(0)|money }}
+                            </td>
+
+
+                            <td>
+
+                                <form method="POST" action="{{ url_for('delete_expense', expense_id=expense.id) }}"
+                                    onsubmit="return confirm('Delete this expense? This action cannot be undone.');">
+
+                                    <button type="submit" class="action-btn delete-btn">
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="6">
+
+                                <div class="empty">
+
+                                    <div class="empty-icon">
+                                        💸
+                                    </div>
+
+                                    <div class="empty-title">
+                                        No expenses recorded
+                                    </div>
+
+                                    <div class="empty-text">
+                                        Add your first business expense.
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 
+         INVESTMENTS
+     -->
+
+        <section id="investmentsSection" class="inventory-section">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2 class="section-heading">
+                        Investments
+                    </h2>
+
+                    <p class="section-description">
+                        Track money invested into assets, projects and opportunities.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn" onclick="openInvestmentModal()">
+                    + Add Investment
+                </button>
+
+            </div>
+
+
+
+            <div class="money-stats">
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Total Invested
+                    </div>
+
+                    <div class="money-card-value money-investment">
+                        R{{ total_investments|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Expected Returns
+                    </div>
+
+                    <div class="money-card-value money-total">
+                        R{{ expected_returns|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Investment Count
+                    </div>
+
+                    <div class="money-card-value">
+                        {{ investment_count|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Active Investments
+                    </div>
+
+                    <div class="money-card-value money-investment">
+                        {{ active_investments|default(0) }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="table-container">
+
+                <table id="investmentTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Investment</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Expected Return</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% if investments %}
+
+                        {% for investment in investments %}
+
+                        <tr>
+
+                            <td>
+
+                                <div class="item-name">
+                                    {{ investment.investment_name }}
+                                </div>
+
+                                {% if investment.description %}
+
+                                <div class="sku">
+                                    {{ investment.description }}
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ investment.category or "Other" }}
+                            </td>
+
+
+                            <td>
+                                {{ investment.investment_date or "—" }}
+                            </td>
+
+
+                            <td class="amount-investment">
+                                R{{ investment.amount|default(0)|money }}
+                            </td>
+
+
+                            <td class="amount-positive">
+                                R{{ investment.expected_return|default(0)|money }}
+                            </td>
+
+
+                            <td>
+
+                                {% if investment.status == "Active" %}
+
+                                <span class="status active">
+                                    Active
+                                </span>
+
+                                {% elif investment.status == "Completed" %}
+
+                                <span class="status completed">
+                                    Completed
+                                </span>
+
+                                {% elif investment.status == "Paused" %}
+
+                                <span class="status paused">
+                                    Paused
+                                </span>
+
+                                {% else %}
+
+                                <span class="status inactive">
+                                    {{ investment.status or "Inactive" }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <form method="POST"
+                                    action="{{ url_for('delete_investment', investment_id=investment.id) }}"
+                                    onsubmit="return confirm('Delete this investment? This action cannot be undone.');">
+
+                                    <button type="submit" class="action-btn delete-btn">
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="7">
+
+                                <div class="empty">
+
+                                    <div class="empty-icon">
+                                        📈
+                                    </div>
+
+                                    <div class="empty-title">
+                                        No investments recorded
+                                    </div>
+
+                                    <div class="empty-text">
+                                        Add your first investment.
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 
+         RECURRING PAYMENTS
+     -->
+
+        <section id="recurringSection" class="inventory-section">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2 class="section-heading">
+                        Recurring Payments
+                    </h2>
+
+                    <p class="section-description">
+                        Manage payments that repeat automatically.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="btn" onclick="openRecurringModal()">
+                    + Add Recurring Payment
+                </button>
+
+            </div>
+
+
+
+            <div class="info-box">
+
+                <strong>Automatic recording:</strong>
+
+                Add rent, internet, software subscriptions, insurance,
+                salaries or other repeating payments once. When the payment
+                becomes due, Altair Business Suite can automatically create
+                the corresponding money-out record.
+
+            </div>
+
+
+
+            <div class="money-stats">
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Monthly Recurring Cost
+                    </div>
+
+                    <div class="money-card-value money-recurring">
+                        R{{ monthly_recurring|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Active Payments
+                    </div>
+
+                    <div class="money-card-value">
+                        {{ active_recurring|default(0) }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Next Payment
+                    </div>
+
+                    <div class="money-card-value">
+                        {{ next_payment_date|default("—") }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Recurring Records
+                    </div>
+
+                    <div class="money-card-value money-recurring">
+                        {{ recurring_record_count|default(0) }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            {% if recurring_payments %}
+
+            <div class="recurring-grid">
+
+                {% for payment in recurring_payments %}
+
+                <div class="recurring-card">
+
+                    <div class="recurring-top">
+
+                        <div>
+
+                            <div class="recurring-name">
+                                {{ payment.payment_name }}
+                            </div>
+
+                            <div class="recurring-category">
+                                {{ payment.category or "Other" }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="recurring-amount">
+                            R{{ payment.amount|default(0)|money }}
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="recurring-details">
+
+
+                        <div>
+
+                            <div class="detail-label">
+                                Frequency
+                            </div>
+
+                            <div class="detail-value">
+                                {{ payment.frequency or "Monthly" }}
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="detail-label">
+                                Next Payment
+                            </div>
+
+                            <div class="detail-value">
+                                {{ payment.next_payment_date or "—" }}
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="detail-label">
+                                Payment Method
+                            </div>
+
+                            <div class="detail-value">
+                                {{ payment.payment_method or "—" }}
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="detail-label">
+                                Status
+                            </div>
+
+                            <div>
+
+                                {% if payment.status == "Active" %}
+
+                                <span class="status active">
+                                    Active
+                                </span>
+
+                                {% elif payment.status == "Paused" %}
+
+                                <span class="status paused">
+                                    Paused
+                                </span>
+
+                                {% elif payment.status == "Completed" %}
+
+                                <span class="status completed">
+                                    Completed
+                                </span>
+
+                                {% elif payment.status == "Ended" %}
+
+                                <span class="status ended">
+                                    Ended
+                                </span>
+
+                                {% else %}
+
+                                <span class="status inactive">
+                                    {{ payment.status or "Inactive" }}
+                                </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        {% if payment.description %}
+
+                        <div style="grid-column:1/-1;">
+
+                            <div class="detail-label">
+                                Description
+                            </div>
+
+                            <div class="detail-value">
+                                {{ payment.description }}
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+
+                        <div style="grid-column:1/-1;">
+
+                            <div class="actions">
+
+                                <button type="button" class="action-btn"
+                                    onclick='openEditRecurringModal({{ payment|tojson }})'>
+                                    Edit
+                                </button>
+
+
+                                <form method="POST"
+                                    action="{{ url_for('delete_recurring_payment', payment_id=payment.id) }}"
+                                    onsubmit="return confirm('Delete this recurring payment? This action cannot be undone.');">
+
+                                    <button type="submit" class="action-btn delete-btn">
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="table-container">
+
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        🔄
+                    </div>
+
+                    <div class="empty-title">
+                        No recurring payments
+                    </div>
+
+                    <div class="empty-text">
+                        Add rent, subscriptions, salaries or other repeating payments.
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+
+
+        <!-- 
+         MONEY OUT RECORDS
+     -->
+
+        <section id="recordsSection" class="inventory-section">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2 class="section-heading">
+                        Money Out Records
+                    </h2>
+
+                    <p class="section-description">
+                        A combined history of money leaving your business.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="money-stats">
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Total Money Out
+                    </div>
+
+                    <div class="money-card-value money-out">
+                        R{{ total_money_out|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        This Month
+                    </div>
+
+                    <div class="money-card-value money-out">
+                        R{{ month_money_out|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Expenses
+                    </div>
+
+                    <div class="money-card-value">
+                        R{{ total_expenses|default(0)|money }}
+                    </div>
+
+                </div>
+
+
+                <div class="money-card">
+
+                    <div class="money-card-label">
+                        Investments
+                    </div>
+
+                    <div class="money-card-value money-investment">
+                        R{{ total_investments|default(0)|money }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="table-container">
+
+                <table id="recordsTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Payment Method</th>
+                            <th>Amount</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% if money_out_records %}
+
+                        {% for record in money_out_records %}
+
+                        <tr>
+
+                            <td>
+                                {{ record.date or "—" }}
+                            </td>
+
+
+                            <td>
+
+                                <div class="item-name">
+                                    {{ record.description or "Money Out" }}
+                                </div>
+
+                            </td>
+
+
+                            <td>
+                                {{ record.category or "Other" }}
+                            </td>
+
+
+                            <td>
+
+                                {% if record.type == "Investment" %}
+
+                                <span class="type service">
+                                    Investment
+                                </span>
+
+                                {% elif record.type == "Recurring" %}
+
+                                <span class="type">
+                                    Recurring
+                                </span>
+
+                                {% else %}
+
+                                <span class="type">
+                                    Expense
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ record.payment_method or "—" }}
+                            </td>
+
+
+                            <td class="amount-out">
+                                R{{ record.amount|default(0)|money }}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="6">
+
+                                <div class="empty">
+
+                                    <div class="empty-icon">
+                                        📋
+                                    </div>
+
+                                    <div class="empty-title">
+                                        No money-out records
+                                    </div>
+
+                                    <div class="empty-text">
+                                        Expenses, investments and recurring payments will appear here.
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
 
 
     <!-- 
-     ADD CUSTOMER MODAL
+     ADD ITEM MODAL
  -->
 
-    <div id="customerModal" class="modal">
+    <div class="modal" id="addModal">
 
         <div class="modal-content">
 
             <div class="modal-header">
 
                 <div>
-                    <h2>Add Customer</h2>
+
+                    <h2>
+                        Add Inventory Item
+                    </h2>
 
                     <p>
-                        Add a new customer to {{ company.company_name }}.
+                        Add a product or service to your business.
                     </p>
+
                 </div>
 
-                <button type="button" class="modal-close" onclick="closeCustomerModal()">
+                <button type="button" class="close" onclick="closeAddModal()" aria-label="Close">
                     ×
                 </button>
 
             </div>
 
 
-            <form method="POST" action="{{ url_for('add_customer') }}">
+            <form method="POST" action="{{ url_for('add_item') }}">
 
                 <div class="form-grid">
 
-                    <!-- NAME -->
-
-                    <div class="form-group full">
-
-                        <label>
-                            Customer Name *
-                        </label>
-
-                        <input type="text" name="name" placeholder="Enter customer name" required>
-
-                    </div>
-
-
-                    <!-- EMAIL -->
 
                     <div class="form-group">
 
                         <label>
-                            Email
+                            Item Name *
                         </label>
 
-                        <input type="email" name="email" placeholder="customer@example.com">
+                        <input type="text" name="item_name" required placeholder="e.g. Website Development">
 
                     </div>
 
-
-                    <!-- PHONE -->
 
                     <div class="form-group">
 
                         <label>
-                            Phone
+                            Type *
                         </label>
 
-                        <input type="text" name="phone" placeholder="+27 00 000 0000">
+                        <select name="item_type" id="addItemType" required onchange="toggleAddItemFields()">
+
+                            <option value="Product">
+                                Product
+                            </option>
+
+                            <option value="Service">
+                                Service
+                            </option>
+
+                        </select>
 
                     </div>
 
-
-                    <!-- COMPANY -->
 
                     <div class="form-group">
 
                         <label>
-                            Company
+                            SKU / Item Code
                         </label>
 
-                        <input type="text" name="company_name" placeholder="Customer company">
+                        <input type="text" name="sku" placeholder="e.g. WEB-001">
 
                     </div>
 
 
-                    <!-- STATUS -->
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input type="text" name="category" placeholder="e.g. Web Development">
+
+                    </div>
+
+
+                    <div class="form-group" id="addQuantityGroup">
+
+                        <label>
+                            Quantity
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="quantity" id="addQuantity" value="0">
+
+                    </div>
+
+
+                    <div class="form-group" id="addLowStockGroup">
+
+                        <label>
+                            Low Stock Alert
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="low_stock_level" id="addLowStock" value="5">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Cost Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="cost_price" value="0">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Selling Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="selling_price" value="0">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Supplier
+                        </label>
+
+                        <input type="text" name="supplier" placeholder="Supplier name">
+
+                    </div>
+
 
                     <div class="form-group">
 
@@ -1689,10 +4043,6 @@
                                 Active
                             </option>
 
-                            <option value="Pending">
-                                Pending
-                            </option>
-
                             <option value="Inactive">
                                 Inactive
                             </option>
@@ -1702,70 +4052,28 @@
                     </div>
 
 
-                    <!-- CITY -->
-
-                    <div class="form-group">
-
-                        <label>
-                            City
-                        </label>
-
-                        <input type="text" name="city" placeholder="City">
-
-                    </div>
-
-
-                    <!-- COUNTRY -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Country
-                        </label>
-
-                        <input type="text" name="country" placeholder="Country">
-
-                    </div>
-
-
-                    <!-- ADDRESS -->
-
                     <div class="form-group full">
 
                         <label>
-                            Address
+                            Description
                         </label>
 
-                        <textarea name="address" rows="3" placeholder="Customer address"></textarea>
-
-                    </div>
-
-
-                    <!-- NOTES -->
-
-                    <div class="form-group full">
-
-                        <label>
-                            Notes
-                        </label>
-
-                        <textarea name="notes" rows="3" placeholder="Additional customer information..."></textarea>
+                        <textarea name="description" placeholder="Describe this product or service..."></textarea>
 
                     </div>
 
                 </div>
 
 
-                <!-- BUTTONS -->
+                <div class="modal-footer">
 
-                <div class="modal-actions">
-
-                    <button type="button" class="cancel-btn" onclick="closeCustomerModal()">
+                    <button type="button" class="cancel-btn" onclick="closeAddModal()">
                         Cancel
                     </button>
 
+
                     <button type="submit" class="btn">
-                        Save Customer
+                        Add Item
                     </button>
 
                 </div>
@@ -1777,6 +4085,967 @@
     </div>
 
 
+
+    <!-- 
+     EDIT ITEM MODAL
+ -->
+
+    <div class="modal" id="editModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Edit Inventory Item
+                    </h2>
+
+                    <p>
+                        Update your product or service.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="close" onclick="closeEditModal()" aria-label="Close">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" id="editForm">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Item Name *
+                        </label>
+
+                        <input type="text" name="item_name" id="editItemName" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Type
+                        </label>
+
+                        <select name="item_type" id="editItemType" onchange="toggleEditItemFields()">
+
+                            <option value="Product">
+                                Product
+                            </option>
+
+                            <option value="Service">
+                                Service
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            SKU / Item Code
+                        </label>
+
+                        <input type="text" name="sku" id="editSKU">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input type="text" name="category" id="editCategory">
+
+                    </div>
+
+
+                    <div class="form-group" id="editQuantityGroup">
+
+                        <label>
+                            Quantity
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="quantity" id="editQuantity">
+
+                    </div>
+
+
+                    <div class="form-group" id="editLowStockGroup">
+
+                        <label>
+                            Low Stock Alert
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="low_stock_level" id="editLowStock">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Cost Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="cost_price" id="editCost">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Selling Price
+                        </label>
+
+                        <input type="number" step="0.01" min="0" name="selling_price" id="editPrice">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Supplier
+                        </label>
+
+                        <input type="text" name="supplier" id="editSupplier">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status" id="editStatus">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" id="editDescription"></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeEditModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="btn">
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 
+     ADD EXPENSE MODAL
+ -->
+
+    <div class="modal" id="expenseModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Add Business Expense
+                    </h2>
+
+                    <p>
+                        Record money spent by your company.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="close" onclick="closeExpenseModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_expense') }}">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Expense Name *
+                        </label>
+
+                        <input type="text" name="expense_name" required placeholder="e.g. Office Electricity">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <select name="category">
+
+                            <option value="Office">
+                                Office
+                            </option>
+
+                            <option value="Rent">
+                                Rent
+                            </option>
+
+                            <option value="Utilities">
+                                Utilities
+                            </option>
+
+                            <option value="Transport">
+                                Transport
+                            </option>
+
+                            <option value="Marketing">
+                                Marketing
+                            </option>
+
+                            <option value="Salary">
+                                Salary
+                            </option>
+
+                            <option value="Equipment">
+                                Equipment
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Amount *
+                        </label>
+
+                        <input type="number" name="amount" step="0.01" min="0" required placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Expense Date *
+                        </label>
+
+                        <input type="date" name="expense_date" id="expenseDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Payment Method
+                        </label>
+
+                        <select name="payment_method">
+
+                            <option value="Cash">
+                                Cash
+                            </option>
+
+                            <option value="Bank Transfer">
+                                Bank Transfer
+                            </option>
+
+                            <option value="Card">
+                                Card
+                            </option>
+
+                            <option value="Mobile Money">
+                                Mobile Money
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" placeholder="Additional information..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeExpenseModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="btn">
+                        Save Expense
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 
+     ADD INVESTMENT MODAL
+ -->
+
+    <div class="modal" id="investmentModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Add Investment
+                    </h2>
+
+                    <p>
+                        Record money invested by the business.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="close" onclick="closeInvestmentModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_investment') }}">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Investment Name *
+                        </label>
+
+                        <input type="text" name="investment_name" required placeholder="e.g. New Company Equipment">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <select name="category">
+
+                            <option value="Equipment">
+                                Equipment
+                            </option>
+
+                            <option value="Technology">
+                                Technology
+                            </option>
+
+                            <option value="Property">
+                                Property
+                            </option>
+
+                            <option value="Business">
+                                Business
+                            </option>
+
+                            <option value="Stocks">
+                                Stocks
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Amount Invested *
+                        </label>
+
+                        <input type="number" name="amount" step="0.01" min="0" required placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Investment Date *
+                        </label>
+
+                        <input type="date" name="investment_date" id="investmentDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Expected Return
+                        </label>
+
+                        <input type="number" name="expected_return" step="0.01" min="0" value="0" placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                            <option value="Paused">
+                                Paused
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" placeholder="Describe the investment..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeInvestmentModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="btn">
+                        Save Investment
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 
+     ADD RECURRING PAYMENT MODAL
+ -->
+
+    <div class="modal" id="recurringModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Add Recurring Payment
+                    </h2>
+
+                    <p>
+                        Set up a payment that repeats automatically.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="close" onclick="closeRecurringModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" action="{{ url_for('add_recurring_payment') }}">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Payment Name *
+                        </label>
+
+                        <input type="text" name="payment_name" required placeholder="e.g. Office Rent">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <select name="category">
+
+                            <option value="Rent">
+                                Rent
+                            </option>
+
+                            <option value="Salary">
+                                Salary
+                            </option>
+
+                            <option value="Utilities">
+                                Utilities
+                            </option>
+
+                            <option value="Internet">
+                                Internet
+                            </option>
+
+                            <option value="Software">
+                                Software
+                            </option>
+
+                            <option value="Insurance">
+                                Insurance
+                            </option>
+
+                            <option value="Subscription">
+                                Subscription
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Amount *
+                        </label>
+
+                        <input type="number" name="amount" step="0.01" min="0" required placeholder="0.00">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Frequency *
+                        </label>
+
+                        <select name="frequency">
+
+                            <option value="Monthly">
+                                Monthly
+                            </option>
+
+                            <option value="Weekly">
+                                Weekly
+                            </option>
+
+                            <option value="Yearly">
+                                Yearly
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Start Date *
+                        </label>
+
+                        <input type="date" name="start_date" id="recurringStartDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Next Payment Date *
+                        </label>
+
+                        <input type="date" name="next_payment_date" id="recurringNextDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            End Date
+                        </label>
+
+                        <input type="date" name="end_date">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Payment Method
+                        </label>
+
+                        <select name="payment_method">
+
+                            <option value="Bank Transfer">
+                                Bank Transfer
+                            </option>
+
+                            <option value="Card">
+                                Card
+                            </option>
+
+                            <option value="Cash">
+                                Cash
+                            </option>
+
+                            <option value="Mobile Money">
+                                Mobile Money
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description"
+                            placeholder="Additional information about this recurring payment..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeRecurringModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="btn">
+                        Save Recurring Payment
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- 
+     EDIT RECURRING PAYMENT MODAL
+ -->
+
+    <div class="modal" id="editRecurringModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Edit Recurring Payment
+                    </h2>
+
+                    <p>
+                        Update your recurring payment schedule.
+                    </p>
+
+                </div>
+
+
+                <button type="button" class="close" onclick="closeEditRecurringModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="POST" id="editRecurringForm">
+
+                <div class="form-grid">
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Payment Name *
+                        </label>
+
+                        <input type="text" name="payment_name" id="editPaymentName" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input type="text" name="category" id="editPaymentCategory">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Amount *
+                        </label>
+
+                        <input type="number" name="amount" id="editPaymentAmount" step="0.01" min="0" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Frequency
+                        </label>
+
+                        <select name="frequency" id="editPaymentFrequency">
+
+                            <option value="Monthly">
+                                Monthly
+                            </option>
+
+                            <option value="Weekly">
+                                Weekly
+                            </option>
+
+                            <option value="Yearly">
+                                Yearly
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Next Payment Date
+                        </label>
+
+                        <input type="date" name="next_payment_date" id="editNextPaymentDate" required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status" id="editRecurringStatus">
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Paused">
+                                Paused
+                            </option>
+
+                            <option value="Ended">
+                                Ended
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Payment Method
+                        </label>
+
+                        <input type="text" name="payment_method" id="editPaymentMethod">
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>
+                            Description
+                        </label>
+
+                        <textarea name="description" id="editPaymentDescription"></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button" class="cancel-btn" onclick="closeEditRecurringModal()">
+                        Cancel
+                    </button>
+
+
+                    <button type="submit" class="btn">
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
     <!-- 
      JAVASCRIPT
  -->
@@ -1785,144 +5054,587 @@
 
 
         /* 
-           CUSTOMER SEARCH
+           MODAL HELPERS
          */
 
-        const searchInput =
-            document.getElementById("customerSearch");
+        function openModal(id) {
+
+            const modal = document.getElementById(id);
+
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.add("show");
+
+            document.body.classList.add("modal-open");
+
+        }
 
 
-        if (searchInput) {
+        function closeModal(id) {
 
-            searchInput.addEventListener(
-                "input",
-                function () {
+            const modal = document.getElementById(id);
 
-                    const searchValue =
-                        this.value.toLowerCase().trim();
+            if (!modal) {
+                return;
+            }
 
+            modal.classList.remove("show");
 
-                    const rows =
-                        document.querySelectorAll(
-                            "#customerTable tbody tr"
-                        );
+            const anyOpen = document.querySelector(".modal.show");
 
+            if (!anyOpen) {
+                document.body.classList.remove("modal-open");
+            }
 
-                    rows.forEach(function (row) {
-
-                        const text =
-                            row.textContent.toLowerCase();
+        }
 
 
-                        if (
-                            searchValue === "" ||
-                            text.includes(searchValue)
-                        ) {
+        /* 
+           SECTION SWITCHING
+         */
 
-                            row.style.display = "";
+        function showSection(section, button) {
 
-                        } else {
+            document
+                .querySelectorAll(".inventory-section")
+                .forEach(function (element) {
 
-                            row.style.display = "none";
+                    element.classList.remove("active");
 
-                        }
+                });
 
-                    });
 
-                }
+            document
+                .querySelectorAll(".inventory-tab")
+                .forEach(function (tab) {
+
+                    tab.classList.remove("active");
+
+                });
+
+
+            const selectedSection =
+                document.getElementById(section + "Section");
+
+
+            if (selectedSection) {
+
+                selectedSection.classList.add("active");
+
+            }
+
+
+            if (button) {
+
+                button.classList.add("active");
+
+            }
+
+        }
+
+
+        /* 
+           ADD ITEM
+         */
+
+        function openAddModal() {
+
+            openModal("addModal");
+
+            toggleAddItemFields();
+
+        }
+
+
+        function closeAddModal() {
+
+            closeModal("addModal");
+
+        }
+
+
+        function toggleAddItemFields() {
+
+            const type =
+                document.getElementById("addItemType");
+
+            const quantityGroup =
+                document.getElementById("addQuantityGroup");
+
+            const lowStockGroup =
+                document.getElementById("addLowStockGroup");
+
+            if (!type) {
+                return;
+            }
+
+            const isService =
+                type.value === "Service";
+
+            if (quantityGroup) {
+
+                quantityGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+            if (lowStockGroup) {
+
+                lowStockGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+        }
+
+
+        /* 
+           EDIT ITEM
+         */
+
+        function openEditModal(item) {
+
+            if (!item) {
+                return;
+            }
+
+
+            const form =
+                document.getElementById("editForm");
+
+
+            if (!form) {
+                return;
+            }
+
+
+            form.action =
+                "/items/edit/" + item.id;
+
+
+            document.getElementById("editItemName").value =
+                item.item_name ?? "";
+
+
+            document.getElementById("editItemType").value =
+                item.item_type ?? "Product";
+
+
+            document.getElementById("editSKU").value =
+                item.sku ?? "";
+
+
+            document.getElementById("editCategory").value =
+                item.category ?? "";
+
+
+            document.getElementById("editQuantity").value =
+                item.quantity ?? 0;
+
+
+            document.getElementById("editLowStock").value =
+                item.low_stock_level ?? 5;
+
+
+            document.getElementById("editCost").value =
+                item.cost_price ?? 0;
+
+
+            document.getElementById("editPrice").value =
+                item.selling_price ?? 0;
+
+
+            document.getElementById("editSupplier").value =
+                item.supplier ?? "";
+
+
+            document.getElementById("editStatus").value =
+                item.status ?? "Active";
+
+
+            document.getElementById("editDescription").value =
+                item.description ?? "";
+
+
+            toggleEditItemFields();
+
+            openModal("editModal");
+
+        }
+
+
+        function closeEditModal() {
+
+            closeModal("editModal");
+
+        }
+
+
+        function toggleEditItemFields() {
+
+            const type =
+                document.getElementById("editItemType");
+
+            const quantityGroup =
+                document.getElementById("editQuantityGroup");
+
+            const lowStockGroup =
+                document.getElementById("editLowStockGroup");
+
+            if (!type) {
+                return;
+            }
+
+            const isService =
+                type.value === "Service";
+
+            if (quantityGroup) {
+
+                quantityGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+            if (lowStockGroup) {
+
+                lowStockGroup.style.display =
+                    isService ? "none" : "flex";
+
+            }
+
+        }
+
+
+        /* 
+           EXPENSE
+         */
+
+        function openExpenseModal() {
+
+            setTodayIfEmpty("expenseDate");
+
+            openModal("expenseModal");
+
+        }
+
+
+        function closeExpenseModal() {
+
+            closeModal("expenseModal");
+
+        }
+
+
+        /* 
+           INVESTMENT
+         */
+
+        function openInvestmentModal() {
+
+            setTodayIfEmpty("investmentDate");
+
+            openModal("investmentModal");
+
+        }
+
+
+        function closeInvestmentModal() {
+
+            closeModal("investmentModal");
+
+        }
+
+
+        /* 
+           RECURRING
+         */
+
+        function openRecurringModal() {
+
+            setTodayIfEmpty("recurringStartDate");
+
+            setTodayIfEmpty("recurringNextDate");
+
+            openModal("recurringModal");
+
+        }
+
+
+        function closeRecurringModal() {
+
+            closeModal("recurringModal");
+
+        }
+
+
+        /* 
+           EDIT RECURRING
+         */
+
+        function openEditRecurringModal(payment) {
+
+            if (!payment) {
+                return;
+            }
+
+
+            const form =
+                document.getElementById("editRecurringForm");
+
+
+            if (!form) {
+                return;
+            }
+
+
+            form.action =
+                "/recurring-payments/edit/" + payment.id;
+
+
+            document.getElementById("editPaymentName").value =
+                payment.payment_name ?? "";
+
+
+            document.getElementById("editPaymentCategory").value =
+                payment.category ?? "";
+
+
+            document.getElementById("editPaymentAmount").value =
+                payment.amount ?? 0;
+
+
+            document.getElementById("editPaymentFrequency").value =
+                payment.frequency ?? "Monthly";
+
+
+            document.getElementById("editNextPaymentDate").value =
+                formatDateForInput(payment.next_payment_date);
+
+
+            document.getElementById("editRecurringStatus").value =
+                payment.status ?? "Active";
+
+
+            document.getElementById("editPaymentMethod").value =
+                payment.payment_method ?? "";
+
+
+            document.getElementById("editPaymentDescription").value =
+                payment.description ?? "";
+
+
+            openModal("editRecurringModal");
+
+        }
+
+
+        function closeEditRecurringModal() {
+
+            closeModal("editRecurringModal");
+
+        }
+
+
+        /* 
+           INVENTORY SEARCH
+         */
+
+        function searchInventory() {
+
+            const inputElement =
+                document.getElementById("searchInput");
+
+            if (!inputElement) {
+                return;
+            }
+
+
+            const input =
+                inputElement.value
+                    .trim()
+                    .toLowerCase();
+
+
+            const rows =
+                document.querySelectorAll(
+                    "#inventoryTable tbody tr.inventory-row"
+                );
+
+
+            rows.forEach(function (row) {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+
+                row.style.display =
+                    text.includes(input)
+                        ? ""
+                        : "none";
+
+            });
+
+        }
+
+
+        /* 
+           DATE HELPERS
+         */
+
+        function getToday() {
+
+            const now = new Date();
+
+            const year =
+                now.getFullYear();
+
+            const month =
+                String(now.getMonth() + 1)
+                    .padStart(2, "0");
+
+            const day =
+                String(now.getDate())
+                    .padStart(2, "0");
+
+            return year + "-" + month + "-" + day;
+
+        }
+
+
+        function setTodayIfEmpty(id) {
+
+            const element =
+                document.getElementById(id);
+
+            if (
+                element &&
+                !element.value
+            ) {
+
+                element.value =
+                    getToday();
+
+            }
+
+        }
+
+
+        function formatDateForInput(value) {
+
+            if (!value) {
+                return "";
+            }
+
+
+            const stringValue =
+                String(value);
+
+
+            if (
+                /^\d{4}-\d{2}-\d{2}$/.test(
+                    stringValue
+                )
+            ) {
+
+                return stringValue;
+
+            }
+
+
+            return stringValue.substring(
+                0,
+                10
             );
 
         }
 
 
         /* 
-           CLEAR SEARCH
+           CLOSE MODALS WHEN CLICKING BACKDROP
          */
 
-        function clearSearch() {
+        window.addEventListener(
+            "click",
+            function (event) {
 
-            if (!searchInput) {
-                return;
+                if (
+                    event.target.classList.contains("modal")
+                ) {
+
+                    event.target.classList.remove("show");
+
+
+                    const anyOpen =
+                        document.querySelector(".modal.show");
+
+
+                    if (!anyOpen) {
+
+                        document.body.classList.remove(
+                            "modal-open"
+                        );
+
+                    }
+
+                }
+
             }
+        );
 
-            searchInput.value = "";
-
-            const rows =
-                document.querySelectorAll(
-                    "#customerTable tbody tr"
-                );
-
-
-            rows.forEach(function (row) {
-
-                row.style.display = "";
-
-            });
-
-        }
 
         /* 
-   CUSTOMER MODAL
- */
+           ESC KEY
+         */
 
-        function openCustomerModal() {
+        document.addEventListener(
+            "keydown",
+            function (event) {
 
-            const modal =
-                document.getElementById("customerModal");
+                if (event.key === "Escape") {
 
-            if (modal) {
+                    document
+                        .querySelectorAll(".modal.show")
+                        .forEach(function (modal) {
 
-                modal.classList.add("show");
+                            modal.classList.remove("show");
 
-            }
-
-        }
+                        });
 
 
-        function closeCustomerModal() {
+                    document.body.classList.remove(
+                        "modal-open"
+                    );
 
-            const modal =
-                document.getElementById("customerModal");
-
-            if (modal) {
-
-                modal.classList.remove("show");
+                }
 
             }
-
-        }
-
-
-        /* Close when clicking outside */
-
-        document.addEventListener("click", function (event) {
-
-            const modal =
-                document.getElementById("customerModal");
-
-            if (
-                modal &&
-                event.target === modal
-            ) {
-
-                closeCustomerModal();
-
-            }
-
-        });
+        );
 
 
-        /* Close with ESC */
+        /* 
+           INITIALIZATION
+         */
 
-        document.addEventListener("keydown", function (event) {
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-            if (event.key === "Escape") {
+                setTodayIfEmpty("expenseDate");
 
-                closeCustomerModal();
+                setTodayIfEmpty("investmentDate");
+
+                setTodayIfEmpty("recurringStartDate");
+
+                setTodayIfEmpty("recurringNextDate");
+
+                toggleAddItemFields();
+
+                toggleEditItemFields();
 
             }
-
-        });
+        );
 
     </script>
 
