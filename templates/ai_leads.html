@@ -1621,22 +1621,6 @@
             }
 
         }
-
-
-        .email-link,
-        .phone-link {
-            color: #7c3aed;
-            text-decoration: none;
-            font-size: 10px;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .email-link:hover,
-        .phone-link:hover {
-            color: #5b21b6;
-            text-decoration: underline;
-        }
     </style>
 
 </head>
@@ -2580,11 +2564,7 @@
                                 </th>
 
                                 <th>
-                                    Email
-                                </th>
-
-                                <th>
-                                    Phone
+                                    Contact
                                 </th>
 
                                 <th>
@@ -2672,33 +2652,13 @@
 
 
 
-                                <!-- EMAIL -->
-
-                                <td>
-
-                                    {% if lead.email %}
-
-                                    <a href="mailto:{{ lead.email }}" class="email-link">
-                                        {{ lead.email }}
-                                    </a>
-
-                                    {% else %}
-
-                                    —
-
-                                    {% endif %}
-
-                                </td>
-
-                                <!-- PHONE -->
+                                <!-- CONTACT / PHONE -->
 
                                 <td>
 
                                     {% if lead.phone %}
 
-                                    <a href="tel:{{ lead.phone }}" class="phone-link">
-                                        {{ lead.phone }}
-                                    </a>
+                                    {{ lead.phone }}
 
                                     {% else %}
 
@@ -2706,7 +2666,23 @@
 
                                     {% endif %}
 
+
+                                    {% if lead.email %}
+
+                                    <div class="muted">
+
+                                        {{
+                                        lead.email
+                                        }}
+
+                                    </div>
+
+                                    {% endif %}
+
                                 </td>
+
+
+
                                 <!-- SCORE -->
 
                                 <td>
@@ -3226,19 +3202,40 @@
                 new FormData();
 
 
-            formData.append("company_name", button.dataset.company || "");
+            formData.append(
+                "company_name",
+                button.dataset.company || ""
+            );
 
-            formData.append("industry", button.dataset.industry || "");
 
-            formData.append("location", button.dataset.location || "");
+            formData.append(
+                "industry",
+                button.dataset.industry || ""
+            );
 
-            formData.append("email", button.dataset.email || "");
 
-            formData.append("phone", button.dataset.phone || "");
+            formData.append(
+                "location",
+                button.dataset.location || ""
+            );
 
-            formData.append("website", button.dataset.website || "");
 
-            formData.append("google_place_id", button.dataset.googlePlaceId || "");
+            formData.append(
+                "phone",
+                button.dataset.phone || ""
+            );
+
+
+            formData.append(
+                "website",
+                button.dataset.website || ""
+            );
+
+
+            formData.append(
+                "google_place_id",
+                button.dataset.googlePlaceId || ""
+            );
 
 
 
