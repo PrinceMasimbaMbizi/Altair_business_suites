@@ -3226,40 +3226,19 @@
                 new FormData();
 
 
-            formData.append(
-                "company_name",
-                button.dataset.company || ""
-            );
+            formData.append("company_name", button.dataset.company || "");
 
+            formData.append("industry", button.dataset.industry || "");
 
-            formData.append(
-                "industry",
-                button.dataset.industry || ""
-            );
+            formData.append("location", button.dataset.location || "");
 
+            formData.append("email", button.dataset.email || "");
 
-            formData.append(
-                "location",
-                button.dataset.location || ""
-            );
+            formData.append("phone", button.dataset.phone || "");
 
+            formData.append("website", button.dataset.website || "");
 
-            formData.append(
-                "phone",
-                button.dataset.phone || ""
-            );
-
-
-            formData.append(
-                "website",
-                button.dataset.website || ""
-            );
-
-
-            formData.append(
-                "google_place_id",
-                button.dataset.googlePlaceId || ""
-            );
+            formData.append("google_place_id", button.dataset.googlePlaceId || "");
 
 
 
