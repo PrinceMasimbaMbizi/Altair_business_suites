@@ -7,7 +7,7 @@ import mysql.connector
 import os
 import requests
 
-GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
+GOOGLE_PLACES_API_KEY = os.environ.get("4173ce950cbd2cb130f7d4b0844c1e1c")
 
 # FLASK APP
 app = Flask(__name__)
