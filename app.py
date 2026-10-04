@@ -12,7 +12,7 @@ GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
 # FLASK APP
 app = Flask(__name__)
 
-app.secret_key = "AIzaSyCzrz_RdKRGlon0Wt6ve2QHFSTJA2-IcJ0"
+app.secret_key = os.environ.get("AIzaSyCzrz_RdKRGlon0Wt6ve2QHFSTJA2-IcJ0")
 
 
 
@@ -1022,50 +1022,23 @@ def add_customer():
 
     user_id = session["user_id"]
 
-    name = request.form.get(
-        "name",
-        ""
-    ).strip()
+    name = request.form.get("name", "").strip()
 
-    email = request.form.get(
-        "email",
-        ""
-    ).strip()
+    email = request.form.get( "email", "").strip()
 
-    phone = request.form.get(
-        "phone",
-        ""
-    ).strip()
+    phone = request.form.get("phone", "").strip()
 
-    company_name = request.form.get(
-        "company_name",
-        ""
-    ).strip()
+    company_name = request.form.get("company_name","").strip()
 
-    address = request.form.get(
-        "address",
-        ""
-    ).strip()
+    address = request.form.get( "address","").strip()
 
-    city = request.form.get(
-        "city",
-        ""
-    ).strip()
+    city = request.form.get( "city","" ).strip()
 
-    country = request.form.get(
-        "country",
-        ""
-    ).strip()
+    country = request.form.get( "country","").strip()
 
-    status = request.form.get(
-        "status",
-        "Active"
-    ).strip()
+    status = request.form.get("status","Active" ).strip()
 
-    notes = request.form.get(
-        "notes",
-        ""
-    ).strip()
+    notes = request.form.get( "notes", "").strip()
 
     if not name:
 
@@ -5223,6 +5196,7 @@ def save_google_lead():
     industry = request.form.get("industry", "").strip()
     location = request.form.get("location", "").strip()
     website = request.form.get("website", "").strip()
+    email = request.form.get("email", "").strip()
     phone = request.form.get("phone", "").strip()
     google_place_id = request.form.get("google_place_id", "").strip()
 
@@ -5272,41 +5246,9 @@ def save_google_lead():
         
 
         cursor.execute("""
-            INSERT INTO leads
-            (
-                user_id,
-                company_name,
-                industry,
-                location,
-                website,
-                phone,
-                source,
-                lead_status,
-                lead_score,
-                google_place_id
-            )
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                'Google',
-                'New',
-                0,
-                %s
-            )
-        """, (
-            user_id,
-            company_name,
-            industry,
-            location,
-            website,
-            phone,
-            google_place_id
-        ))
+            INSERT INTO leads(user_id, company_name, industry, location, website, email, phone, source, lead_status, lead_score, google_place_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Google', 'New', 0, %s) """, (
+            user_id,company_name,industry,location,website,email,phone,google_place_id))
 
         lead_id = cursor.lastrowid
 

@@ -1621,6 +1621,22 @@
             }
 
         }
+
+
+        .email-link,
+        .phone-link {
+            color: #7c3aed;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .email-link:hover,
+        .phone-link:hover {
+            color: #5b21b6;
+            text-decoration: underline;
+        }
     </style>
 
 </head>
@@ -2564,7 +2580,11 @@
                                 </th>
 
                                 <th>
-                                    Contact
+                                    Email
+                                </th>
+
+                                <th>
+                                    Phone
                                 </th>
 
                                 <th>
@@ -2652,13 +2672,15 @@
 
 
 
-                                <!-- CONTACT / PHONE -->
+                                <!-- EMAIL -->
 
                                 <td>
 
-                                    {% if lead.phone %}
+                                    {% if lead.email %}
 
-                                    {{ lead.phone }}
+                                    <a href="mailto:{{ lead.email }}" class="email-link">
+                                        {{ lead.email }}
+                                    </a>
 
                                     {% else %}
 
@@ -2666,23 +2688,25 @@
 
                                     {% endif %}
 
+                                </td>
 
-                                    {% if lead.email %}
+                                <!-- PHONE -->
 
-                                    <div class="muted">
+                                <td>
 
-                                        {{
-                                        lead.email
-                                        }}
+                                    {% if lead.phone %}
 
-                                    </div>
+                                    <a href="tel:{{ lead.phone }}" class="phone-link">
+                                        {{ lead.phone }}
+                                    </a>
+
+                                    {% else %}
+
+                                    —
 
                                     {% endif %}
 
                                 </td>
-
-
-
                                 <!-- SCORE -->
 
                                 <td>
