@@ -12,7 +12,7 @@ GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
 # FLASK APP
 app = Flask(__name__)
 
-app.secret_key = os.environ.get("AIzaSyCzrz_RdKRGlon0Wt6ve2QHFSTJA2-IcJ0")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY","altair-development-secret-key")
 
 
 
