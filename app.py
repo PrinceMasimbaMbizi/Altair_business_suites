@@ -4483,6 +4483,149 @@ def settings():
 
         db.close()
 
+
+@app.route("/ai-leads")
+def ai_leads():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        # ==========================================
+        # GET CURRENT USER'S COMPANY
+        # ==========================================
+
+        cursor.execute("""
+            SELECT *
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+        """, (user_id,))
+
+        company = cursor.fetchone()
+
+        # ==========================================
+        # GET CURRENT USER'S LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT *
+            FROM leads
+            WHERE user_id = %s
+            ORDER BY id DESC
+        """, (user_id,))
+
+        leads = cursor.fetchall()
+
+        # ==========================================
+        # TOTAL LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM leads
+            WHERE user_id = %s
+        """, (user_id,))
+
+        total_leads = cursor.fetchone()["total"]
+
+        # ==========================================
+        # NEW LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM leads
+            WHERE user_id = %s
+            AND lead_status = 'New'
+        """, (user_id,))
+
+        new_leads = cursor.fetchone()["total"]
+
+        # ==========================================
+        # CONTACTED LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM leads
+            WHERE user_id = %s
+            AND lead_status = 'Contacted'
+        """, (user_id,))
+
+        contacted_leads = cursor.fetchone()["total"]
+
+        # ==========================================
+        # INTERESTED LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM leads
+            WHERE user_id = %s
+            AND lead_status = 'Interested'
+        """, (user_id,))
+
+        interested_leads = cursor.fetchone()["total"]
+
+        # ==========================================
+        # CONVERTED LEADS
+        # ==========================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM leads
+            WHERE user_id = %s
+            AND lead_status = 'Converted'
+        """, (user_id,))
+
+        converted_leads = cursor.fetchone()["total"]
+
+        # ==========================================
+        # OPEN AI LEAD FINDER
+        # ==========================================
+
+        return render_template(
+            "ai_leads.html",
+            company=company,
+            leads=leads,
+            total_leads=total_leads,
+            new_leads=new_leads,
+            contacted_leads=contacted_leads,
+            interested_leads=interested_leads,
+            converted_leads=converted_leads,
+            user_name=session.get("user_name", ""),
+            user_email=session.get("user_email", "")
+        )
+
+    except Exception as e:
+
+        print("AI LEADS ERROR:", e)
+
+        flash(
+            "Unable to load AI Lead Finder.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+            
 # =========================================================
 # ADD AI LEAD MANUALLY
 # =========================================================
