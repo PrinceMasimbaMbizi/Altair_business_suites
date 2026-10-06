@@ -794,7 +794,7 @@ def company_setup():
                         city,
                         country,
                         services,
-                        logo_filename
+                        logo_url
                     )
                 )
 
@@ -4067,7 +4067,7 @@ def settings():
                 "logo"
             )
 
-            logo_filename = None
+            logo_url = None
 
             if logo and logo.filename:
 
@@ -4093,7 +4093,7 @@ def settings():
                     1
                 )[1].lower()
 
-                logo_filename = (
+                logo_url = (
                     f"company_{user_id}.{extension}"
                 )
 
@@ -4105,7 +4105,7 @@ def settings():
                 logo.save(
                     os.path.join(
                         app.config["UPLOAD_FOLDER"],
-                        logo_filename
+                        logo_url
                     )
                 )
 
@@ -4134,7 +4134,7 @@ def settings():
 
             if existing_company:
 
-                if logo_filename:
+                if logo_url:
 
                     cursor.execute(
                         """
@@ -4195,7 +4195,7 @@ def settings():
                             account_number,
                             branch_code,
                             payment_terms,
-                            logo_filename,
+                            logo_url,
                             user_id
                         )
                     )
@@ -4367,7 +4367,7 @@ def settings():
 
                         payment_terms,
 
-                        logo_filename
+                        logo_url
                     )
                 )
 
@@ -4483,10 +4483,198 @@ def settings():
 
         db.close()
 
+# =========================================================
+# ADD AI LEAD MANUALLY
+# =========================================================
 
-#The AI part of this application is now in development and will be available in future updates.
-@app.route("/ai-leads")
-def ai_leads():
+@app.route(
+    "/ai-leads/add",
+    methods=["POST"]
+)
+def add_ai_lead():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    company_name = request.form.get(
+        "company_name",
+        ""
+    ).strip()
+
+    industry = request.form.get(
+        "industry",
+        ""
+    ).strip()
+
+    location = request.form.get(
+        "location",
+        ""
+    ).strip()
+
+    website = request.form.get(
+        "website",
+        ""
+    ).strip()
+
+    email = request.form.get(
+        "email",
+        ""
+    ).strip()
+
+    phone = request.form.get(
+        "phone",
+        ""
+    ).strip()
+
+    contact_person = request.form.get(
+        "contact_person",
+        ""
+    ).strip()
+
+    source = request.form.get(
+        "source",
+        "Manual"
+    ).strip()
+
+    notes = request.form.get(
+        "notes",
+        ""
+    ).strip()
+
+
+    # =====================================================
+    # VALIDATION
+    # =====================================================
+
+    if not company_name:
+
+        flash(
+            "Company name is required.",
+            "error"
+        )
+
+        return redirect(
+            url_for("ai_leads")
+        )
+
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor()
+
+
+        # =================================================
+        # INSERT LEAD
+        # =================================================
+
+        cursor.execute(
+            """
+            INSERT INTO leads
+            (
+                user_id,
+                company_name,
+                industry,
+                location,
+                website,
+                email,
+                phone,
+                contact_person,
+                source,
+                lead_status,
+                lead_score,
+                ai_analysis,
+                ai_reason,
+                ai_message,
+                notes
+            )
+
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                'New',
+                0,
+                '',
+                '',
+                '',
+                %s
+            )
+            """,
+            (
+                user_id,
+                company_name,
+                industry,
+                location,
+                website,
+                email,
+                phone,
+                contact_person,
+                source,
+                notes
+            )
+        )
+
+
+        db.commit()
+
+
+        flash(
+            "Lead added successfully!",
+            "success"
+        )
+
+
+    except Exception as e:
+
+        if db:
+            db.rollback()
+
+        print(
+            "ADD AI LEAD ERROR:",
+            e
+        )
+
+        flash(
+            "Could not add lead.",
+            "error"
+        )
+
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+
+    return redirect(
+        url_for("ai_leads")
+    )
+
+
+
+
+@app.route(
+    "/ai-leads/<int:lead_id>/status",
+    methods=["POST"]
+)
+def update_lead_status(lead_id):
 
     if "user_id" not in session:
         return redirect(url_for("login"))
