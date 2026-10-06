@@ -921,6 +921,8 @@
             width: 100%;
 
             overflow-x: auto;
+            overflow-y: visible;
+            scrollbar-width: thin;
         }
 
 
@@ -930,7 +932,7 @@
 
             border-collapse: collapse;
 
-            min-width: 950px;
+            min-width: 2900px;
         }
 
 
@@ -1620,6 +1622,185 @@
                 padding: 17px;
             }
 
+        }
+
+
+        /* 
+           FULL LEADS DATABASE TABLE
+         */
+
+        .leads-database-card .section-header {
+            position: sticky;
+            left: 0;
+        }
+
+        .leads-database-wrap {
+            position: relative;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            border-top: 1px solid #eeeef3;
+        }
+
+        .leads-database-table {
+            min-width: 2900px !important;
+            table-layout: fixed;
+        }
+
+        .leads-database-table th,
+        .leads-database-table td {
+            white-space: nowrap;
+            max-width: 320px;
+        }
+
+        .leads-database-table th {
+            position: sticky;
+            top: 0;
+            z-index: 4;
+            background: #f8f8fc;
+            border-bottom: 1px solid #e8e8ef;
+        }
+
+        .leads-database-table th:first-child,
+        .leads-database-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background: white;
+        }
+
+        .leads-database-table th:first-child {
+            background: #f8f8fc;
+            z-index: 7;
+        }
+
+        .leads-database-table td {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .leads-database-table td.wrap-cell {
+            white-space: normal;
+            word-break: break-word;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        .db-id {
+            font-weight: 800;
+            color: #6d28d9;
+        }
+
+        .db-user-id {
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .db-empty {
+            color: #a0a0ad;
+            font-style: italic;
+        }
+
+        .db-long {
+            max-width: 340px !important;
+            white-space: normal !important;
+            line-height: 1.45;
+        }
+
+        .db-url {
+            color: #6d28d9;
+            text-decoration: none;
+            display: inline-block;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+
+        .db-url:hover {
+            text-decoration: underline;
+        }
+
+        .score-pill {
+            display: inline-flex;
+            min-width: 38px;
+            justify-content: center;
+            padding: 5px 8px;
+            border-radius: 999px;
+            background: #f3e8ff;
+            color: #6d28d9;
+            font-weight: 800;
+            font-size: 10px;
+        }
+
+        .source-pill {
+            display: inline-flex;
+            padding: 5px 8px;
+            border-radius: 7px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .google-id {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 10px;
+            color: #666676;
+        }
+
+        .date-cell {
+            font-size: 10px;
+            color: #666676;
+        }
+
+        .ai-cell {
+            max-width: 360px !important;
+            white-space: normal !important;
+            line-height: 1.5;
+        }
+
+        .lead-actions-cell {
+            position: sticky !important;
+            right: 0;
+            z-index: 6;
+            background: white;
+            box-shadow: -5px 0 12px rgba(0, 0, 0, .04);
+        }
+
+        .leads-database-table th:last-child {
+            position: sticky;
+            right: 0;
+            z-index: 8;
+            background: #f8f8fc;
+        }
+
+        .database-caption {
+            padding: 11px 18px;
+            background: #fbfbfd;
+            border-bottom: 1px solid #eeeef3;
+            color: #858596;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .database-caption strong {
+            color: #4b4b5a;
+        }
+
+        @media (max-width: 900px) {
+            .database-caption {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .leads-database-table {
+                min-width: 2700px !important;
+            }
         }
     </style>
 
@@ -2504,1113 +2685,595 @@
 
 
 
-            <!-- 
-             SAVED LEADS
+            <!--
+             SAVED LEADS / COMPLETE DATABASE VIEW
         = -->
 
-            <section class="section-card">
-
+            <section class="section-card leads-database-card">
 
                 <div class="section-header">
 
-
                     <div class="section-title">
-
-                        <h3>
-                            Saved Leads
-                        </h3>
-
-                        <p>
-                            Manage your potential customers
-                        </p>
-
+                        <h3>💾 Saved Leads Database</h3>
+                        <p>All fields from your <strong>leads</strong> table are displayed below.</p>
                     </div>
 
-
                     <button class="primary-button" onclick="openModal()">
-
                         + Add Lead
-
                     </button>
-
 
                 </div>
 
+                <div class="database-caption">
+                    <span><strong>{{ leads|length }}</strong> lead(s) loaded for your account.</span>
+                    <span>↔ Scroll horizontally to view every database field.</span>
+                    <input id="savedLeadFilter" oninput="filterSavedLeads()" type="search"
+                        placeholder="Filter loaded leads..."
+                        style="padding:8px 11px;border:1px solid #e5e5ec;border-radius:8px;outline:none;font:inherit;font-size:10px;width:210px;">
+                </div>
 
+                <div class="leads-database-wrap">
 
-                <div class="table-container">
-
-
-                    {% if leads %}
-
-
-                    <table id="leadsTable">
-
+                    <table id="leadsTable" class="leads-database-table">
 
                         <thead>
-
                             <tr>
-
-                                <th>
-                                    Company
-                                </th>
-
-                                <th>
-                                    Industry
-                                </th>
-
-                                <th>
-                                    Location
-                                </th>
-
-                                <th>
-                                    Contact
-                                </th>
-
-                                <th>
-                                    Score
-                                </th>
-
-                                <th>
-                                    Status
-                                </th>
-
-                                <th>
-                                    Actions
-                                </th>
-
+                                <th>ID</th>
+                                <th>User ID</th>
+                                <th>Company Name</th>
+                                <th>Industry</th>
+                                <th>Location</th>
+                                <th>Website</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Contact Person</th>
+                                <th>Source</th>
+                                <th>Lead Status</th>
+                                <th>Lead Score</th>
+                                <th>AI Analysis</th>
+                                <th>AI Reason</th>
+                                <th>AI Message</th>
+                                <th>Notes</th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
+                                <th>Google Place ID</th>
+                                <th>Actions</th>
                             </tr>
-
                         </thead>
-
 
                         <tbody>
 
-
                             {% for lead in leads %}
 
+                            <tr class="lead-row" data-id="{{ lead.id or '' }}" data-user-id="{{ lead.user_id or '' }}"
+                                data-industry="{{ lead.industry or '' }}" data-location="{{ lead.location or '' }}"
+                                data-company="{{ lead.company_name or '' }}" data-status="{{ lead.lead_status or '' }}">
 
-                            <tr class="lead-row" data-industry="{{ lead.industry or '' }}"
-                                data-location="{{ lead.location or '' }}" data-company="{{ lead.company_name or '' }}"
-                                data-status="{{ lead.lead_status or '' }}">
-
-
-                                <!-- COMPANY -->
+                                <td><span class="db-id">{{ lead.id or '—' }}</span></td>
+                                <td><span class="db-user-id">{{ lead.user_id or '—' }}</span></td>
 
                                 <td>
+                                    <div class="company-name">{{ lead.company_name or '—' }}</div>
+                                </td>
 
-                                    <div class="company-name">
+                                <td>{{ lead.industry or '—' }}</td>
+                                <td>{{ lead.location or '—' }}</td>
 
-                                        {{
-                                        lead.company_name
-                                        }}
-
-                                    </div>
-
-
+                                <td>
                                     {% if lead.website %}
-
-                                    <div class="muted">
-
-                                        {{
-                                        lead.website
-                                        }}
-
-                                    </div>
-
-                                    {% endif %}
-
+                                    <a href="{{ lead.website }}" target="_blank" rel="noopener noreferrer"
+                                        class="db-url">{{ lead.website }}</a>
+                                    {% else %}<span class="db-empty">—</span>{% endif %}
                                 </td>
 
-
-
-                                <!-- INDUSTRY -->
-
                                 <td>
-
-                                    {{
-                                    lead.industry
-                                    or
-                                    "—"
-                                    }}
-
-                                </td>
-
-
-
-                                <!-- LOCATION -->
-
-                                <td>
-
-                                    {{
-                                    lead.location
-                                    or
-                                    "—"
-                                    }}
-
-                                </td>
-
-
-
-                                <!-- CONTACT / PHONE -->
-
-                                <td>
-
-                                    {% if lead.phone %}
-
-                                    {{ lead.phone }}
-
-                                    {% else %}
-
-                                    —
-
-                                    {% endif %}
-
-
                                     {% if lead.email %}
-
-                                    <div class="muted">
-
-                                        {{
-                                        lead.email
-                                        }}
-
-                                    </div>
-
-                                    {% endif %}
-
+                                    <a href="mailto:{{ lead.email }}" class="db-url">{{ lead.email }}</a>
+                                    {% else %}<span class="db-empty">—</span>{% endif %}
                                 </td>
 
-
-
-                                <!-- SCORE -->
-
                                 <td>
-
-                                    {{
-                                    lead.lead_score
-                                    or
-                                    0
-                                    }}
-
+                                    {% if lead.phone %}
+                                    <a href="tel:{{ lead.phone }}" class="db-url">{{ lead.phone }}</a>
+                                    {% else %}<span class="db-empty">—</span>{% endif %}
                                 </td>
 
-
-
-                                <!-- STATUS -->
+                                <td>{{ lead.contact_person or '—' }}</td>
 
                                 <td>
+                                    <span class="source-pill">{{ lead.source or '—' }}</span>
+                                </td>
 
-
+                                <td>
                                     <span class="badge
-
-                                    {% if lead.lead_status == 'New' %}
-
-                                        new
-
-                                    {% elif lead.lead_status == 'Contacted' %}
-
-                                        contacted
-
-                                    {% elif lead.lead_status == 'Interested' %}
-
-                                        interested
-
-                                    {% elif lead.lead_status == 'Converted' %}
-
-                                        converted
-
-                                    {% else %}
-
-                                        not-interested
-
-                                    {% endif %}">
-
-                                        {{
-                                        lead.lead_status
-                                        }}
-
+                                        {% if lead.lead_status == 'New' %}new
+                                        {% elif lead.lead_status == 'Contacted' %}contacted
+                                        {% elif lead.lead_status == 'Interested' %}interested
+                                        {% elif lead.lead_status == 'Converted' %}converted
+                                        {% else %}not-interested{% endif %}">
+                                        {{ lead.lead_status or 'New' }}
                                     </span>
-
-
                                 </td>
 
+                                <td>
+                                    <span class="score-pill">{{ lead.lead_score if lead.lead_score is not none else 0
+                                        }}</span>
+                                </td>
 
+                                <td class="ai-cell">{{ lead.ai_analysis or '—' }}</td>
+                                <td class="ai-cell">{{ lead.ai_reason or '—' }}</td>
+                                <td class="ai-cell">{{ lead.ai_message or '—' }}</td>
+                                <td class="ai-cell">{{ lead.notes or '—' }}</td>
 
-                                <!-- ACTIONS -->
+                                <td class="date-cell">{{ lead.created_at or '—' }}</td>
+                                <td class="date-cell">{{ lead.updated_at or '—' }}</td>
 
                                 <td>
+                                    {% if lead.google_place_id %}
+                                    <span class="google-id">{{ lead.google_place_id }}</span>
+                                    {% else %}<span class="db-empty">—</span>{% endif %}
+                                </td>
 
-
+                                <td class="lead-actions-cell">
                                     <div class="actions">
 
-
-                                        <!-- STATUS -->
-
-                                        <form method="POST" action="{{
-                                            url_for(
-                                                'update_lead_status',
-                                                lead_id=lead.id
-                                            )
-                                        }}" class="status-form">
-
-
+                                        <form method="POST"
+                                            action="{{ url_for('update_lead_status', lead_id=lead.id) }}"
+                                            class="status-form">
                                             <select name="status" onchange="this.form.submit()" class="status-select">
-
-
-                                                <option value="New" {% if lead.lead_status=='New' %} selected {% endif
-                                                    %}>
-                                                    New
-                                                </option>
-
-
-                                                <option value="Contacted" {% if lead.lead_status=='Contacted' %}
-                                                    selected {% endif %}>
-                                                    Contacted
-                                                </option>
-
-
-                                                <option value="Interested" {% if lead.lead_status=='Interested' %}
-                                                    selected {% endif %}>
-                                                    Interested
-                                                </option>
-
-
-                                                <option value="Converted" {% if lead.lead_status=='Converted' %}
-                                                    selected {% endif %}>
-                                                    Converted
-                                                </option>
-
-
+                                                <option value="New" {% if lead.lead_status=='New' %}selected{% endif %}>
+                                                    New</option>
+                                                <option value="Contacted" {% if lead.lead_status=='Contacted'
+                                                    %}selected{% endif %}>Contacted</option>
+                                                <option value="Interested" {% if lead.lead_status=='Interested'
+                                                    %}selected{% endif %}>Interested</option>
+                                                <option value="Converted" {% if lead.lead_status=='Converted'
+                                                    %}selected{% endif %}>Converted</option>
                                                 <option value="Not Interested" {% if lead.lead_status=='Not Interested'
-                                                    %} selected {% endif %}>
-                                                    Not Interested
-                                                </option>
-
-
+                                                    %}selected{% endif %}>Not Interested</option>
                                             </select>
-
-
                                         </form>
 
-
-
-                                        <!-- DELETE -->
-
-                                        <form method="POST" action="{{
-                                            url_for(
-                                                'delete_ai_lead',
-                                                lead_id=lead.id
-                                            )
-                                        }}" onsubmit="
-                                            return confirm(
-                                                'Delete this lead?'
-                                            );
-                                        ">
-
-
-                                            <button type="submit" class="action-button delete-button">
-
-                                                🗑
-
-                                            </button>
-
-
+                                        <form method="POST" action="{{ url_for('delete_ai_lead', lead_id=lead.id) }}"
+                                            onsubmit="return confirm('Delete this lead?');">
+                                            <button type="submit" class="action-button delete-button"
+                                                title="Delete lead">🗑</button>
                                         </form>
-
 
                                     </div>
-
-
                                 </td>
-
 
                             </tr>
 
+                            {% else %}
+
+                            <tr>
+                                <td colspan="20">
+                                    <div class="empty">
+                                        <div class="empty-icon">🤖</div>
+                                        <h3>No leads yet</h3>
+                                        <p>Add your first potential customer to start building your lead database.</p>
+                                    </div>
+                                </td>
+                            </tr>
 
                             {% endfor %}
 
-
                         </tbody>
-
-
                     </table>
 
+                </div>
 
-                    {% else %}
+            </section>
+
+            <!-- 
+     ADD LEAD MODAL
+= -->
+
+            <div class="modal" id="leadModal">
 
 
-                    <div class="empty">
+                <div class="modal-box">
 
 
-                        <div class="empty-icon">
-                            🤖
+                    <div class="modal-header">
+
+
+                        <div>
+
+                            <h2>
+                                Add New Lead
+                            </h2>
+
+                            <p>
+                                Add a potential customer manually.
+                            </p>
+
                         </div>
 
 
-                        <h3>
-                            No leads yet
-                        </h3>
+                        <button class="close" onclick="closeModal()" type="button">
 
+                            ×
 
-                        <p>
-                            Add your first potential customer to start building your lead database.
-                        </p>
+                        </button>
 
 
                     </div>
 
 
-                    {% endif %}
+
+                    <form method="POST" action="{{ url_for('add_ai_lead') }}">
+
+
+                        <div class="form-grid">
+
+
+                            <!-- COMPANY -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Company Name *
+                                </label>
+
+                                <input type="text" name="company_name" required placeholder="Company name">
+
+                            </div>
+
+
+                            <!-- INDUSTRY -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Industry
+                                </label>
+
+                                <input type="text" name="industry" placeholder="e.g. Construction">
+
+                            </div>
+
+
+                            <!-- LOCATION -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Location
+                                </label>
+
+                                <input type="text" name="location" placeholder="e.g. Johannesburg">
+
+                            </div>
+
+
+                            <!-- CONTACT -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Contact Person
+                                </label>
+
+                                <input type="text" name="contact_person" placeholder="Contact person">
+
+                            </div>
+
+
+                            <!-- EMAIL -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Email
+                                </label>
+
+                                <input type="email" name="email" placeholder="company@example.com">
+
+                            </div>
+
+
+                            <!-- PHONE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Phone
+                                </label>
+
+                                <input type="text" name="phone" placeholder="+27...">
+
+                            </div>
+
+
+                            <!-- WEBSITE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Website
+                                </label>
+
+                                <input type="url" name="website" placeholder="https://example.com">
+
+                            </div>
+
+
+                            <!-- SOURCE -->
+
+                            <div class="form-group">
+
+                                <label>
+                                    Source
+                                </label>
+
+                                <select name="source">
+
+
+                                    <option value="Manual">
+                                        Manual
+                                    </option>
+
+
+                                    <option value="Google">
+                                        Google
+                                    </option>
+
+
+                                    <option value="Website">
+                                        Website
+                                    </option>
+
+
+                                    <option value="Referral">
+                                        Referral
+                                    </option>
+
+
+                                    <option value="Social Media">
+                                        Social Media
+                                    </option>
+
+
+                                    <option value="AI Search">
+                                        AI Search
+                                    </option>
+
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- NOTES -->
+
+                            <div class="form-group full">
+
+                                <label>
+                                    Notes
+                                </label>
+
+                                <textarea name="notes" placeholder="Add notes about this lead..."></textarea>
+
+                            </div>
+
+
+                        </div>
+
+
+
+                        <div class="form-actions">
+
+
+                            <button type="button" class="cancel-button" onclick="closeModal()">
+
+                                Cancel
+
+                            </button>
+
+
+                            <button type="submit" class="save-button">
+
+                                Save Lead
+
+                            </button>
+
+
+                        </div>
+
+
+                    </form>
 
 
                 </div>
-
-
-            </section>
-
-
-
-            <div style="height:40px;"></div>
-
-
-        </main>
-
-
-    </div>
-
-
-
-    <!-- 
-     ADD LEAD MODAL
-= -->
-
-    <div class="modal" id="leadModal">
-
-
-        <div class="modal-box">
-
-
-            <div class="modal-header">
-
-
-                <div>
-
-                    <h2>
-                        Add New Lead
-                    </h2>
-
-                    <p>
-                        Add a potential customer manually.
-                    </p>
-
-                </div>
-
-
-                <button class="close" onclick="closeModal()" type="button">
-
-                    ×
-
-                </button>
 
 
             </div>
 
 
-
-            <form method="POST" action="{{ url_for('add_ai_lead') }}">
-
-
-                <div class="form-grid">
-
-
-                    <!-- COMPANY -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Company Name *
-                        </label>
-
-                        <input type="text" name="company_name" required placeholder="Company name">
-
-                    </div>
-
-
-                    <!-- INDUSTRY -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Industry
-                        </label>
-
-                        <input type="text" name="industry" placeholder="e.g. Construction">
-
-                    </div>
-
-
-                    <!-- LOCATION -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Location
-                        </label>
-
-                        <input type="text" name="location" placeholder="e.g. Johannesburg">
-
-                    </div>
-
-
-                    <!-- CONTACT -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Contact Person
-                        </label>
-
-                        <input type="text" name="contact_person" placeholder="Contact person">
-
-                    </div>
-
-
-                    <!-- EMAIL -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Email
-                        </label>
-
-                        <input type="email" name="email" placeholder="company@example.com">
-
-                    </div>
-
-
-                    <!-- PHONE -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Phone
-                        </label>
-
-                        <input type="text" name="phone" placeholder="+27...">
-
-                    </div>
-
-
-                    <!-- WEBSITE -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Website
-                        </label>
-
-                        <input type="url" name="website" placeholder="https://example.com">
-
-                    </div>
-
-
-                    <!-- SOURCE -->
-
-                    <div class="form-group">
-
-                        <label>
-                            Source
-                        </label>
-
-                        <select name="source">
-
-
-                            <option value="Manual">
-                                Manual
-                            </option>
-
-
-                            <option value="Google">
-                                Google
-                            </option>
-
-
-                            <option value="Website">
-                                Website
-                            </option>
-
-
-                            <option value="Referral">
-                                Referral
-                            </option>
-
-
-                            <option value="Social Media">
-                                Social Media
-                            </option>
-
-
-                            <option value="AI Search">
-                                AI Search
-                            </option>
-
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- NOTES -->
-
-                    <div class="form-group full">
-
-                        <label>
-                            Notes
-                        </label>
-
-                        <textarea name="notes" placeholder="Add notes about this lead..."></textarea>
-
-                    </div>
-
-
-                </div>
-
-
-
-                <div class="form-actions">
-
-
-                    <button type="button" class="cancel-button" onclick="closeModal()">
-
-                        Cancel
-
-                    </button>
-
-
-                    <button type="submit" class="save-button">
-
-                        Save Lead
-
-                    </button>
-
-
-                </div>
-
-
-            </form>
-
-
-        </div>
-
-
-    </div>
-
-
-
-    <!-- 
-     JAVASCRIPT
-= -->
-
-    <script>
-
-
-        /* 
-           MODAL
-        = */
-
-        function openModal() {
-
-            document
-                .getElementById("leadModal")
-                .classList
-                .add("active");
-
-        }
-
-
-        function closeModal() {
-
-            document
-                .getElementById("leadModal")
-                .classList
-                .remove("active");
-
-        }
-
-
-        const leadModal =
-            document.getElementById("leadModal");
-
-
-        if (leadModal) {
-
-            leadModal.addEventListener(
-                "click",
-                function (event) {
-
-                    if (event.target === this) {
-
-                        closeModal();
-
-                    }
-
+            <script>
+
+                /* 
+                   MODAL
+                 */
+                function openModal() {
+                    const modal = document.getElementById("leadModal");
+                    if (modal) modal.classList.add("active");
                 }
-            );
 
-        }
+                function closeModal() {
+                    const modal = document.getElementById("leadModal");
+                    if (modal) modal.classList.remove("active");
+                }
 
+                const leadModal = document.getElementById("leadModal");
+                if (leadModal) {
+                    leadModal.addEventListener("click", function (event) {
+                        if (event.target === this) closeModal();
+                    });
+                }
 
+                document.addEventListener("keydown", function (event) {
+                    if (event.key === "Escape") closeModal();
+                });
 
-        /* 
-           SAVE GOOGLE LEAD
-           AJAX - NO PAGE REFRESH
-        = */
+                /* 
+                   SAVE GOOGLE LEAD
+                   AJAX - NO PAGE REFRESH
+                 */
+                async function saveGoogleLead(button) {
 
-        async function saveGoogleLead(button) {
+                    if (button.dataset.saving === "true") return;
 
-
-            /* Prevent double click */
-
-            if (
-                button.dataset.saving === "true"
-            ) {
-
-                return;
-
-            }
-
-
-            button.dataset.saving = "true";
-
-
-            const originalText =
-                button.innerHTML;
-
-
-            button.innerHTML =
-                "Saving...";
-
-
-            button.disabled = true;
-
-
-
-            /* Form data */
-
-            const formData =
-                new FormData();
-
-
-            formData.append(
-                "company_name",
-                button.dataset.company || ""
-            );
-
-
-            formData.append(
-                "industry",
-                button.dataset.industry || ""
-            );
-
-
-            formData.append(
-                "location",
-                button.dataset.location || ""
-            );
-
-
-            formData.append(
-                "phone",
-                button.dataset.phone || ""
-            );
-
-
-            formData.append(
-                "website",
-                button.dataset.website || ""
-            );
-
-
-            formData.append(
-                "google_place_id",
-                button.dataset.googlePlaceId || ""
-            );
-
-
-
-            try {
-
-
-                const response =
-                    await fetch(
-                        "{{ url_for('save_google_lead') }}",
-                        {
-                            method: "POST",
-
-                            body: formData,
-
-                            headers: {
-                                "X-Requested-With":
-                                    "XMLHttpRequest"
-                            }
-                        }
-                    );
-
-
-
-                const data =
-                    await response.json();
-
-
-
-                if (data.success) {
-
-
-                    button.innerHTML =
-                        "✓ Saved";
-
-
-                    button.style.background =
-                        "#dcfce7";
-
-
-                    button.style.color =
-                        "#16a34a";
-
-
+                    button.dataset.saving = "true";
+                    const originalText = button.innerHTML;
+                    button.innerHTML = "Saving...";
                     button.disabled = true;
 
+                    const formData = new FormData();
 
+                    formData.append("company_name", button.dataset.company || "");
+                    formData.append("industry", button.dataset.industry || "");
+                    formData.append("location", button.dataset.location || "");
+                    formData.append("phone", button.dataset.phone || "");
+                    formData.append("website", button.dataset.website || "");
+                    formData.append("google_place_id", button.dataset.googlePlaceId || "");
 
-                    /* Add immediately to saved table */
+                    try {
+                        const response = await fetch("{{ url_for('save_google_lead') }}", {
+                            method: "POST",
+                            body: formData,
+                            headers: { "X-Requested-With": "XMLHttpRequest" }
+                        });
 
-                    if (
-                        !data.already_saved &&
-                        data.lead
-                    ) {
+                        const data = await response.json();
 
-                        addLeadToSavedTable(
-                            data.lead
-                        );
+                        if (data.success) {
+                            button.innerHTML = "✓ Saved";
+                            button.style.background = "#dcfce7";
+                            button.style.color = "#16a34a";
+                            button.disabled = true;
 
+                            if (!data.already_saved && data.lead) {
+                                addLeadToSavedTable(data.lead);
+                            }
+                        } else {
+                            throw new Error(data.message || "Could not save lead.");
+                        }
+
+                    } catch (error) {
+                        console.error("Save Google Lead Error:", error);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        button.dataset.saving = "false";
+                        alert(error.message || "Something went wrong while saving the lead.");
                     }
-
-
-                } else {
-
-
-                    button.innerHTML =
-                        originalText;
-
-
-                    button.disabled =
-                        false;
-
-
-                    button.dataset.saving =
-                        "false";
-
-
-                    alert(
-                        data.message ||
-                        "Could not save lead."
-                    );
-
                 }
 
-
-            } catch (error) {
-
-
-                console.error(
-                    "Save Google Lead Error:",
-                    error
-                );
-
-
-                button.innerHTML =
-                    originalText;
-
-
-                button.disabled =
-                    false;
-
-
-                button.dataset.saving =
-                    "false";
-
-
-                alert(
-                    "Something went wrong while saving the lead."
-                );
-
-            }
-
-        }
-
-
-
-        /* 
-           ADD GOOGLE LEAD TO TABLE WITHOUT REFRESH
-        = */
-
-        function addLeadToSavedTable(lead) {
-
-
-            let table =
-                document.querySelector(
-                    "#leadsTable"
-                );
-
-
-            /*
-             * If there was no saved lead before,
-             * create the table dynamically.
-             */
-
-            if (!table) {
-
-
-                const sectionCards =
-                    document.querySelectorAll(
-                        ".section-card"
-                    );
-
-
-                const savedSection =
-                    sectionCards[
-                    sectionCards.length - 1
-                    ];
-
-
-                if (!savedSection) {
-                    return;
+                /* 
+                   ESCAPE HTML
+                 */
+                function escapeHtml(value) {
+                    const div = document.createElement("div");
+                    div.textContent = value === null || value === undefined ? "" : String(value);
+                    return div.innerHTML;
                 }
 
-
-                const tableContainer =
-                    savedSection.querySelector(
-                        ".table-container"
-                    );
-
-
-                if (!tableContainer) {
-                    return;
+                function displayValue(value) {
+                    return value !== null && value !== undefined && String(value).trim() !== ""
+                        ? escapeHtml(value)
+                        : '<span class="db-empty">—</span>';
                 }
 
+                function displayUrl(value) {
+                    if (!value) return '<span class="db-empty">—</span>';
+                    const safe = escapeHtml(value);
+                    return `<a href="${safe}" target="_blank" rel="noopener noreferrer" class="db-url">${safe}</a>`;
+                }
 
-                tableContainer.innerHTML = `
+                function displayEmail(value) {
+                    if (!value) return '<span class="db-empty">—</span>';
+                    const safe = escapeHtml(value);
+                    return `<a href="mailto:${safe}" class="db-url">${safe}</a>`;
+                }
 
-                <table id="leadsTable">
+                function displayPhone(value) {
+                    if (!value) return '<span class="db-empty">—</span>';
+                    const safe = escapeHtml(value);
+                    return `<a href="tel:${safe}" class="db-url">${safe}</a>`;
+                }
 
-                    <thead>
+                function statusClass(status) {
+                    if (status === "New") return "new";
+                    if (status === "Contacted") return "contacted";
+                    if (status === "Interested") return "interested";
+                    if (status === "Converted") return "converted";
+                    return "not-interested";
+                }
 
-                        <tr>
+                function addLeadToSavedTable(lead) {
 
-                            <th>Company</th>
+                    let table = document.querySelector("#leadsTable");
+                    if (!table) return;
 
-                            <th>Industry</th>
+                    const tbody = table.querySelector("tbody");
+                    if (!tbody) return;
 
-                            <th>Location</th>
+                    /* Remove the empty-state row if it exists. */
+                    const emptyRow = tbody.querySelector("td[colspan='20']");
+                    if (emptyRow) emptyRow.closest("tr").remove();
 
-                            <th>Contact</th>
+                    const status = lead.lead_status || "New";
+                    const score = lead.lead_score ?? 0;
 
-                            <th>Score</th>
+                    const row = document.createElement("tr");
+                    row.className = "lead-row";
+                    row.dataset.id = lead.id || "";
+                    row.dataset.userId = lead.user_id || "";
+                    row.dataset.industry = lead.industry || "";
+                    row.dataset.location = lead.location || "";
+                    row.dataset.company = lead.company_name || "";
+                    row.dataset.status = status;
 
-                            <th>Status</th>
-
-                            <th>Actions</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody></tbody>
-
-                </table>
-
+                    row.innerHTML = `
+                <td><span class="db-id">${displayValue(lead.id)}</span></td>
+                <td><span class="db-user-id">${displayValue(lead.user_id)}</span></td>
+                <td><div class="company-name">${displayValue(lead.company_name)}</div></td>
+                <td>${displayValue(lead.industry)}</td>
+                <td>${displayValue(lead.location)}</td>
+                <td>${displayUrl(lead.website)}</td>
+                <td>${displayEmail(lead.email)}</td>
+                <td>${displayPhone(lead.phone)}</td>
+                <td>${displayValue(lead.contact_person)}</td>
+                <td><span class="source-pill">${displayValue(lead.source || "Google")}</span></td>
+                <td><span class="badge ${statusClass(status)}">${escapeHtml(status)}</span></td>
+                <td><span class="score-pill">${escapeHtml(score)}</span></td>
+                <td class="ai-cell">${displayValue(lead.ai_analysis)}</td>
+                <td class="ai-cell">${displayValue(lead.ai_reason)}</td>
+                <td class="ai-cell">${displayValue(lead.ai_message)}</td>
+                <td class="ai-cell">${displayValue(lead.notes)}</td>
+                <td class="date-cell">${displayValue(lead.created_at)}</td>
+                <td class="date-cell">${displayValue(lead.updated_at)}</td>
+                <td><span class="google-id">${displayValue(lead.google_place_id)}</span></td>
+                <td class="lead-actions-cell"><span class="muted">Saved — refresh for full actions</span></td>
             `;
 
-
-                table =
-                    document.querySelector(
-                        "#leadsTable"
-                    );
-
-            }
-
-
-            const tbody =
-                table.querySelector(
-                    "tbody"
-                );
-
-
-            if (!tbody) {
-                return;
-            }
-
-
-
-            /* Create row */
-
-            const row =
-                document.createElement("tr");
-
-
-            row.className =
-                "lead-row";
-
-
-            row.dataset.industry =
-                lead.industry || "";
-
-
-            row.dataset.location =
-                lead.location || "";
-
-
-            row.dataset.company =
-                lead.company_name || "";
-
-
-            row.dataset.status =
-                lead.lead_status || "New";
-
-
-
-            row.innerHTML = `
-
-            <td>
-
-                <div class="company-name">
-
-                    ${escapeHtml(
-                lead.company_name ||
-                "—"
-            )}
-
-                </div>
-
-                ${lead.website
-
-                    ?
-
-                    `
-                    <div class="muted">
-
-                        ${escapeHtml(
-                        lead.website
-                    )}
-
-                    </div>
-                    `
-
-                    :
-
-                    ""
+                    tbody.prepend(row);
                 }
 
-            </td>
 
+                function filterSavedLeads() {
+                    const queryInput = document.getElementById("savedLeadFilter");
+                    const query = (queryInput ? queryInput.value : "").toLowerCase().trim();
+                    const rows = document.querySelectorAll("#leadsTable tbody .lead-row");
 
-            <td>
-
-                ${escapeHtml(
-                    lead.industry ||
-                    "—"
-                )}
-
-            </td>
-
-
-            <td>
-
-                ${escapeHtml(
-                    lead.location ||
-                    "—"
-                )}
-
-            </td>
-
-
-            <td>
-
-                ${escapeHtml(
-                    lead.phone ||
-                    "—"
-                )}
-
-            </td>
-
-
-            <td>
-
-                ${lead.lead_score ||
-                0
+                    rows.forEach(row => {
+                        row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+                    });
                 }
 
-            </td>
-
-
-            <td>
-
-                <span class="badge new">
-
-                    New
-
-                </span>
-
-            </td>
-
-
-            <td>
-
-                <div class="actions">
-
-                    <span class="muted">
-
-                        Saved
-
-                    </span>
-
-                </div>
-
-            </td>
-
-        `;
-
-
-            tbody.prepend(row);
-
-        }
-
-
-
-        /* 
-           SECURITY HELPER
-        = */
-
-        function escapeHtml(value) {
-
-
-            const div =
-                document.createElement(
-                    "div"
-                );
-
-
-            div.textContent =
-                value;
-
-
-            return div.innerHTML;
-
-        }
-
-    </script>
-
+            </script>
 
 </body>
 
