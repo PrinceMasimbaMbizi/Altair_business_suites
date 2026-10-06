@@ -8,8 +8,16 @@ from datetime import datetime, date
 import mysql.connector
 import os
 import requests
+import cloudinary
+import cloudinary.uploader
 
-GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
+GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY") 
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+)
 
 # FLASK APP
 app = Flask(__name__)
@@ -577,51 +585,92 @@ def company_setup():
                 url_for("company_setup")
             )
 
+
+
+
+
+
+
+
+
+
+
+
         # Logo
 
         logo = request.files.get("logo")
 
-        logo_filename = None
+        logo_url = None
 
-        if logo and logo.filename:
 
-            if not allowed_file(
-                logo.filename
-            ):
+    if logo and logo.filename:
 
-                flash(
-                    "Invalid logo format. Please use PNG, JPG or JPEG.",
-                    "error"
-                )
+    # -----------------------------------------------------
+    # CHECK FILE TYPE
+    # -----------------------------------------------------
 
-                return redirect(
-                    url_for("company_setup")
-                )
+        if not allowed_file(logo.filename):
 
-            original_filename = secure_filename(
-                logo.filename
-            )
+            flash(
+            "Invalid logo format. Please use PNG, JPG or JPEG.",
+            "error"
+        )
 
-            extension = original_filename.rsplit(
-                ".",
-                1
-            )[1].lower()
+        return redirect(
+            url_for("settings")
+        )
 
-            logo_filename = (
-                f"company_{user_id}.{extension}"
-            )
 
-            os.makedirs(
-                app.config["UPLOAD_FOLDER"],
-                exist_ok=True
-            )
+    try:
 
-            logo.save(
-                os.path.join(
-                    app.config["UPLOAD_FOLDER"],
-                    logo_filename
-                )
-            )
+        # -------------------------------------------------
+        # UPLOAD LOGO TO CLOUDINARY
+        # -------------------------------------------------
+
+        upload_result = cloudinary.uploader.upload(
+
+            logo,
+
+            folder="altair_business_suite/company_logos",
+
+            public_id=f"company_{user_id}",
+
+            overwrite=True,
+
+            resource_type="image"
+        )
+
+
+        # -------------------------------------------------
+        # GET PERMANENT CLOUDINARY URL
+        # -------------------------------------------------
+
+        logo_url = upload_result.get(
+            "secure_url"
+        )
+
+
+        print(
+            "CLOUDINARY LOGO URL:",
+            logo_url
+        )
+
+
+    except Exception as e:
+
+        print(
+            "CLOUDINARY LOGO UPLOAD ERROR:",
+            e
+        )
+
+        flash(
+            "Could not upload company logo.",
+            "error"
+        )
+
+        return redirect(
+            url_for("settings")
+        )
 
         db = None
         cursor = None
@@ -681,7 +730,7 @@ def company_setup():
                     )
                 )
 
-                if logo_filename:
+                if logo_url:
 
                     cursor.execute(
                         """
@@ -690,7 +739,7 @@ def company_setup():
                         WHERE user_id = %s
                         """,
                         (
-                            logo_filename,
+                            logo_url,
                             user_id
                         )
                     )
@@ -4714,27 +4763,32 @@ def delete_ai_lead(lead_id):
 
 
 
+# =========================================================
+# AI LEAD FINDER - GOOGLE PLACES SEARCH
+# =========================================================
 
-
-
-
-
-
-
-
-
-#to search for AL leads using Google Places API
-@app.route("/ai-leads/search", methods=["POST"])
+@app.route(
+    "/ai-leads/search",
+    methods=["POST"]
+)
 def search_ai_leads():
 
+    # =====================================================
+    # CHECK LOGIN
+    # =====================================================
+
     if "user_id" not in session:
-        return redirect(url_for("login"))
+
+        return redirect(
+            url_for("login")
+        )
 
     user_id = session["user_id"]
 
-    
+
+    # =====================================================
     # GET SEARCH INPUTS
-    
+    # =====================================================
 
     services = request.form.get(
         "services",
@@ -4761,6 +4815,11 @@ def search_ai_leads():
         ""
     ).strip()
 
+
+    # =====================================================
+    # MAX RESULTS
+    # =====================================================
+
     try:
 
         max_results = int(
@@ -4770,17 +4829,28 @@ def search_ai_leads():
             )
         )
 
-    except (ValueError, TypeError):
+    except (
+        ValueError,
+        TypeError
+    ):
 
         max_results = 10
 
+
     # Keep Google request reasonable
+
     max_results = max(
         1,
-        min(max_results, 20)
+        min(
+            max_results,
+            20
+        )
     )
 
+
+    # =====================================================
     # VALIDATION
+    # =====================================================
 
     if not services:
 
@@ -4793,6 +4863,7 @@ def search_ai_leads():
             url_for("ai_leads")
         )
 
+
     if not location:
 
         flash(
@@ -4803,6 +4874,7 @@ def search_ai_leads():
         return redirect(
             url_for("ai_leads")
         )
+
 
     if not GOOGLE_PLACES_API_KEY:
 
@@ -4815,64 +4887,156 @@ def search_ai_leads():
             url_for("ai_leads")
         )
 
-    
-    # BUILD SMART SEARCH QUERY
-    
+
+    # =====================================================
+    # BUILD CUSTOMER DISCOVERY QUERY
+    # =====================================================
+    #
+    # IMPORTANT:
+    #
+    # "services" is what OUR company sells.
+    #
+    # We do NOT put the service directly into the
+    # Google Places search because that can cause
+    # Google to find our competitors.
+    #
+    # Example:
+    #
+    # Service we sell:
+    # Website Development
+    #
+    # Target industry:
+    # Restaurants
+    #
+    # Location:
+    # Cape Town
+    #
+    # Google search:
+    #
+    # Restaurants in Cape Town
+    #
+    # The service is used later to qualify the lead.
+    # =====================================================
 
     query_parts = []
 
-    # Service being offered
-    query_parts.append(
-        services
-    )
 
-    # Target industry
+    # =====================================================
+    # TARGET INDUSTRY
+    # =====================================================
+
     if industry:
 
         query_parts.append(
             industry
         )
 
-    # Business size
-    if business_size and business_size.lower() != "any":
+    else:
 
         query_parts.append(
-            business_size + " businesses"
+            "businesses"
         )
 
-    # Extra keywords
+
+    # =====================================================
+    # BUSINESS SIZE
+    # =====================================================
+
+    if (
+        business_size
+        and
+        business_size.lower() != "any"
+    ):
+
+        query_parts.append(
+            business_size
+            + " businesses"
+        )
+
+
+    # =====================================================
+    # EXTRA KEYWORDS
+    # =====================================================
+
     if keywords:
 
         query_parts.append(
             keywords
         )
 
-    # Location
+
+    # =====================================================
+    # LOCATION
+    # =====================================================
+
     query_parts.append(
         "in " + location
     )
+
+
+    # =====================================================
+    # FINAL GOOGLE QUERY
+    # =====================================================
 
     search_query = " ".join(
         query_parts
     )
 
-    print("=" * 70)
-    print("AI LEAD SEARCH")
-    print("=" * 70)
-    print("Services:", services)
-    print("Location:", location)
-    print("Industry:", industry)
-    print("Business Size:", business_size)
-    print("Keywords:", keywords)
-    print("Google Query:", search_query)
+
+    # =====================================================
+    # DEBUG INFORMATION
+    # =====================================================
+
     print("=" * 70)
 
+    print(
+        "AI LEAD SEARCH"
+    )
+
+    print("=" * 70)
+
+    print(
+        "Service / Product:",
+        services
+    )
+
+    print(
+        "Target Location:",
+        location
+    )
+
+    print(
+        "Target Industry:",
+        industry
+    )
+
+    print(
+        "Business Size:",
+        business_size
+    )
+
+    print(
+        "Keywords:",
+        keywords
+    )
+
+    print(
+        "Google Customer Query:",
+        search_query
+    )
+
+    print("=" * 70)
+
+
+    # =====================================================
     # GOOGLE PLACES API
+    # =====================================================
 
     url = (
         "https://places.googleapis.com/v1/"
         "places:searchText"
     )
+
 
     headers = {
 
@@ -4884,17 +5048,27 @@ def search_ai_leads():
 
         "X-Goog-FieldMask":
             ",".join([
+
                 "places.id",
+
                 "places.displayName",
+
                 "places.formattedAddress",
+
                 "places.websiteUri",
+
                 "places.nationalPhoneNumber",
+
                 "places.internationalPhoneNumber",
+
                 "places.types",
+
                 "places.businessStatus",
+
                 "places.googleMapsUri"
             ])
     }
+
 
     payload = {
 
@@ -4905,27 +5079,36 @@ def search_ai_leads():
             max_results
     }
 
-   
-    # SEND REQUEST
+
+    # =====================================================
+    # SEND GOOGLE REQUEST
+    # =====================================================
 
     try:
 
         response = requests.post(
+
             url,
+
             headers=headers,
+
             json=payload,
+
             timeout=30
         )
+
 
         print(
             "GOOGLE STATUS:",
             response.status_code
         )
 
+
         print(
             "GOOGLE RESPONSE:",
             response.text
         )
+
 
         if response.status_code != 200:
 
@@ -4939,7 +5122,9 @@ def search_ai_leads():
                 url_for("ai_leads")
             )
 
+
         data = response.json()
+
 
     except requests.RequestException as e:
 
@@ -4948,114 +5133,183 @@ def search_ai_leads():
             e
         )
 
+
         flash(
             "Unable to connect to Google Places.",
             "error"
         )
 
+
         return redirect(
             url_for("ai_leads")
         )
 
-    
+
+    # =====================================================
     # PROCESS GOOGLE RESULTS
-   
+    # =====================================================
 
     google_results = []
+
 
     for place in data.get(
         "places",
         []
     ):
 
-        
+
+        # =================================================
         # COMPANY NAME
-        
+        # =================================================
 
         display_name = place.get(
             "displayName",
             {}
         )
 
+
         company_name = display_name.get(
             "text",
             "Unknown Business"
         )
 
-        
+
+        # =================================================
         # PHONE
-        
+        # =================================================
 
         phone = (
+
             place.get(
                 "nationalPhoneNumber"
             )
+
             or
+
             place.get(
                 "internationalPhoneNumber"
             )
+
             or
+
             ""
         )
 
-        
-        # INDUSTRY
-        
+
+        # =================================================
+        # GOOGLE BUSINESS TYPES
+        # =================================================
 
         types = place.get(
             "types",
             []
         )
 
+
+        # =================================================
+        # DETERMINE INDUSTRY
+        # =================================================
+
         industry_name = ""
 
+
         ignored_types = {
+
             "point_of_interest",
+
             "establishment",
+
             "store",
+
             "premise",
+
             "political",
+
             "locality",
+
             "geocode"
         }
+
 
         for place_type in types:
 
             if place_type not in ignored_types:
 
                 industry_name = (
+
                     place_type
-                    .replace("_", " ")
+
+                    .replace(
+                        "_",
+                        " "
+                    )
+
                     .title()
                 )
 
                 break
 
-        # If Google doesn't provide
-        # a useful type, use the user's
-        # requested industry.
+
+        # =================================================
+        # FALLBACK INDUSTRY
+        # =================================================
 
         if not industry_name:
 
             industry_name = industry
 
-        
-        # LOCATION
-        
+
+        # =================================================
+        # ADDRESS
+        # =================================================
 
         address = place.get(
             "formattedAddress",
             ""
         )
 
-        
-        # RESULT
-        
 
-        google_results.append({
+        # =================================================
+        # WEBSITE
+        # =================================================
+
+        website = place.get(
+            "websiteUri",
+            ""
+        )
+
+
+        # =================================================
+        # BUSINESS STATUS
+        # =================================================
+
+        business_status = place.get(
+            "businessStatus",
+            ""
+        )
+
+
+        # =================================================
+        # GOOGLE MAPS URL
+        # =================================================
+
+        google_maps_url = place.get(
+            "googleMapsUri",
+            ""
+        )
+
+
+        # =================================================
+        # BUILD POTENTIAL LEAD
+        # =================================================
+
+        potential_lead = {
 
             "google_place_id":
-                place.get("id", ""),
+                place.get(
+                    "id",
+                    ""
+                ),
 
             "company_name":
                 company_name,
@@ -5064,10 +5318,7 @@ def search_ai_leads():
                 address,
 
             "website":
-                place.get(
-                    "websiteUri",
-                    ""
-                ),
+                website,
 
             "phone":
                 phone,
@@ -5079,33 +5330,131 @@ def search_ai_leads():
                 types,
 
             "business_status":
-                place.get(
-                    "businessStatus",
+                business_status,
+
+            "google_maps_url":
+                google_maps_url
+        }
+
+
+        # =================================================
+        # CHECK FOR COMPETITOR
+        # =================================================
+
+        if is_likely_competitor(
+
+            potential_lead,
+
+            services
+        ):
+
+            print(
+                "COMPETITOR SKIPPED:",
+                company_name
+            )
+
+            continue
+
+
+        # =================================================
+        # QUALIFY THE LEAD
+        # =================================================
+
+        qualification = qualify_lead_with_ai(
+
+            lead=potential_lead,
+
+            service=services,
+
+            target_industry=industry,
+
+            target_location=location,
+
+            business_size=business_size,
+
+            keywords=keywords
+        )
+
+
+        # =================================================
+        # ADD AI QUALIFICATION
+        # =================================================
+
+        potential_lead.update({
+
+            "lead_score":
+                qualification.get(
+                    "lead_score",
+                    0
+                ),
+
+            "ai_analysis":
+                qualification.get(
+                    "ai_analysis",
                     ""
                 ),
 
-            "google_maps_url":
-                place.get(
-                    "googleMapsUri",
+            "ai_reason":
+                qualification.get(
+                    "ai_reason",
                     ""
+                ),
+
+            "ai_message":
+                qualification.get(
+                    "ai_message",
+                    ""
+                ),
+
+            "lead_quality":
+                qualification.get(
+                    "lead_quality",
+                    "Potential Lead"
                 )
         })
 
-    
+
+        # =================================================
+        # ADD RESULT
+        # =================================================
+
+        google_results.append(
+            potential_lead
+        )
+
+
+    # =====================================================
+    # SORT RESULTS BY LEAD SCORE
+    # =====================================================
+
+    google_results.sort(
+
+        key=lambda lead:
+            lead.get(
+                "lead_score",
+                0
+            ),
+
+        reverse=True
+    )
+
+
+    # =====================================================
     # NO RESULTS
-    
+    # =====================================================
 
     if not google_results:
 
         flash(
-            "No businesses were found for your search. "
+            "No suitable potential customers were found. "
             "Try changing the location, industry or keywords.",
             "error"
         )
 
-    
-    # LOAD PAGE
-    
+
+    # =====================================================
+    # LOAD AI LEAD FINDER PAGE
+    # =====================================================
 
     return render_template(
 
@@ -5169,7 +5518,13 @@ def search_ai_leads():
     )
 
 
-def get_company_for_user(user_id):
+# =========================================================
+# GET COMPANY FOR CURRENT USER
+# =========================================================
+
+def get_company_for_user(
+    user_id
+):
 
     db = get_db_connection()
 
@@ -5177,21 +5532,34 @@ def get_company_for_user(user_id):
         dictionary=True
     )
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT *
         FROM companies
         WHERE user_id = %s
         LIMIT 1
-    """, (user_id,))
+        """,
+        (
+            user_id,
+        )
+    )
 
     company = cursor.fetchone()
 
     cursor.close()
+
     db.close()
 
     return company
 
-def get_leads_for_user(user_id):
+
+# =========================================================
+# GET LEADS FOR CURRENT USER
+# =========================================================
+
+def get_leads_for_user(
+    user_id
+):
 
     db = get_db_connection()
 
@@ -5199,21 +5567,34 @@ def get_leads_for_user(user_id):
         dictionary=True
     )
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT *
         FROM leads
         WHERE user_id = %s
         ORDER BY id DESC
-    """, (user_id,))
+        """,
+        (
+            user_id,
+        )
+    )
 
     leads = cursor.fetchall()
 
     cursor.close()
+
     db.close()
 
     return leads
 
-def get_lead_count(user_id):
+
+# =========================================================
+# GET TOTAL LEADS
+# =========================================================
+
+def get_lead_count(
+    user_id
+):
 
     db = get_db_connection()
 
@@ -5221,18 +5602,29 @@ def get_lead_count(user_id):
         dictionary=True
     )
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT COUNT(*) AS total
         FROM leads
         WHERE user_id = %s
-    """, (user_id,))
+        """,
+        (
+            user_id,
+        )
+    )
 
     result = cursor.fetchone()
 
     cursor.close()
+
     db.close()
 
     return result["total"]
+
+
+# =========================================================
+# GET LEADS BY STATUS
+# =========================================================
 
 def get_lead_status_count(
     user_id,
@@ -5245,22 +5637,31 @@ def get_lead_status_count(
         dictionary=True
     )
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT COUNT(*) AS total
         FROM leads
         WHERE user_id = %s
         AND lead_status = %s
-    """, (
-        user_id,
-        status
-    ))
+        """,
+        (
+            user_id,
+            status
+        )
+    )
 
     result = cursor.fetchone()
 
     cursor.close()
+
     db.close()
 
     return result["total"]
+
+
+# =========================================================
+# CHECK IF BUSINESS IS LIKELY A COMPETITOR
+# =========================================================
 
 def is_likely_competitor(
     lead,
@@ -5272,35 +5673,80 @@ def is_likely_competitor(
         ""
     ).lower()
 
+
     industry = lead.get(
         "industry",
         ""
     ).lower()
 
-    def is_likely_competitor(
-    lead,
-    service
-):
 
-        company_name = lead.get("company_name","").lower()
+    website = lead.get(
+        "website",
+        ""
+    ).lower()
 
-    industry = lead.get("industry","").lower()
+
+    # =====================================================
+    # COMPETITOR TERMS
+    # =====================================================
 
     competitor_terms = [
 
         "web design",
+
         "web development",
+
         "website design",
+
         "website development",
+
         "web developer",
+
         "website developer",
+
         "digital agency",
+
         "digital marketing agency",
+
         "software development",
-        "app development"
+
+        "software company",
+
+        "app development",
+
+        "application development",
+
+        "web agency",
+
+        "website agency",
+
+        "seo agency",
+
+        "marketing agency"
     ]
 
-    combined_text = (company_name+ " "+ industry)
+
+    # =====================================================
+    # COMBINE BUSINESS INFORMATION
+    # =====================================================
+
+    combined_text = (
+
+        company_name
+
+        + " "
+
+        + industry
+
+        + " "
+
+        + website
+    )
+
+
+    # =====================================================
+    # CHECK TERMS
+    # =====================================================
 
     for term in competitor_terms:
 
@@ -5308,18 +5754,372 @@ def is_likely_competitor(
 
             return True
 
+
     return False
 
 
+# =========================================================
+# BASIC AI LEAD QUALIFICATION
+# =========================================================
+#
+# This is currently a rule-based qualification system.
+# It can later be replaced/enhanced with a real AI model.
+# =========================================================
+
+def qualify_lead_with_ai(
+
+    lead,
+
+    service,
+
+    target_industry,
+
+    target_location,
+
+    business_size,
+
+    keywords
+
+):
+
+    score = 0
+
+    reasons = []
+
+    analysis_points = []
 
 
+    # =====================================================
+    # LEAD INFORMATION
+    # =====================================================
+
+    company_name = lead.get(
+        "company_name",
+        ""
+    )
+
+    website = lead.get(
+        "website",
+        ""
+    )
+
+    industry = lead.get(
+        "industry",
+        ""
+    )
+
+    location = lead.get(
+        "address",
+        ""
+    )
+
+    business_status = lead.get(
+        "business_status",
+        ""
+    )
 
 
+    # =====================================================
+    # BUSINESS STATUS
+    # =====================================================
+
+    if business_status == "OPERATIONAL":
+
+        score += 10
+
+        analysis_points.append(
+            "The business is currently listed as operational."
+        )
 
 
+    # =====================================================
+    # INDUSTRY MATCH
+    # =====================================================
+
+    if target_industry:
+
+        industry_lower = industry.lower()
+
+        target_lower = target_industry.lower()
 
 
+        if (
 
+            target_lower in industry_lower
+
+            or
+
+            industry_lower in target_lower
+        ):
+
+            score += 25
+
+            reasons.append(
+                "The business matches the target industry."
+            )
+
+            analysis_points.append(
+
+                "The business appears to match "
+                "the requested target industry: "
+                + target_industry
+                + "."
+            )
+
+        else:
+
+            analysis_points.append(
+
+                "The business may not exactly match "
+                "the requested target industry."
+            )
+
+
+    # =====================================================
+    # WEBSITE CHECK
+    # =====================================================
+
+    if not website:
+
+        score += 35
+
+        reasons.append(
+            "No website was found in the Google business listing."
+        )
+
+        analysis_points.append(
+
+            "No website was found for this business. "
+            "This may represent a strong opportunity "
+            "for "
+            + service
+            + "."
+        )
+
+    else:
+
+        score += 5
+
+        analysis_points.append(
+
+            "The business already has a website listed."
+        )
+
+
+    # =====================================================
+    # LOCATION MATCH
+    # =====================================================
+
+    if target_location:
+
+        if target_location.lower() in location.lower():
+
+            score += 15
+
+            analysis_points.append(
+
+                "The business appears to be located "
+                "in the requested target area."
+            )
+
+
+    # =====================================================
+    # SERVICE BEING SOLD
+    # =====================================================
+
+    if service:
+
+        analysis_points.append(
+
+            "The requested service or product being "
+            "sold is: "
+            + service
+            + "."
+        )
+
+
+    # =====================================================
+    # BUSINESS SIZE
+    # =====================================================
+
+    if (
+
+        business_size
+
+        and
+
+        business_size.lower() != "any"
+    ):
+
+        analysis_points.append(
+
+            "The requested business size is: "
+            + business_size
+            + "."
+        )
+
+
+    # =====================================================
+    # KEYWORDS
+    # =====================================================
+
+    if keywords:
+
+        analysis_points.append(
+
+            "Additional search requirements: "
+            + keywords
+            + "."
+        )
+
+
+    # =====================================================
+    # LIMIT SCORE
+    # =====================================================
+
+    score = max(
+        0,
+        min(
+            score,
+            100
+        )
+    )
+
+
+    # =====================================================
+    # LEAD QUALITY
+    # =====================================================
+
+    if score >= 80:
+
+        quality = (
+            "Excellent potential lead"
+        )
+
+    elif score >= 60:
+
+        quality = (
+            "Strong potential lead"
+        )
+
+    elif score >= 40:
+
+        quality = (
+            "Potential lead"
+        )
+
+    elif score >= 20:
+
+        quality = (
+            "Weak potential lead"
+        )
+
+    else:
+
+        quality = (
+            "Low potential lead"
+        )
+
+
+    # =====================================================
+    # AI ANALYSIS
+    # =====================================================
+
+    ai_analysis = (
+
+        company_name
+
+        + " was identified as a potential customer "
+          "for "
+
+        + service
+
+        + ". "
+
+        + " ".join(
+            analysis_points
+        )
+    )
+
+
+    # =====================================================
+    # AI REASON
+    # =====================================================
+
+    if reasons:
+
+        ai_reason = " ".join(
+            reasons
+        )
+
+    else:
+
+        ai_reason = (
+
+            quality
+
+            + ". Additional research is recommended "
+              "before contacting the business."
+        )
+
+
+    # =====================================================
+    # OUTREACH MESSAGE
+    # =====================================================
+
+    ai_message = (
+
+        "Hi "
+
+        + company_name
+
+        + ",\n\n"
+
+        + "I came across your business while researching "
+          "companies in "
+
+        + target_location
+
+        + ".\n\n"
+
+        + "We provide "
+
+        + service
+
+        + " and help businesses improve their "
+          "operations, online presence and customer "
+          "experience.\n\n"
+
+        + "I would be happy to discuss how we could "
+          "potentially help your business.\n\n"
+
+        + "Kind regards,\n"
+
+        + "Skies Altair Technologies"
+    )
+
+
+    # =====================================================
+    # RETURN QUALIFICATION
+    # =====================================================
+
+    return {
+
+        "lead_score":
+            score,
+
+        "ai_analysis":
+            ai_analysis,
+
+        "ai_reason":
+            ai_reason,
+
+        "ai_message":
+            ai_message,
+
+        "lead_quality":
+            quality
+    }
 
 
 
