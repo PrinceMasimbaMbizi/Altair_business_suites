@@ -134,7 +134,7 @@ def company_logo():
         if not company or not company.get("logo"):
             abort(404)
 
-        # Only use the filename
+        
         # This protects against paths stored in the database.
         filename = os.path.basename(
             company["logo"]
@@ -4851,6 +4851,7 @@ def delete_ai_lead(lead_id):
 
     return redirect(url_for("ai_leads"))
 
+#to search for AL leads using Google Places API
 @app.route("/ai-leads/search", methods=["POST"])
 def search_ai_leads():
 
@@ -4859,13 +4860,27 @@ def search_ai_leads():
 
     user_id = session["user_id"]
 
-    business_type = request.form.get(
-        "business_type",
+    
+    # GET SEARCH INPUTS
+    
+
+    services = request.form.get(
+        "services",
         ""
     ).strip()
 
     location = request.form.get(
         "location",
+        ""
+    ).strip()
+
+    industry = request.form.get(
+        "industry",
+        ""
+    ).strip()
+
+    business_size = request.form.get(
+        "business_size",
         ""
     ).strip()
 
@@ -4875,38 +4890,47 @@ def search_ai_leads():
     ).strip()
 
     try:
+
         max_results = int(
             request.form.get(
                 "max_results",
                 10
             )
         )
-    except ValueError:
+
+    except (ValueError, TypeError):
+
         max_results = 10
 
-    # Keep requests reasonable
+    # Keep Google request reasonable
     max_results = max(
         1,
         min(max_results, 20)
     )
 
-    if not business_type:
+    # VALIDATION
+
+    if not services:
 
         flash(
-            "Please enter the type of customer you want to find.",
+            "Please enter the service or product you offer.",
             "error"
         )
 
-        return redirect(url_for("ai_leads"))
+        return redirect(
+            url_for("ai_leads")
+        )
 
     if not location:
 
         flash(
-            "Please enter a location.",
+            "Please enter the target location.",
             "error"
         )
 
-        return redirect(url_for("ai_leads"))
+        return redirect(
+            url_for("ai_leads")
+        )
 
     if not GOOGLE_PLACES_API_KEY:
 
@@ -4915,22 +4939,63 @@ def search_ai_leads():
             "error"
         )
 
-        return redirect(url_for("ai_leads"))
+        return redirect(
+            url_for("ai_leads")
+        )
 
     
-    # BUILD GOOGLE SEARCH QUERY
+    # BUILD SMART SEARCH QUERY
     
 
-    search_query = business_type
+    query_parts = []
 
+    # Service being offered
+    query_parts.append(
+        services
+    )
+
+    # Target industry
+    if industry:
+
+        query_parts.append(
+            industry
+        )
+
+    # Business size
+    if business_size and business_size.lower() != "any":
+
+        query_parts.append(
+            business_size + " businesses"
+        )
+
+    # Extra keywords
     if keywords:
-        search_query += " " + keywords
 
-    search_query += " in " + location
+        query_parts.append(
+            keywords
+        )
 
-    
+    # Location
+    query_parts.append(
+        "in " + location
+    )
+
+    search_query = " ".join(
+        query_parts
+    )
+
+    print("=" * 70)
+    print("AI LEAD SEARCH")
+    print("=" * 70)
+    print("Services:", services)
+    print("Location:", location)
+    print("Industry:", industry)
+    print("Business Size:", business_size)
+    print("Keywords:", keywords)
+    print("Google Query:", search_query)
+    print("=" * 70)
+
     # GOOGLE PLACES API
-    
 
     url = (
         "https://places.googleapis.com/v1/"
@@ -4965,8 +5030,11 @@ def search_ai_leads():
             search_query,
 
         "pageSize":
-            min(max_results, 20)
+            max_results
     }
+
+   
+    # SEND REQUEST
 
     try:
 
@@ -4991,7 +5059,7 @@ def search_ai_leads():
 
             flash(
                 "Google Places search failed. "
-                "Check your API key and Places API configuration.",
+                "Please check your Google Places API configuration.",
                 "error"
             )
 
@@ -5018,12 +5086,19 @@ def search_ai_leads():
         )
 
     
-    # CONVERT GOOGLE RESULTS
-    
+    # PROCESS GOOGLE RESULTS
+   
 
     google_results = []
 
-    for place in data.get("places", []):
+    for place in data.get(
+        "places",
+        []
+    ):
+
+        
+        # COMPANY NAME
+        
 
         display_name = place.get(
             "displayName",
@@ -5035,6 +5110,10 @@ def search_ai_leads():
             "Unknown Business"
         )
 
+        
+        # PHONE
+        
+
         phone = (
             place.get(
                 "nationalPhoneNumber"
@@ -5043,26 +5122,121 @@ def search_ai_leads():
             place.get(
                 "internationalPhoneNumber"
             )
+            or
+            ""
         )
 
-        types = place.get("types", [])
+        
+        # INDUSTRY
+        
 
-        industry = ""
+        types = place.get(
+            "types",
+            []
+        )
 
-        ignored_types = {"point_of_interest","establishment","store","premise","political","locality","geocode"}
+        industry_name = ""
+
+        ignored_types = {
+            "point_of_interest",
+            "establishment",
+            "store",
+            "premise",
+            "political",
+            "locality",
+            "geocode"
+        }
 
         for place_type in types:
+
             if place_type not in ignored_types:
-                industry = place_type.replace("_", " ").title()
+
+                industry_name = (
+                    place_type
+                    .replace("_", " ")
+                    .title()
+                )
+
                 break
 
-        google_results.append({"google_place_id": place.get("id"),"company_name": company_name,"address": place.get("formattedAddress", ""),"website": place.get("websiteUri", ""),"phone": phone or "","industry":industry, "types": types,"business_status": place.get("businessStatus", ""),"google_maps_url": place.get("googleMapsUri", "")})
+        # If Google doesn't provide
+        # a useful type, use the user's
+        # requested industry.
+
+        if not industry_name:
+
+            industry_name = industry
+
+        
+        # LOCATION
+        
+
+        address = place.get(
+            "formattedAddress",
+            ""
+        )
+
+        
+        # RESULT
+        
+
+        google_results.append({
+
+            "google_place_id":
+                place.get("id", ""),
+
+            "company_name":
+                company_name,
+
+            "address":
+                address,
+
+            "website":
+                place.get(
+                    "websiteUri",
+                    ""
+                ),
+
+            "phone":
+                phone,
+
+            "industry":
+                industry_name,
+
+            "types":
+                types,
+
+            "business_status":
+                place.get(
+                    "businessStatus",
+                    ""
+                ),
+
+            "google_maps_url":
+                place.get(
+                    "googleMapsUri",
+                    ""
+                )
+        })
 
     
-    # SEND RESULTS BACK TO PAGE
+    # NO RESULTS
+    
+
+    if not google_results:
+
+        flash(
+            "No businesses were found for your search. "
+            "Try changing the location, industry or keywords.",
+            "error"
+        )
+
+    
+    # LOAD PAGE
     
 
     return render_template(
+
         "ai_leads.html",
 
         company=get_company_for_user(
@@ -5102,6 +5276,16 @@ def search_ai_leads():
         search_performed=True,
 
         search_query=search_query,
+
+        search_services=services,
+
+        search_location=location,
+
+        search_industry=industry,
+
+        search_business_size=business_size,
+
+        search_keywords=keywords,
 
         user_name=session.get(
             "user_name"

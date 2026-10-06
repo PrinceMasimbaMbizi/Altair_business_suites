@@ -1802,6 +1802,417 @@
                 min-width: 2700px !important;
             }
         }
+
+
+        /* =========================================================
+   AI LEAD SEARCH - IMPROVED
+========================================================= */
+
+        .search-card {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.04);
+
+            border: 1px solid #eeeef5;
+        }
+
+
+        /* =========================================================
+   SEARCH HEADER
+========================================================= */
+
+        .search-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 24px;
+        }
+
+        .search-card .card-header h3 {
+            font-size: 17px;
+            font-weight: 800;
+            color: #171722;
+        }
+
+        .search-card .card-header span {
+            display: block;
+
+            margin-top: 5px;
+
+            color: #858597;
+
+            font-size: 11px;
+        }
+
+
+        .search-status {
+            padding: 7px 11px;
+
+            border-radius: 8px;
+
+            background: #f0ebff;
+
+            color: #7c3aed;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: .5px;
+        }
+
+
+        /* =========================================================
+   SEARCH GRID
+========================================================= */
+
+        .search-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 20px;
+
+        }
+
+
+        /* =========================================================
+   FIELD
+========================================================= */
+
+        .field {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 7px;
+
+        }
+
+
+        .field-full {
+
+            grid-column: 1 / -1;
+
+        }
+
+
+        .field-large {
+            min-width: 0;
+        }
+
+
+        .field label {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            color: #383844;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+
+        .field label .required {
+
+            color: #dc2626;
+
+            font-size: 12px;
+        }
+
+
+        .field label .optional {
+
+            color: #9999a8;
+
+            font-size: 9px;
+
+            font-weight: 500;
+
+            margin-left: 3px;
+        }
+
+
+        /* =========================================================
+   INPUTS
+========================================================= */
+
+        .field input,
+        .field select {
+
+            width: 100%;
+
+            min-height: 45px;
+
+            padding: 12px 14px;
+
+            background: #f9f9fc;
+
+            border: 1px solid #e4e4ed;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            color: #171722;
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            transition: .2s;
+        }
+
+
+        .field input::placeholder {
+            color: #aaaab8;
+        }
+
+
+        .field input:hover,
+        .field select:hover {
+
+            border-color: #d4d0e8;
+
+        }
+
+
+        .field input:focus,
+        .field select:focus {
+
+            background: white;
+
+            border-color: #8b5cf6;
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.09);
+
+        }
+
+
+        .field small {
+
+            color: #9999a7;
+
+            font-size: 9px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =========================================================
+   SEARCH HELP
+========================================================= */
+
+        .search-help {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 12px;
+
+            margin-top: 22px;
+
+            padding: 13px 15px;
+
+            background: #faf9ff;
+
+            border: 1px solid #eeeafd;
+
+            border-radius: 11px;
+        }
+
+
+        .search-help-icon {
+
+            width: 32px;
+
+            height: 32px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background: #ede9fe;
+
+            font-size: 15px;
+        }
+
+
+        .search-help strong {
+
+            display: block;
+
+            color: #3b3260;
+
+            font-size: 11px;
+
+            margin-bottom: 4px;
+        }
+
+
+        .search-help p {
+
+            color: #777789;
+
+            font-size: 10px;
+
+            line-height: 1.6;
+        }
+
+
+        .search-help b {
+
+            color: #6d28d9;
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================================
+   SEARCH ACTION
+========================================================= */
+
+        .search-actions {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            margin-top: 22px;
+        }
+
+
+        .search-button {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            min-height: 44px;
+
+            padding: 0 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            font-family: inherit;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            transition: .2s;
+        }
+
+
+        .search-button:hover {
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(124, 58, 237, .20);
+        }
+
+
+        .search-button:active {
+
+            transform: translateY(0);
+        }
+
+
+        /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+        @media (max-width: 900px) {
+
+            .search-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+            .field-full {
+
+                grid-column: auto;
+
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .search-card {
+
+                padding: 18px;
+
+            }
+
+            .search-card .card-header {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+            .search-status {
+
+                align-self: flex-start;
+
+            }
+
+            .search-actions {
+
+                justify-content: stretch;
+
+            }
+
+            .search-button {
+
+                width: 100%;
+
+            }
+
+        }
     </style>
 
 </head>
@@ -2160,15 +2571,11 @@
 
 
 
-            <!-- 
-             SEARCH
-        = -->
+            <!-- AI LEAD FINDER SEARCH-->
 
             <section class="search-card">
 
-
                 <div class="card-header">
-
 
                     <div>
 
@@ -2177,11 +2584,14 @@
                         </h3>
 
                         <span>
-                            Search Google Places
+                            Tell Altair what kind of customers you want to find
                         </span>
 
                     </div>
 
+                    <div class="search-status">
+                        AI Lead Search
+                    </div>
 
                 </div>
 
@@ -2192,46 +2602,123 @@
                     <div class="search-grid">
 
 
-                        <!-- BUSINESS TYPE -->
+                        <!--SERVICES OFFERED -->
 
-                        <div class="field">
+                        <div class="field field-large">
 
                             <label>
-                                Business Type
+                                Service(s) Offered
+                                <span class="required">*</span>
                             </label>
 
-                            <input type="text" name="business_type" placeholder="e.g. Construction companies" required>
+                            <input type="text" name="services"
+                                placeholder="e.g. Website Development, Accounting, Cleaning" required>
+
+                            <small>
+                                What are you selling or offering?
+                            </small>
 
                         </div>
 
 
-                        <!-- LOCATION -->
+                        <!--TARGET LOCATION-->
 
-                        <div class="field">
+                        <div class="field field-large">
 
                             <label>
-                                Location
+                                Target Location
+                                <span class="required">*</span>
                             </label>
 
                             <input type="text" name="location" placeholder="e.g. Johannesburg, South Africa" required>
 
+                            <small>
+                                City, country, region, or multiple locations
+                            </small>
+
                         </div>
 
 
-                        <!-- KEYWORDS -->
+                        <!--TARGET INDUSTRY-->
 
                         <div class="field">
 
                             <label>
-                                Keywords
+                                Target Industry
+                                <span class="optional">
+                                    Optional
+                                </span>
                             </label>
 
-                            <input type="text" name="keywords" placeholder="e.g. roofing, renovation">
+                            <input type="text" name="industry" placeholder="e.g. Restaurants, Construction, Salons">
+
+                            <small>
+                                Leave blank to search across industries
+                            </small>
 
                         </div>
 
 
-                        <!-- NUMBER -->
+                        <!--BUSINESS SIZE -->
+
+                        <div class="field">
+
+                            <label>
+                                Business Size
+                                <span class="optional">
+                                    Optional
+                                </span>
+                            </label>
+
+                            <select name="business_size">
+
+                                <option value="">
+                                    Any business size
+                                </option>
+
+                                <option value="Small">
+                                    Small
+                                </option>
+
+                                <option value="Medium">
+                                    Medium
+                                </option>
+
+                                <option value="Large">
+                                    Large
+                                </option>
+
+                            </select>
+
+                            <small>
+                                Select the type of business you want
+                            </small>
+
+                        </div>
+
+
+                        <!-- EXTRA TERMS / KEYWORDS -->
+
+                        <div class="field field-full">
+
+                            <label>
+                                Extra Terms to Narrow the Search
+                                <span class="optional">
+                                    Optional
+                                </span>
+                            </label>
+
+                            <input type="text" name="keywords"
+                                placeholder="e.g. roofing, renovation, commercial, family-owned, premium">
+
+                            <small>
+                                Add extra words or requirements that should help narrow the search
+                            </small>
+
+                        </div>
+
+
+                        <!-- NUMBER OF LEADS-->
 
                         <div class="field">
 
@@ -2259,17 +2746,59 @@
 
                             </select>
 
+                            <small>
+                                Maximum number of businesses to return
+                            </small>
+
                         </div>
 
 
                     </div>
 
 
+                    <!-- SEARCH SUMMARY -->
+
+                    <div class="search-help">
+
+                        <div class="search-help-icon">
+                            🤖
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Build a focused customer search
+                            </strong>
+
+                            <p>
+                                Example:
+                                <b>Website Development</b>
+                                →
+                                <b>Johannesburg, South Africa</b>
+                                →
+                                <b>Restaurants</b>
+                                →
+                                <b>Small</b>
+                                →
+                                <b>new restaurants, local businesses</b>
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!--  SEARCH BUTTON = -->
+
                     <div class="search-actions">
 
                         <button type="submit" class="search-button">
 
-                            🤖 Find Potential Customers
+                            <span>
+                                🤖
+                            </span>
+
+                            Find Potential Customers
 
                         </button>
 
@@ -2277,7 +2806,6 @@
 
 
                 </form>
-
 
             </section>
 
