@@ -7,7 +7,11 @@ from datetime import datetime, date
 
 import mysql.connector
 import os
+
+
 import requests
+
+
 import cloudinary
 import cloudinary.uploader
 
@@ -29,8 +33,11 @@ GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY")
 cloudinary.config(
     cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
     api_key=os.environ.get("CLOUDINARY_API_KEY"),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    secure=True
 )
+
+
 
 # FLASK APP
 app = Flask(__name__)
@@ -42,6 +49,7 @@ if not app.secret_key:
     raise RuntimeError(
         "FLASK_SECRET_KEY is not configured."
     )
+
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
     app.root_path,
@@ -227,64 +235,27 @@ def get_current_company_id():
 def company_logo():
 
     if "user_id" not in session:
-        abort(404)
-
-    user_id = session["user_id"]
-
-    db = None
-    cursor = None
+        return "", 401
 
     try:
 
-        db = get_db_connection()
+        company = get_current_company()
 
-        cursor = db.cursor(dictionary=True)
+        if not company:
+            return "", 404
 
-        cursor.execute(
-            """
-            SELECT logo
-            FROM companies
-            WHERE user_id = %s
-            LIMIT 1
-            """,
-            (user_id,)
-        )
+        logo_url = company.get("logo")
 
-        company = cursor.fetchone()
+        if not logo_url:
+            return "", 404
 
-        if not company or not company.get("logo"):
-            abort(404)
+        return redirect(logo_url)
 
-        
-        # This protects against paths stored in the database.
-        filename = os.path.basename(
-            company["logo"]
-        )
+    except Exception as e:
 
-        logo_path = os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            filename
-        )
+        print("COMPANY LOGO ERROR:", e)
 
-        print("COMPANY LOGO FROM DATABASE:", company["logo"])
-        print("COMPANY LOGO FILE:", logo_path)
-        print("LOGO EXISTS:", os.path.isfile(logo_path))
-
-        if not os.path.isfile(logo_path):
-            abort(404)
-
-        return send_from_directory(
-            app.config["UPLOAD_FOLDER"],
-            filename
-        )
-
-    finally:
-
-        if cursor:
-            cursor.close()
-
-        if db:
-            db.close()
+        return "", 404
 
 # REGISTER
 
@@ -598,9 +569,8 @@ def company_setup():
     # POST REQUEST
     
 
-    # -----------------------------------------------------
+    
     # GET FORM DATA
-    # -----------------------------------------------------
 
     company_name = request.form.get(
         "company_name",
@@ -763,6 +733,7 @@ def company_setup():
 
                 resource_type="image"
             )
+            logo_url = upload_result.get("secure_url")
 
             # -------------------------------------------------
             # GET PERMANENT CLOUDINARY URL
@@ -1891,39 +1862,76 @@ def get_business_ai_data(user_id):
     try:
 
         
+        # OPEN DATABASE CONNECTION
+        
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        
         # SECURITY: RESOLVE COMPANY FROM AUTHENTICATED USER
-    
+        
 
         company = get_current_company()
 
+
+
+
+
+
+
+
         if not company:
+
             raise PermissionError(
                 "No company is associated with the authenticated user."
             )
 
         # Extra ownership verification
+
         if int(company["user_id"]) != int(user_id):
+
             raise PermissionError(
                 "Company ownership verification failed."
             )
 
         company_id = company["id"]
 
-    
+        
         # VERIFIED COMPANY INFORMATION
         
 
         verified_company = {
+
             "id": company_id,
-            "company_name": company.get("company_name"),
-            "industry": company.get("industry"),
-            "specialization": company.get("specialization"),
-            "description": company.get("description"),
-            "services": company.get("services"),
-            "city": company.get("city"),
-            "country": company.get("country")
+
+            "company_name":
+                company.get("company_name"),
+
+            "industry":
+                company.get("industry"),
+
+            "specialization":
+                company.get("specialization"),
+
+            "description":
+                company.get("description"),
+
+            "services":
+                company.get("services"),
+
+            "city":
+                company.get("city"),
+
+            "country":
+                company.get("country")
         }
+
         data = {}
+
 
         
         # COMPANY
@@ -2486,9 +2494,9 @@ def altair_business_summary(
     )
 
 
-    # --------------------------------------------------------
+    
     # HEALTH DESCRIPTION
-    # --------------------------------------------------------
+    
 
     if health >= 80:
 
@@ -2513,9 +2521,9 @@ def altair_business_summary(
         )
 
 
-    # --------------------------------------------------------
+    
     # BUILD RESPONSE
-    # --------------------------------------------------------
+    
 
     return (
         "ALTAIR BUSINESS ANALYSIS\n\n"
@@ -2551,9 +2559,9 @@ def altair_business_summary(
 
 
 
-# ============================================================
+
 # ALTAIR AI CHAT
-# ============================================================
+
 
 @app.route(
     "/api/ai/chat",
@@ -2561,9 +2569,9 @@ def altair_business_summary(
 )
 def altair_ai_chat():
 
-    # --------------------------------------------------------
+    
     # AUTHENTICATION
-    # --------------------------------------------------------
+    
 
     if "user_id" not in session:
 
@@ -2582,9 +2590,9 @@ def altair_ai_chat():
 
     try:
 
-        # ----------------------------------------------------
+        
         # GET USER MESSAGE
-        # ----------------------------------------------------
+        
 
         body = (
             request
@@ -2617,9 +2625,9 @@ def altair_ai_chat():
             }), 400
 
 
-        # ----------------------------------------------------
+        
         # GET AUTHENTICATED BUSINESS DATA
-        # ----------------------------------------------------
+        
 
         business_data = (
             get_business_ai_data(
@@ -2628,9 +2636,9 @@ def altair_ai_chat():
         )
 
 
-        # ----------------------------------------------------
+        
         # CALCULATE BUSINESS ANALYTICS
-        # ----------------------------------------------------
+        
 
         analysis = (
             generate_business_advice(
@@ -2639,9 +2647,9 @@ def altair_ai_chat():
         )
 
 
-        # ----------------------------------------------------
+        
         # OUR OWN NLP MODEL
-        # ----------------------------------------------------
+        
 
         understanding = (
             understand_altair_question(
@@ -2664,9 +2672,9 @@ def altair_ai_chat():
         )
 
 
-        # ----------------------------------------------------
+        
         # LOW CONFIDENCE
-        # ----------------------------------------------------
+        
 
         if confidence < 35:
 
@@ -2692,9 +2700,9 @@ def altair_ai_chat():
             })
 
 
-        # ----------------------------------------------------
+        
         # GENERATE ANSWER
-        # ----------------------------------------------------
+        
 
         reply = (
             altair_response_engine(
@@ -2705,9 +2713,9 @@ def altair_ai_chat():
         )
 
 
-        # ----------------------------------------------------
+        
         # RETURN RESPONSE
-        # ----------------------------------------------------
+        
 
         return jsonify({
 
@@ -2743,6 +2751,57 @@ def altair_ai_chat():
 
         }), 500
 
+
+@app.route("/api/ai/business-insights", methods=["GET"])
+def api_business_insights():
+
+    if "user_id" not in session:
+
+        return jsonify({
+            "success": False,
+            "message": "Please login first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    try:
+
+        business_data = get_business_ai_data(user_id)
+
+        advice = generate_business_advice(
+            business_data
+        )
+
+        ai_text = altair_business_summary(
+            business_data,
+            advice
+        )
+
+        return jsonify({
+
+            "success": True,
+
+            "analysis": advice,
+
+            "ai_advice": ai_text
+
+        })
+
+    except Exception as e:
+
+        print(
+            "ALTAIR BUSINESS INSIGHTS ERROR:",
+            e
+        )
+
+        return jsonify({
+
+            "success": False,
+
+            "message":
+                "Altair AI could not analyze the business."
+
+        }), 500
 
 
 # DASHBOARD
