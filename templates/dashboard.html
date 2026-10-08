@@ -164,6 +164,75 @@
             max-width: 145px;
         }
 
+        /*  COMPANY BRAND */
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 35px;
+            padding: 5px 8px;
+
+            min-width: 0;
+        }
+
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px;
+            height: 44px;
+
+            min-width: 44px;
+            min-height: 44px;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+        .company-logo-image {
+            display: block;
+
+            background: #242435;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .company-logo-placeholder {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+
+            box-shadow:
+                0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        .company-brand-name {
+            color: #ffffff;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
 
         /* 
            MENU
@@ -749,8 +818,108 @@
         /* 
            MOBILE
          */
+        /* =========================================================
+   ALTAIR AI INSIGHT CARDS
+========================================================= */
+
+        .ai-insight-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin-top: 5px;
+        }
+
+        .ai-insight-box {
+            background:
+                rgba(255, 255, 255, 0.055);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 13px;
+
+            padding: 13px;
+
+            min-height: 78px;
+
+            transition: 0.2s ease;
+        }
+
+        .ai-insight-box:hover {
+            background:
+                rgba(255, 255, 255, 0.09);
+
+            transform: translateY(-1px);
+        }
+
+        .ai-insight-label {
+            color: #aaa5b8;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.7px;
+
+            margin-bottom: 7px;
+        }
+
+        .ai-insight-value {
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            line-height: 1.3;
+        }
+
+        .ai-insight-value.accent {
+            color: #00f0ff;
+        }
+
+        .ai-insight-value.success {
+            color: #4ade80;
+        }
+
+        .ai-insight-value.warning {
+            color: #fbbf24;
+        }
+
+        .ai-insight-value.danger {
+            color: #fb7185;
+        }
 
         @media (max-width: 700px) {
+
+            .ai-insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 700px) {
+            .company-brand {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .company-brand-name {
+                display: none;
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+
+                min-width: 40px;
+                min-height: 40px;
+            }
 
             body {
                 overflow: hidden;
@@ -1067,17 +1236,36 @@
 
 
             <!-- COMPANY LOGO -->
-            {% if company and company.logo %}
 
-            <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image">
+            <div class="company-brand">
 
-            {% else %}
+                {% if company and company.logo %}
 
-            <div class="company-logo-placeholder">
-                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                <img src="{{ company.logo }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+
+                {% else %}
+
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+
+                {% endif %}
+
+
+                {% if company and company.company_name %}
+
+                <div class="company-brand-name">
+                    {{ company.company_name }}
+                </div>
+
+                {% endif %}
+
             </div>
-
-            {% endif %}
 
 
             <!-- MAIN MENU -->
@@ -2010,108 +2198,6 @@
 
 
         /* 
-           REVENUE CHART
-         */
-
-        const ctx =
-            document.getElementById("revenueChart");
-
-
-        if (ctx) {
-
-            new Chart(ctx, {
-
-                type: "line",
-
-                data: {
-
-                    labels: [
-                        "Feb",
-                        "Mar",
-                        "Apr",
-                        "May",
-                        "Jun",
-                        "Jul",
-                        "Aug"
-                    ],
-
-                    datasets: [
-
-                        {
-                            label: "Revenue",
-
-                            data: [
-                                42000,
-                                51000,
-                                48000,
-                                63000,
-                                59000,
-                                73000,
-                                84250
-                            ],
-
-                            borderWidth: 3,
-
-                            tension: 0.4,
-
-                            fill: false,
-
-                            pointRadius: 4,
-
-                            pointHoverRadius: 6
-                        }
-
-                    ]
-
-                },
-
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    plugins: {
-
-                        legend: {
-                            display: false
-                        }
-
-                    },
-
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-
-                                callback: function (value) {
-
-                                    return "R" +
-                                        (value / 1000) +
-                                        "k";
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            });
-
-        }
-
-
-
-        /* 
            WELCOME POPUP
          */
 
@@ -2189,6 +2275,161 @@
                 altairBusinessData =
                     result.analysis;
 
+
+                /* =========================================================
+DATABASE + ML REVENUE CHART
+========================================================= */
+
+                const revenueData =
+                    result.analysis.revenue_history || [];
+
+                const chartLabels =
+                    revenueData.map(item => item.month);
+
+                const chartValues =
+                    revenueData.map(item => Number(item.revenue || 0));
+
+                const forecastValue =
+                    Number(
+                        result.analysis.revenue_prediction || 0
+                    );
+
+                const chartCanvas =
+                    document.getElementById("revenueChart");
+
+                if (chartCanvas) {
+
+                    const existingChart =
+                        Chart.getChart(chartCanvas);
+
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+
+                    const labels =
+                        [...chartLabels, "Next Month"];
+
+                    const actualValues =
+                        [...chartValues, null];
+
+                    const forecastValues =
+                        chartLabels.map(() => null);
+
+                    forecastValues.push(forecastValue);
+
+                    new Chart(chartCanvas, {
+
+                        type: "line",
+
+                        data: {
+
+                            labels: labels,
+
+                            datasets: [
+
+                                {
+                                    label: "Actual Revenue",
+
+                                    data: actualValues,
+
+                                    borderWidth: 3,
+
+                                    tension: 0.4,
+
+                                    fill: false,
+
+                                    pointRadius: 4,
+
+                                    pointHoverRadius: 6
+                                },
+
+                                {
+                                    label: "ML Forecast",
+
+                                    data: forecastValues,
+
+                                    borderWidth: 3,
+
+                                    borderDash: [7, 6],
+
+                                    tension: 0.4,
+
+                                    fill: false,
+
+                                    pointRadius: 5,
+
+                                    pointHoverRadius: 7
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            interaction: {
+                                intersect: false,
+                                mode: "index"
+                            },
+
+                            plugins: {
+
+                                legend: {
+                                    display: true
+                                },
+
+                                tooltip: {
+                                    callbacks: {
+
+                                        label: function (context) {
+
+                                            return (
+                                                context.dataset.label +
+                                                ": R" +
+                                                Number(
+                                                    context.raw || 0
+                                                ).toLocaleString()
+                                            );
+
+                                        }
+
+                                    }
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero: true,
+
+                                    ticks: {
+
+                                        callback: function (value) {
+
+                                            return (
+                                                "R" +
+                                                Number(value).toLocaleString()
+                                            );
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    });
+
+                }
 
                 /* -----------------------------------------------
                    HEALTH
