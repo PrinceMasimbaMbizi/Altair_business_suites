@@ -3,3 +3,7 @@ gunicorn
 mysql-connector-python
 requests
 cloudinary
+pandas
+numpy
+scikit-learn
+openai

@@ -11,6 +11,17 @@ import requests
 import cloudinary
 import cloudinary.uploader
 
+import json
+import math
+from datetime import datetime, date, timedelta
+
+import pandas as pd
+import numpy as np
+
+from sklearn.linear_model import LinearRegression
+
+from openai import OpenAI
+
 GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY") 
 
 cloudinary.config(
@@ -24,7 +35,12 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY","altair-development-secret-key")
 
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
+openai_client = None
+
+if OPENAI_API_KEY:
+    openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
@@ -588,14 +604,6 @@ def company_setup():
 
 
 
-
-
-
-
-
-
-
-
         # Logo
 
         logo = request.files.get("logo")
@@ -605,9 +613,9 @@ def company_setup():
 
     if logo and logo.filename:
 
-    # -----------------------------------------------------
+    
     # CHECK FILE TYPE
-    # -----------------------------------------------------
+    
 
         if not allowed_file(logo.filename):
 
@@ -623,9 +631,9 @@ def company_setup():
 
     try:
 
-        # -------------------------------------------------
+        
         # UPLOAD LOGO TO CLOUDINARY
-        # -------------------------------------------------
+        
 
         upload_result = cloudinary.uploader.upload(
 
@@ -641,9 +649,9 @@ def company_setup():
         )
 
 
-        # -------------------------------------------------
+        
         # GET PERMANENT CLOUDINARY URL
-        # -------------------------------------------------
+        
 
         logo_url = upload_result.get(
             "secure_url"
@@ -842,9 +850,948 @@ def company_setup():
 
 
 
+# ALTAIR AI - REVENUE FORECASTING ENGINE
+def predict_next_month_revenue(monthly_revenue):
+
+    """
+    Machine-learning revenue prediction.
+
+    monthly_revenue:
+        List of dictionaries:
+        [
+            {"month": "2026-04", "revenue": 50000},
+            {"month": "2026-05", "revenue": 57000},
+            ...
+        ]
+
+    Returns:
+        prediction
+        confidence
+        model
+    """
+
+    if not monthly_revenue:
+        return {
+            "prediction": 0,
+            "confidence": 0,
+            "model": "Insufficient data"
+        }
+
+    cleaned = []
+
+    for row in monthly_revenue:
+
+        try:
+
+            value = float(
+                row.get("revenue", 0) or 0
+            )
+
+            cleaned.append(value)
+
+        except Exception:
+            cleaned.append(0)
+
+    # Remove empty trailing periods
+    while cleaned and cleaned[-1] == 0:
+        cleaned.pop()
+
+    # Not enough historical data
+    if len(cleaned) < 3:
+
+        if cleaned:
+
+            prediction = sum(cleaned) / len(cleaned)
+
+        else:
+
+            prediction = 0
+
+        return {
+            "prediction": round(prediction, 2),
+            "confidence": 25,
+            "model": "Historical average"
+        }
+
+    # MACHINE LEARNING MODEL
+
+    X = np.array(
+        range(1, len(cleaned) + 1)
+    ).reshape(-1, 1)
+
+    y = np.array(cleaned)
+
+    model = LinearRegression()
+
+    model.fit(X, y)
+
+    next_period = np.array(
+        [[len(cleaned) + 1]]
+    )
+
+    prediction = model.predict(
+        next_period
+    )[0]
+
+    # Revenue cannot be negative
+    prediction = max(
+        0,
+        float(prediction)
+    )
+
+    
+    # MODEL FIT
+
+    try:
+
+        r2 = model.score(X, y)
+
+        confidence = int(
+            max(
+                20,
+                min(
+                    95,
+                    r2 * 100
+                )
+            )
+        )
+
+    except Exception:
+
+        confidence = 50
+
+    return {
+        "prediction": round(
+            prediction,
+            2
+        ),
+        "confidence": confidence,
+        "model": "Linear Regression"
+    }
+
+
+# ALTAIR AI 
+def get_business_ai_data(user_id):
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        data = {}
+
+        
+        # COMPANY
+        
+
+        cursor.execute("""
+            SELECT
+                company_name,
+                industry,
+                specialization,
+                description,
+                services,
+                city,
+                country
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+        """, (user_id,))
+
+        company = cursor.fetchone()
+
+        data["company"] = company or {}
+
+        
+        # REVENUE BY MONTH
+        
+
+        cursor.execute("""
+            SELECT
+                DATE_FORMAT(
+                    invoice_date,
+                    '%Y-%m'
+                ) AS month,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'Paid'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS revenue
+
+            FROM invoices
+
+            WHERE user_id = %s
+
+            GROUP BY
+                DATE_FORMAT(
+                    invoice_date,
+                    '%Y-%m'
+                )
+
+            ORDER BY month ASC
+
+            LIMIT 24
+        """, (user_id,))
+
+        monthly_revenue = cursor.fetchall()
+
+        data["monthly_revenue"] = (
+            monthly_revenue or []
+        )
+
+        
+        # INVOICE ANALYSIS
+        
+
+        cursor.execute("""
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'Paid'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS paid_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'Pending'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS pending_amount,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'Overdue'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS overdue_amount,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Paid'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS paid_count,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Pending'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS pending_count,
+
+                SUM(
+                    CASE
+                        WHEN status = 'Overdue'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS overdue_count
+
+            FROM invoices
+
+            WHERE user_id = %s
+        """, (user_id,))
+
+        data["invoices"] = (
+            cursor.fetchone() or {}
+        )
+
+        
+        # CUSTOMERS
+        
+
+        cursor.execute("""
+            SELECT
+                COUNT(*) AS total
+            FROM customers
+            WHERE user_id = %s
+        """, (user_id,))
+
+        customer_data = cursor.fetchone()
+
+        data["customers"] = (
+            customer_data or {}
+        )
+
+        
+        # LEADS
+        
+
+        cursor.execute("""
+            SELECT
+
+                COUNT(*) AS total,
+
+                SUM(
+                    CASE
+                        WHEN lead_status = 'New'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS new_leads,
+
+                SUM(
+                    CASE
+                        WHEN lead_status = 'Contacted'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS contacted,
+
+                SUM(
+                    CASE
+                        WHEN lead_status = 'Interested'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS interested,
+
+                SUM(
+                    CASE
+                        WHEN lead_status = 'Converted'
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS converted
+
+            FROM leads
+
+            WHERE user_id = %s
+        """, (user_id,))
+
+        data["leads"] = (
+            cursor.fetchone() or {}
+        )
+
+        
+        # EXPENSES
+        cursor.execute("""
+            SELECT
+
+                COUNT(*) AS count,
+
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS total
+
+            FROM expenses
+
+            WHERE user_id = %s
+        """, (user_id,))
+
+        data["expenses"] = (
+            cursor.fetchone() or {}
+        )
+
+   
+        # INVESTMENTS
+
+        cursor.execute("""
+            SELECT
+
+                COUNT(*) AS count,
+
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS total
+
+            FROM investments
+
+            WHERE user_id = %s
+        """, (user_id,))
+
+        data["investments"] = (
+            cursor.fetchone() or {}
+        )
+
+
+        # INVENTORY
+
+        cursor.execute("""
+            SELECT
+                COUNT(*) AS total_items
+            FROM items
+            WHERE user_id = %s
+        """, (user_id,))
+
+        data["inventory"] = (
+            cursor.fetchone() or {}
+        )
+
+        
+        # RECURRING PAYMENTS
+
+        cursor.execute("""
+            SELECT
+
+                COUNT(*) AS count,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN frequency = 'Monthly'
+                            THEN amount
+
+                            WHEN frequency = 'Weekly'
+                            THEN amount * 4.33
+
+                            WHEN frequency = 'Quarterly'
+                            THEN amount / 3
+
+                            WHEN frequency = 'Yearly'
+                            THEN amount / 12
+
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS monthly_cost
+
+            FROM recurring_payments
+
+            WHERE user_id = %s
+
+            AND status = 'Active'
+        """, (user_id,))
+
+        data["recurring"] = (
+            cursor.fetchone() or {}
+        )
+
+     
+        # CALCULATED FORECAST
+
+        forecast = predict_next_month_revenue(
+            monthly_revenue
+        )
+
+        data["forecast"] = forecast
+
+        return data
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+
+
+
+# ALTAIR AI - BUSINESS ADVISOR
+
+
+def generate_business_advice(business_data):
+
+    invoices = business_data.get(
+        "invoices",
+        {}
+    )
+
+    leads = business_data.get(
+        "leads",
+        {}
+    )
+
+    expenses = business_data.get(
+        "expenses",
+        {}
+    )
+
+    recurring = business_data.get(
+        "recurring",
+        {}
+    )
+
+    forecast = business_data.get(
+        "forecast",
+        {}
+    )
+
+    paid_revenue = float(
+        invoices.get(
+            "paid_amount",
+            0
+        ) or 0
+    )
+
+    overdue_amount = float(
+        invoices.get(
+            "overdue_amount",
+            0
+        ) or 0
+    )
+
+    pending_amount = float(
+        invoices.get(
+            "pending_amount",
+            0
+        ) or 0
+    )
+
+    expense_total = float(
+        expenses.get(
+            "total",
+            0
+        ) or 0
+    )
+
+    monthly_recurring = float(
+        recurring.get(
+            "monthly_cost",
+            0
+        ) or 0
+    )
+
+    total_leads = int(
+        leads.get(
+            "total",
+            0
+        ) or 0
+    )
+
+    converted_leads = int(
+        leads.get(
+            "converted",
+            0
+        ) or 0
+    )
+
+    
+    # CONVERSION RATE
+    
+
+    if total_leads > 0:
+
+        conversion_rate = (
+            converted_leads /
+            total_leads
+        ) * 100
+
+    else:
+
+        conversion_rate = 0
+
+    
+    # CASH PRESSURE
+    
+
+    cash_pressure = (
+        overdue_amount +
+        pending_amount
+    )
+
+    
+    # BASIC BUSINESS HEALTH SCORE
+    
+
+    health_score = 70
+
+    if overdue_amount > 0:
+        health_score -= 10
+
+    if conversion_rate < 10:
+        health_score -= 10
+
+    if monthly_recurring > paid_revenue:
+        health_score -= 20
+
+    if health_score < 0:
+        health_score = 0
+
+    if health_score > 100:
+        health_score = 100
+
+    return {
+        "health_score": health_score,
+
+        "paid_revenue": round(
+            paid_revenue,
+            2
+        ),
+
+        "overdue_amount": round(
+            overdue_amount,
+            2
+        ),
+
+        "pending_amount": round(
+            pending_amount,
+            2
+        ),
+
+        "expenses": round(
+            expense_total,
+            2
+        ),
+
+        "monthly_recurring": round(
+            monthly_recurring,
+            2
+        ),
+
+        "lead_conversion": round(
+            conversion_rate,
+            1
+        ),
+
+        "revenue_prediction": forecast.get(
+            "prediction",
+            0
+        ),
+
+        "prediction_confidence": forecast.get(
+            "confidence",
+            0
+        )
+    }
+
+
+
+# AI BUSINESS INSIGHTS API
+
+
+@app.route(
+    "/api/ai/business-insights",
+    methods=["GET"]
+)
+def api_business_insights():
+
+    if "user_id" not in session:
+
+        return jsonify({
+            "success": False,
+            "message": "Please login first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    try:
+
+        business_data = get_business_ai_data(
+            user_id
+        )
+
+        advice = generate_business_advice(
+            business_data
+        )
+
+        
+        # AI EXPLANATION
+        
+
+        ai_text = ""
+
+        if openai_client:
+
+            prompt = f"""
+You are Altair AI, an expert business
+advisor inside Altair Business Suite.
+
+You are analyzing ONE business.
+
+Never invent numbers.
+
+Use only the supplied data.
+
+Business data:
+
+{json.dumps(
+    business_data,
+    default=str,
+    indent=2
+)}
+
+Calculated analysis:
+
+{json.dumps(
+    advice,
+    default=str,
+    indent=2
+)}
+
+Give concise but useful advice.
+
+Return exactly these sections:
+
+REVENUE:
+Explain the current revenue situation.
+
+FORECAST:
+Explain the machine-learning revenue prediction
+and its confidence.
+
+CASH FLOW:
+Explain pending and overdue money.
+
+SALES:
+Explain lead performance.
+
+EXPENSES:
+Explain expenses and recurring costs.
+
+RECOMMENDATION:
+Give the three most important actions
+the business owner should take next.
+
+Do not claim certainty about future results.
+"""
+
+            response = openai_client.responses.create(
+
+                model="gpt-5.6-luna",
+
+                input=prompt
+            )
+
+            ai_text = response.output_text
+
+        else:
+
+            ai_text = (
+                "AI explanation is unavailable because "
+                "OPENAI_API_KEY has not been configured."
+            )
+
+        return jsonify({
+
+            "success": True,
+
+            "analysis": advice,
+
+            "ai_advice": ai_text
+
+        })
+
+    except Exception as e:
+
+        print(
+            "AI BUSINESS INSIGHTS ERROR:",
+            e
+        )
+
+        return jsonify({
+
+            "success": False,
+
+            "message": str(e)
+
+        }), 500
+
+
+# ============================================================
+# ALTAIR AI CHAT
+# ============================================================
+
+@app.route(
+    "/api/ai/chat",
+    methods=["POST"]
+)
+def altair_ai_chat():
+
+    if "user_id" not in session:
+
+        return jsonify({
+            "success": False,
+            "message": "Please login first."
+        }), 401
+
+
+    if not openai_client:
+
+        return jsonify({
+            "success": False,
+            "message": "AI is not configured."
+        }), 500
+
+
+    user_id = session["user_id"]
+
+
+    try:
+
+        body = request.get_json(
+            silent=True
+        ) or {}
+
+        message = (
+            body.get(
+                "message",
+                ""
+            )
+            .strip()
+        )
+
+
+        if not message:
+
+            return jsonify({
+                "success": False,
+                "message": "Please enter a question."
+            }), 400
+
+
+        # ----------------------------------------------------
+        # GET THIS USER'S BUSINESS DATA
+        # ----------------------------------------------------
+
+        business_data = (
+            get_business_ai_data(
+                user_id
+            )
+        )
+
+
+        analysis = (
+            generate_business_advice(
+                business_data
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # AI PROMPT
+        # ----------------------------------------------------
+
+        prompt = f"""
+
+You are Altair AI Business Advisor.
+
+You are talking to the owner of a business
+inside Altair Business Suite.
+
+You have access only to the business data
+provided below.
+
+IMPORTANT RULES:
+
+1. Never invent financial numbers.
+2. Never claim something exists if it is not
+   in the supplied data.
+3. Use the actual business data.
+4. Give practical business advice.
+5. Explain your reasoning.
+6. If there is insufficient data, say so.
+7. Never reveal another user's information.
+8. Never reveal database credentials.
+9. Do not expose SQL queries to the user.
+
+BUSINESS DATA:
+
+{json.dumps(
+    business_data,
+    default=str,
+    indent=2
+)}
+
+
+CALCULATED ML / ANALYTICS:
+
+{json.dumps(
+    analysis,
+    default=str,
+    indent=2
+)}
+
+
+USER QUESTION:
+
+{message}
+
+
+Answer the user's question professionally.
+
+If the question involves money,
+include the relevant figures.
+
+If the question asks for advice,
+give practical actions.
+
+If the question asks for a prediction,
+clearly state that it is a prediction and
+explain the confidence/limitations.
+
+"""
+
+
+        response = (
+            openai_client
+            .responses
+            .create(
+                model="gpt-5.6-luna",
+                input=prompt
+            )
+        )
+
+
+        reply = (
+            response
+            .output_text
+        )
+
+
+        return jsonify({
+
+            "success": True,
+
+            "reply": reply
+
+        })
+
+
+    except Exception as e:
+
+        print(
+            "ALTAIR AI CHAT ERROR:",
+            e
+        )
+
+
+        return jsonify({
+
+            "success": False,
+
+            "message":
+                "Altair AI could not process your question."
+
+        }), 500
+
+
 # DASHBOARD
-
-
 @app.route("/")
 def dashboard():
 
@@ -4500,9 +5447,9 @@ def ai_leads():
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
 
-        # ==========================================
+        
         # GET CURRENT USER'S COMPANY
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT *
@@ -4513,9 +5460,9 @@ def ai_leads():
 
         company = cursor.fetchone()
 
-        # ==========================================
+        
         # GET CURRENT USER'S LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT *
@@ -4526,9 +5473,9 @@ def ai_leads():
 
         leads = cursor.fetchall()
 
-        # ==========================================
+        
         # TOTAL LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -4538,9 +5485,9 @@ def ai_leads():
 
         total_leads = cursor.fetchone()["total"]
 
-        # ==========================================
+        
         # NEW LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -4551,9 +5498,9 @@ def ai_leads():
 
         new_leads = cursor.fetchone()["total"]
 
-        # ==========================================
+        
         # CONTACTED LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -4564,9 +5511,9 @@ def ai_leads():
 
         contacted_leads = cursor.fetchone()["total"]
 
-        # ==========================================
+        
         # INTERESTED LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -4577,9 +5524,9 @@ def ai_leads():
 
         interested_leads = cursor.fetchone()["total"]
 
-        # ==========================================
+        
         # CONVERTED LEADS
-        # ==========================================
+        
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -4590,9 +5537,9 @@ def ai_leads():
 
         converted_leads = cursor.fetchone()["total"]
 
-        # ==========================================
+        
         # OPEN AI LEAD FINDER
-        # ==========================================
+        
 
         return render_template(
             "ai_leads.html",
@@ -4626,9 +5573,8 @@ def ai_leads():
         if db:
             db.close()
             
-# =========================================================
+
 # ADD AI LEAD MANUALLY
-# =========================================================
 
 @app.route(
     "/ai-leads/add",
@@ -4687,9 +5633,9 @@ def add_ai_lead():
     ).strip()
 
 
-    # =====================================================
+    
     # VALIDATION
-    # =====================================================
+    
 
     if not company_name:
 
@@ -4713,9 +5659,9 @@ def add_ai_lead():
         cursor = db.cursor()
 
 
-        # =================================================
+        
         # INSERT LEAD
-        # =================================================
+        
 
         cursor.execute(
             """
@@ -5010,9 +5956,9 @@ def delete_ai_lead(lead_id):
 
 
 
-# =========================================================
+
 # AI LEAD FINDER - GOOGLE PLACES SEARCH
-# =========================================================
+
 
 @app.route(
     "/ai-leads/search",
@@ -5020,9 +5966,9 @@ def delete_ai_lead(lead_id):
 )
 def search_ai_leads():
 
-    # =====================================================
+    
     # CHECK LOGIN
-    # =====================================================
+    
 
     if "user_id" not in session:
 
@@ -5033,9 +5979,9 @@ def search_ai_leads():
     user_id = session["user_id"]
 
 
-    # =====================================================
+    
     # GET SEARCH INPUTS
-    # =====================================================
+    
 
     services = request.form.get(
         "services",
@@ -5063,9 +6009,9 @@ def search_ai_leads():
     ).strip()
 
 
-    # =====================================================
+    
     # MAX RESULTS
-    # =====================================================
+    
 
     try:
 
@@ -5095,9 +6041,9 @@ def search_ai_leads():
     )
 
 
-    # =====================================================
+    
     # VALIDATION
-    # =====================================================
+    
 
     if not services:
 
@@ -5135,9 +6081,9 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # BUILD CUSTOMER DISCOVERY QUERY
-    # =====================================================
+    
     #
     # IMPORTANT:
     #
@@ -5163,14 +6109,14 @@ def search_ai_leads():
     # Restaurants in Cape Town
     #
     # The service is used later to qualify the lead.
-    # =====================================================
+    
 
     query_parts = []
 
 
-    # =====================================================
+    
     # TARGET INDUSTRY
-    # =====================================================
+    
 
     if industry:
 
@@ -5185,9 +6131,9 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # BUSINESS SIZE
-    # =====================================================
+    
 
     if (
         business_size
@@ -5201,9 +6147,9 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # EXTRA KEYWORDS
-    # =====================================================
+    
 
     if keywords:
 
@@ -5212,27 +6158,27 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # LOCATION
-    # =====================================================
+    
 
     query_parts.append(
         "in " + location
     )
 
 
-    # =====================================================
+    
     # FINAL GOOGLE QUERY
-    # =====================================================
+    
 
     search_query = " ".join(
         query_parts
     )
 
 
-    # =====================================================
+    
     # DEBUG INFORMATION
-    # =====================================================
+    
 
     print("=" * 70)
 
@@ -5275,9 +6221,9 @@ def search_ai_leads():
     print("=" * 70)
 
 
-    # =====================================================
+    
     # GOOGLE PLACES API
-    # =====================================================
+    
 
     url = (
         "https://places.googleapis.com/v1/"
@@ -5327,9 +6273,9 @@ def search_ai_leads():
     }
 
 
-    # =====================================================
+    
     # SEND GOOGLE REQUEST
-    # =====================================================
+    
 
     try:
 
@@ -5392,9 +6338,9 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # PROCESS GOOGLE RESULTS
-    # =====================================================
+    
 
     google_results = []
 
@@ -5405,9 +6351,9 @@ def search_ai_leads():
     ):
 
 
-        # =================================================
+        
         # COMPANY NAME
-        # =================================================
+        
 
         display_name = place.get(
             "displayName",
@@ -5421,9 +6367,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # PHONE
-        # =================================================
+        
 
         phone = (
 
@@ -5443,9 +6389,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # GOOGLE BUSINESS TYPES
-        # =================================================
+        
 
         types = place.get(
             "types",
@@ -5453,9 +6399,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # DETERMINE INDUSTRY
-        # =================================================
+        
 
         industry_name = ""
 
@@ -5497,18 +6443,18 @@ def search_ai_leads():
                 break
 
 
-        # =================================================
+        
         # FALLBACK INDUSTRY
-        # =================================================
+        
 
         if not industry_name:
 
             industry_name = industry
 
 
-        # =================================================
+        
         # ADDRESS
-        # =================================================
+        
 
         address = place.get(
             "formattedAddress",
@@ -5516,9 +6462,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # WEBSITE
-        # =================================================
+        
 
         website = place.get(
             "websiteUri",
@@ -5526,9 +6472,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # BUSINESS STATUS
-        # =================================================
+        
 
         business_status = place.get(
             "businessStatus",
@@ -5536,9 +6482,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # GOOGLE MAPS URL
-        # =================================================
+        
 
         google_maps_url = place.get(
             "googleMapsUri",
@@ -5546,9 +6492,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # BUILD POTENTIAL LEAD
-        # =================================================
+        
 
         potential_lead = {
 
@@ -5584,9 +6530,9 @@ def search_ai_leads():
         }
 
 
-        # =================================================
+        
         # CHECK FOR COMPETITOR
-        # =================================================
+        
 
         if is_likely_competitor(
 
@@ -5603,9 +6549,9 @@ def search_ai_leads():
             continue
 
 
-        # =================================================
+        
         # QUALIFY THE LEAD
-        # =================================================
+        
 
         qualification = qualify_lead_with_ai(
 
@@ -5623,9 +6569,9 @@ def search_ai_leads():
         )
 
 
-        # =================================================
+        
         # ADD AI QUALIFICATION
-        # =================================================
+        
 
         potential_lead.update({
 
@@ -5661,18 +6607,18 @@ def search_ai_leads():
         })
 
 
-        # =================================================
+        
         # ADD RESULT
-        # =================================================
+        
 
         google_results.append(
             potential_lead
         )
 
 
-    # =====================================================
+    
     # SORT RESULTS BY LEAD SCORE
-    # =====================================================
+    
 
     google_results.sort(
 
@@ -5686,9 +6632,9 @@ def search_ai_leads():
     )
 
 
-    # =====================================================
+    
     # NO RESULTS
-    # =====================================================
+    
 
     if not google_results:
 
@@ -5699,9 +6645,9 @@ def search_ai_leads():
         )
 
 
-    # =====================================================
+    
     # LOAD AI LEAD FINDER PAGE
-    # =====================================================
+    
 
     return render_template(
 
@@ -5765,9 +6711,9 @@ def search_ai_leads():
     )
 
 
-# =========================================================
+
 # GET COMPANY FOR CURRENT USER
-# =========================================================
+
 
 def get_company_for_user(
     user_id
@@ -5800,9 +6746,9 @@ def get_company_for_user(
     return company
 
 
-# =========================================================
+
 # GET LEADS FOR CURRENT USER
-# =========================================================
+
 
 def get_leads_for_user(
     user_id
@@ -5835,9 +6781,9 @@ def get_leads_for_user(
     return leads
 
 
-# =========================================================
+
 # GET TOTAL LEADS
-# =========================================================
+
 
 def get_lead_count(
     user_id
@@ -5869,9 +6815,9 @@ def get_lead_count(
     return result["total"]
 
 
-# =========================================================
+
 # GET LEADS BY STATUS
-# =========================================================
+
 
 def get_lead_status_count(
     user_id,
@@ -5906,9 +6852,9 @@ def get_lead_status_count(
     return result["total"]
 
 
-# =========================================================
+
 # CHECK IF BUSINESS IS LIKELY A COMPETITOR
-# =========================================================
+
 
 def is_likely_competitor(
     lead,
@@ -5933,9 +6879,9 @@ def is_likely_competitor(
     ).lower()
 
 
-    # =====================================================
+    
     # COMPETITOR TERMS
-    # =====================================================
+    
 
     competitor_terms = [
 
@@ -5973,9 +6919,9 @@ def is_likely_competitor(
     ]
 
 
-    # =====================================================
+    
     # COMBINE BUSINESS INFORMATION
-    # =====================================================
+    
 
     combined_text = (
 
@@ -5991,9 +6937,9 @@ def is_likely_competitor(
     )
 
 
-    # =====================================================
+    
     # CHECK TERMS
-    # =====================================================
+    
 
     for term in competitor_terms:
 
@@ -6005,13 +6951,9 @@ def is_likely_competitor(
     return False
 
 
-# =========================================================
-# BASIC AI LEAD QUALIFICATION
-# =========================================================
-#
-# This is currently a rule-based qualification system.
-# It can later be replaced/enhanced with a real AI model.
-# =========================================================
+
+
+
 
 def qualify_lead_with_ai(
 
@@ -6036,9 +6978,9 @@ def qualify_lead_with_ai(
     analysis_points = []
 
 
-    # =====================================================
+    
     # LEAD INFORMATION
-    # =====================================================
+    
 
     company_name = lead.get(
         "company_name",
@@ -6066,9 +7008,9 @@ def qualify_lead_with_ai(
     )
 
 
-    # =====================================================
+    
     # BUSINESS STATUS
-    # =====================================================
+    
 
     if business_status == "OPERATIONAL":
 
@@ -6079,9 +7021,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # INDUSTRY MATCH
-    # =====================================================
+    
 
     if target_industry:
 
@@ -6122,9 +7064,9 @@ def qualify_lead_with_ai(
             )
 
 
-    # =====================================================
+    
     # WEBSITE CHECK
-    # =====================================================
+    
 
     if not website:
 
@@ -6153,9 +7095,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # LOCATION MATCH
-    # =====================================================
+    
 
     if target_location:
 
@@ -6170,9 +7112,9 @@ def qualify_lead_with_ai(
             )
 
 
-    # =====================================================
+    
     # SERVICE BEING SOLD
-    # =====================================================
+    
 
     if service:
 
@@ -6185,9 +7127,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # BUSINESS SIZE
-    # =====================================================
+    
 
     if (
 
@@ -6206,9 +7148,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # KEYWORDS
-    # =====================================================
+    
 
     if keywords:
 
@@ -6220,9 +7162,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # LIMIT SCORE
-    # =====================================================
+    
 
     score = max(
         0,
@@ -6233,9 +7175,9 @@ def qualify_lead_with_ai(
     )
 
 
-    # =====================================================
+    
     # LEAD QUALITY
-    # =====================================================
+    
 
     if score >= 80:
 
@@ -6268,9 +7210,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # AI ANALYSIS
-    # =====================================================
+    
 
     ai_analysis = (
 
@@ -6289,9 +7231,9 @@ def qualify_lead_with_ai(
     )
 
 
-    # =====================================================
+    
     # AI REASON
-    # =====================================================
+    
 
     if reasons:
 
@@ -6310,9 +7252,9 @@ def qualify_lead_with_ai(
         )
 
 
-    # =====================================================
+    
     # OUTREACH MESSAGE
-    # =====================================================
+    
 
     ai_message = (
 
@@ -6346,9 +7288,9 @@ def qualify_lead_with_ai(
     )
 
 
-    # =====================================================
+    
     # RETURN QUALIFICATION
-    # =====================================================
+    
 
     return {
 

@@ -1245,6 +1245,20 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <!-- 
              MAIN CONTENT
          -->
@@ -1428,22 +1442,37 @@
                  REVENUE + AI
              -->
 
+
+
+
+            <!-- 
+     REVENUE + ALTAIR AI BUSINESS INSIGHTS
+ -->
+
             <section class="dashboard-grid">
 
-
-                <!-- REVENUE -->
+                <!-- 
+         REVENUE FORECAST
+    = -->
 
                 <div class="card">
 
-
                     <div class="card-header">
 
-                        <h3>
-                            Revenue Overview
-                        </h3>
+                        <div>
 
-                        <span>
-                            Last 7 months
+                            <h3>
+                                Revenue Overview
+                            </h3>
+
+                            <span>
+                                Historical performance + ML forecast
+                            </span>
+
+                        </div>
+
+                        <span class="ai-badge">
+                            ML FORECAST
                         </span>
 
                     </div>
@@ -1458,17 +1487,25 @@
                 </div>
 
 
-
-                <!-- AI INSIGHTS -->
+                <!-- 
+         AI BUSINESS INSIGHTS
+    = -->
 
                 <div class="card ai-card">
 
-
                     <div class="card-header">
 
-                        <h3>
-                            AI Business Insights
-                        </h3>
+                        <div>
+
+                            <h3>
+                                AI Business Insights
+                            </h3>
+
+                            <span style="display:block;margin-top:4px;">
+                                Data-driven business intelligence
+                            </span>
+
+                        </div>
 
                         <span class="ai-badge">
                             ALTAIR AI
@@ -1477,37 +1514,78 @@
                     </div>
 
 
+                    <!-- HEALTH -->
+
                     <div class="ai-message">
 
                         <strong>
-                            📈 Revenue prediction
+                            🧠 Business Health
                         </strong>
 
-                        <p>
-                            Your revenue is trending upward.
-                            AI predicts approximately R96,000
-                            in revenue next month.
+                        <p id="aiHealth">
+
+                            Analyzing your business data...
+
                         </p>
 
                     </div>
 
 
+                    <!-- FORECAST -->
+
                     <div class="ai-message">
 
                         <strong>
-                            🎯 Sales opportunity
+                            📈 ML Revenue Forecast
                         </strong>
 
-                        <p>
-                            18 high-relevance leads were detected
-                            from your connected sources.
+                        <p id="aiForecast">
+
+                            Calculating next month's prediction...
+
                         </p>
 
                     </div>
 
 
-                    <button class="ai-btn">
-                        View AI Insights
+                    <!-- CASH FLOW -->
+
+                    <div class="ai-message">
+
+                        <strong>
+                            💰 Cash Flow
+                        </strong>
+
+                        <p id="aiCashFlow">
+
+                            Analyzing invoices and expenses...
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- RECOMMENDATION -->
+
+                    <div class="ai-message">
+
+                        <strong>
+                            💡 AI Recommendation
+                        </strong>
+
+                        <p id="aiRecommendation">
+
+                            Preparing recommendations...
+
+                        </p>
+
+                    </div>
+
+
+                    <button type="button" class="ai-btn" onclick="openAltairAI()">
+
+                        🤖 Ask Altair AI
+
                     </button>
 
                 </div>
@@ -1515,18 +1593,18 @@
             </section>
 
 
-
             <!-- 
-                 LEADS + QUICK ACTIONS
-             -->
+     LEADS + QUICK ACTIONS
+ -->
 
             <section class="dashboard-grid" style="margin-top:20px;">
 
 
-                <!-- LEADS -->
+                <!-- 
+         AI LEAD OPPORTUNITIES
+    = -->
 
                 <div class="card">
-
 
                     <div class="card-header">
 
@@ -1534,134 +1612,237 @@
                             AI Lead Opportunities
                         </h3>
 
-                        <span>
+                        <a href="{{ url_for('ai_leads') }}" style="text-decoration:none;">
                             View all →
-                        </span>
+                        </a>
 
                     </div>
 
 
-                    <div class="lead">
+                    <div id="aiLeadSummary" class="ai-message">
 
-                        <div class="lead-info">
-
-                            <div class="lead-icon">
-                                🧥
-                            </div>
-
-                            <div>
-
-                                <div class="lead-name">
-                                    Winter Jacket Opportunity
-                                </div>
-
-                                <div class="lead-source">
-                                    Facebook • High relevance
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="score">
-                            94%
-                        </div>
-
-                    </div>
-
-
-                    <div class="lead">
-
-                        <div class="lead-info">
-
-                            <div class="lead-icon">
-                                👟
-                            </div>
-
-                            <div>
-
-                                <div class="lead-name">
-                                    Footwear Buyer
-                                </div>
-
-                                <div class="lead-source">
-                                    Instagram • High relevance
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="score">
-                            89%
-                        </div>
-
-                    </div>
-
-
-                    <div class="lead">
-
-                        <div class="lead-info">
-
-                            <div class="lead-icon">
-                                💻
-                            </div>
-
-                            <div>
-
-                                <div class="lead-name">
-                                    Laptop Request
-                                </div>
-
-                                <div class="lead-source">
-                                    LinkedIn • Medium relevance
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="score">
-                            82%
-                        </div>
+                        🤖 AI is analyzing your leads...
 
                     </div>
 
                 </div>
 
 
-
-                <!-- QUICK ACTIONS -->
+                <!-- 
+         BUSINESS METRICS
+    = -->
 
                 <div class="card">
-
 
                     <div class="card-header">
 
                         <h3>
-                            Quick Actions
+                            Business AI Metrics
                         </h3>
 
                     </div>
 
 
-                    <button class="ai-btn" style="margin-bottom:10px;">
-                        + Create Invoice
-                    </button>
+                    <div class="ai-message">
+
+                        <strong>
+                            👥 Customers
+                        </strong>
+
+                        <p id="aiCustomers">
+                            Loading...
+                        </p>
+
+                    </div>
 
 
-                    <button class="ai-btn" style="margin-bottom:10px;">
-                        + Add Customer
-                    </button>
+                    <div class="ai-message">
+
+                        <strong>
+                            🎯 Lead Conversion
+                        </strong>
+
+                        <p id="aiConversion">
+                            Loading...
+                        </p>
+
+                    </div>
 
 
-                    <button class="ai-btn">
-                        🤖 Find New Leads
+                    <div class="ai-message">
+
+                        <strong>
+                            💸 Monthly Recurring Costs
+                        </strong>
+
+                        <p id="aiRecurring">
+                            Loading...
+                        </p>
+
+                    </div>
+
+
+                    <button type="button" class="ai-btn" onclick="openAltairAI()">
+                        Ask About My Business
                     </button>
 
                 </div>
 
             </section>
+
+
+            <!-- 
+     ALTAIR AI CHAT
+ -->
+
+            <div id="altairAIOverlay" style="
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.65);
+        z-index:9999;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+    ">
+
+
+                <div style="
+            width:100%;
+            max-width:700px;
+            height:650px;
+            background:#11111c;
+            border:1px solid rgba(0,240,255,.25);
+            border-radius:20px;
+            box-shadow:0 0 50px rgba(0,240,255,.15);
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+        ">
+
+
+                    <!-- HEADER -->
+
+                    <div style="
+                padding:18px 20px;
+                border-bottom:1px solid rgba(255,255,255,.08);
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+            ">
+
+                        <div>
+
+                            <strong style="
+                        font-size:18px;
+                        color:#fff;
+                    ">
+                                🤖 Altair AI Business Advisor
+                            </strong>
+
+                            <div style="
+                        color:#9ca3af;
+                        font-size:12px;
+                        margin-top:4px;
+                    ">
+                                Your business data. Your AI advisor.
+                            </div>
+
+                        </div>
+
+
+                        <button onclick="closeAltairAI()" style="
+                    background:none;
+                    border:none;
+                    color:#aaa;
+                    font-size:24px;
+                    cursor:pointer;
+                ">
+                            ×
+                        </button>
+
+                    </div>
+
+
+                    <!-- CHAT -->
+
+                    <div id="altairChatMessages" style="
+                flex:1;
+                overflow-y:auto;
+                padding:20px;
+                display:flex;
+                flex-direction:column;
+                gap:12px;
+            ">
+
+                        <div style="
+                    background:rgba(0,240,255,.08);
+                    border:1px solid rgba(0,240,255,.12);
+                    padding:14px;
+                    border-radius:14px;
+                    color:#fff;
+                    max-width:85%;
+                ">
+                            👋 Hi {{ user_name }}.
+
+                            <br><br>
+
+                            I'm Altair AI. I can analyze your
+                            revenue, invoices, customers, expenses,
+                            investments, inventory and leads.
+
+                            <br><br>
+
+                            Ask me something like:
+
+                            <br>
+
+                            <strong>
+                                "How is my business performing?"
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- INPUT -->
+
+                    <div style="
+                padding:15px;
+                border-top:1px solid rgba(255,255,255,.08);
+                display:flex;
+                gap:10px;
+            ">
+
+                        <input id="altairChatInput" type="text" placeholder="Ask Altair AI about your business..."
+                            onkeydown="
+                    if(event.key === 'Enter'){
+                        sendAltairMessage();
+                    }
+                " style="
+                    flex:1;
+                    padding:13px;
+                    border-radius:12px;
+                    border:1px solid rgba(255,255,255,.12);
+                    background:#181824;
+                    color:#fff;
+                    outline:none;
+                ">
+
+
+                        <button onclick="sendAltairMessage()" class="ai-btn" style="width:auto;">
+                            Send
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
 
 
 
@@ -1969,6 +2150,470 @@
             }
 
         }
+
+    </script>
+
+
+    <script>
+
+        /* 
+           ALTAIR AI BUSINESS INSIGHTS
+         */
+
+        let altairBusinessData = null;
+
+
+        async function loadAltairInsights() {
+
+            try {
+
+                const response = await fetch(
+                    "/api/ai/business-insights"
+                );
+
+                const result = await response.json();
+
+
+                if (!result.success) {
+
+                    console.error(
+                        "AI ERROR:",
+                        result.message
+                    );
+
+                    return;
+
+                }
+
+
+                altairBusinessData =
+                    result.analysis;
+
+
+                /* -----------------------------------------------
+                   HEALTH
+                ------------------------------------------------ */
+
+                const health =
+                    document.getElementById(
+                        "aiHealth"
+                    );
+
+                if (health) {
+
+                    health.innerHTML =
+                        `<strong>${result.analysis.health_score}/100</strong>
+                 business health score.`;
+
+                }
+
+
+                /* -----------------------------------------------
+                   FORECAST
+                ------------------------------------------------ */
+
+                const forecast =
+                    document.getElementById(
+                        "aiForecast"
+                    );
+
+                if (forecast) {
+
+                    const value =
+                        Number(
+                            result.analysis.revenue_prediction
+                        ).toLocaleString(
+                            undefined,
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }
+                        );
+
+                    forecast.innerHTML =
+                        `AI predicts approximately
+                <strong>R${value}</strong>
+                next month with
+                <strong>
+                ${result.analysis.prediction_confidence}%
+                </strong>
+                model confidence.`;
+
+                }
+
+
+                /* -----------------------------------------------
+                   CASH FLOW
+                ------------------------------------------------ */
+
+                const cashFlow =
+                    document.getElementById(
+                        "aiCashFlow"
+                    );
+
+                if (cashFlow) {
+
+                    const overdue =
+                        Number(
+                            result.analysis.overdue_amount
+                        ).toLocaleString();
+
+                    const pending =
+                        Number(
+                            result.analysis.pending_amount
+                        ).toLocaleString();
+
+                    cashFlow.innerHTML =
+                        `<strong>R${overdue}</strong>
+                overdue and
+                <strong>R${pending}</strong>
+                pending.`;
+
+                }
+
+
+                /* -----------------------------------------------
+                   RECOMMENDATION
+                ------------------------------------------------ */
+
+                const recommendation =
+                    document.getElementById(
+                        "aiRecommendation"
+                    );
+
+                if (recommendation) {
+
+                    if (
+                        result.analysis.overdue_amount > 0
+                    ) {
+
+                        recommendation.innerHTML =
+                            "Prioritize collecting overdue invoices before increasing spending.";
+
+                    }
+
+                    else if (
+                        result.analysis.lead_conversion < 10
+                    ) {
+
+                        recommendation.innerHTML =
+                            "Your lead conversion is low. Focus on following up with qualified leads.";
+
+                    }
+
+                    else {
+
+                        recommendation.innerHTML =
+                            "Your business indicators are healthy. Continue monitoring revenue, cash flow and customer growth.";
+
+                    }
+
+                }
+
+
+                /* -----------------------------------------------
+                   CUSTOMERS
+                ------------------------------------------------ */
+
+                const customers =
+                    document.getElementById(
+                        "aiCustomers"
+                    );
+
+                if (customers) {
+
+                    customers.innerHTML =
+                        `${result.analysis.customers || 0}
+                customers in your business database.`;
+
+                }
+
+
+                /* -----------------------------------------------
+                   CONVERSION
+                ------------------------------------------------ */
+
+                const conversion =
+                    document.getElementById(
+                        "aiConversion"
+                    );
+
+                if (conversion) {
+
+                    conversion.innerHTML =
+                        `${result.analysis.lead_conversion}%`;
+
+                }
+
+
+                /* -----------------------------------------------
+                   RECURRING
+                ------------------------------------------------ */
+
+                const recurring =
+                    document.getElementById(
+                        "aiRecurring"
+                    );
+
+                if (recurring) {
+
+                    recurring.innerHTML =
+                        `R${Number(
+                            result.analysis.monthly_recurring
+                        ).toLocaleString()}
+                / month`;
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "ALTAIR AI ERROR:",
+                    error
+                );
+
+                const recommendation =
+                    document.getElementById(
+                        "aiRecommendation"
+                    );
+
+                if (recommendation) {
+
+                    recommendation.innerText =
+                        "AI insights could not be loaded.";
+
+                }
+
+            }
+
+        }
+
+
+        /* 
+           ALTAIR AI CHAT
+         */
+
+        function openAltairAI() {
+
+            const overlay =
+                document.getElementById(
+                    "altairAIOverlay"
+                );
+
+            if (overlay) {
+
+                overlay.style.display =
+                    "flex";
+
+            }
+
+        }
+
+
+        function closeAltairAI() {
+
+            const overlay =
+                document.getElementById(
+                    "altairAIOverlay"
+                );
+
+            if (overlay) {
+
+                overlay.style.display =
+                    "none";
+
+            }
+
+        }
+
+
+        /* 
+           SEND CHAT MESSAGE
+         */
+
+        async function sendAltairMessage() {
+
+            const input =
+                document.getElementById(
+                    "altairChatInput"
+                );
+
+            const messages =
+                document.getElementById(
+                    "altairChatMessages"
+                );
+
+
+            if (!input || !messages) {
+                return;
+            }
+
+
+            const message =
+                input.value.trim();
+
+
+            if (!message) {
+                return;
+            }
+
+
+            /* USER MESSAGE */
+
+            const userBubble =
+                document.createElement(
+                    "div"
+                );
+
+            userBubble.style.cssText = `
+        align-self:flex-end;
+        background:#00f0ff;
+        color:#000;
+        padding:12px 15px;
+        border-radius:14px;
+        max-width:85%;
+    `;
+
+            userBubble.innerText =
+                message;
+
+            messages.appendChild(
+                userBubble
+            );
+
+
+            input.value = "";
+
+
+            /* AI LOADING */
+
+            const loading =
+                document.createElement(
+                    "div"
+                );
+
+            loading.style.cssText = `
+        align-self:flex-start;
+        background:#181824;
+        color:#fff;
+        padding:12px 15px;
+        border-radius:14px;
+        max-width:85%;
+    `;
+
+            loading.innerText =
+                "🤖 Altair AI is analyzing your business...";
+
+            messages.appendChild(
+                loading
+            );
+
+
+            messages.scrollTop =
+                messages.scrollHeight;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/ai/chat",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                message: message
+                            })
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                loading.remove();
+
+
+                const aiBubble =
+                    document.createElement(
+                        "div"
+                    );
+
+                aiBubble.style.cssText = `
+            align-self:flex-start;
+            background:rgba(0,240,255,.08);
+            border:1px solid rgba(0,240,255,.12);
+            color:#fff;
+            padding:13px 15px;
+            border-radius:14px;
+            max-width:85%;
+            white-space:pre-wrap;
+        `;
+
+
+                if (result.success) {
+
+                    aiBubble.innerText =
+                        result.reply;
+
+                }
+
+                else {
+
+                    aiBubble.innerText =
+                        "⚠️ " +
+                        (
+                            result.message ||
+                            "Unable to contact Altair AI."
+                        );
+
+                }
+
+
+                messages.appendChild(
+                    aiBubble
+                );
+
+
+                messages.scrollTop =
+                    messages.scrollHeight;
+
+            }
+
+            catch (error) {
+
+                loading.innerText =
+                    "⚠️ Unable to contact Altair AI.";
+
+                console.error(
+                    error
+                );
+
+            }
+
+        }
+
+
+        /* 
+           LOAD AI ON DASHBOARD
+         */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                loadAltairInsights();
+
+            }
+        );
 
     </script>
 
