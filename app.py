@@ -35,6 +35,13 @@ cloudinary.config(
 # FLASK APP
 app = Flask(__name__)
 
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+
+if not app.secret_key:
+    raise RuntimeError(
+        "FLASK_SECRET_KEY is not configured."
+    )
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
     app.root_path,
