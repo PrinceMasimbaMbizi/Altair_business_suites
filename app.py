@@ -20,7 +20,9 @@ import numpy as np
 
 from sklearn.linear_model import LinearRegression
 
-from openai import OpenAI
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 
 GOOGLE_PLACES_API_KEY = os.environ.get("GOOGLE_PLACES_API_KEY") 
 
@@ -32,15 +34,6 @@ cloudinary.config(
 
 # FLASK APP
 app = Flask(__name__)
-
-app.secret_key = os.environ.get("FLASK_SECRET_KEY","altair-development-secret-key")
-
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
-openai_client = None
-
-if OPENAI_API_KEY:
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
@@ -127,6 +120,101 @@ def get_db_connection():
 
         ssl_verify_cert=False
     )
+
+def require_current_company():
+    """
+    Ensures that the authenticated user has a company.
+
+    Returns:
+        (user_id, company)
+    """
+
+    user_id = get_current_user_id()
+
+    if not user_id:
+        return None, None
+
+    company = get_current_company()
+
+    return user_id, company    
+
+
+# CURRENT USER / COMPANY SECURITY
+def get_current_user_id():
+    """
+    Returns the authenticated user's ID.
+
+    IMPORTANT:
+    Never take user_id from request.form, request.args,
+    request.json, or the URL.
+    Always use the Flask session.
+    """
+
+    return session.get("user_id")
+
+
+def get_current_company():
+    """
+    Returns the company belonging to the currently
+    authenticated user.
+
+    The company is NEVER selected using a company_id
+    supplied by the browser.
+    """
+
+    user_id = get_current_user_id()
+
+    if not user_id:
+        return None
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+
+        return cursor.fetchone()
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+
+def get_current_company_id():
+    """
+    Returns the database ID of the company belonging
+    to the authenticated user.
+
+    This value comes from the database after verifying
+    ownership through the Flask session.
+    """
+
+    company = get_current_company()
+
+    if not company:
+        return None
+
+    return company["id"]
+
 
 @app.route("/company-logo")
 def company_logo():
@@ -471,13 +559,15 @@ def logout():
 
 
 # COMPANY SETUP
-
-
 @app.route(
     "/company-setup",
     methods=["GET", "POST"]
 )
 def company_setup():
+
+    
+    # SECURITY: USER MUST BE LOGGED IN
+    
 
     if "user_id" not in session:
 
@@ -487,348 +577,160 @@ def company_setup():
 
     user_id = session["user_id"]
 
-    if request.method == "POST":
+    
+    # GET REQUEST
+    
 
-        company_name = request.form.get(
-            "company_name",
-            ""
-        ).strip()
+    if request.method == "GET":
 
-        industry = request.form.get(
-            "industry",
-            ""
-        ).strip()
+        return render_template(
+            "company_setup.html"
+        )
 
-        specialization = request.form.get(
-            "specialization",
-            ""
-        ).strip()
+    
+    # POST REQUEST
+    
 
-        description = request.form.get(
-            "description",
-            ""
-        ).strip()
+    # -----------------------------------------------------
+    # GET FORM DATA
+    # -----------------------------------------------------
 
-        phone = request.form.get(
-            "phone",
-            ""
-        ).strip()
+    company_name = request.form.get(
+        "company_name",
+        ""
+    ).strip()
 
-        email = request.form.get(
-            "email",
-            ""
-        ).strip()
+    industry = request.form.get(
+        "industry",
+        ""
+    ).strip()
 
-        website = request.form.get(
-            "website",
-            ""
-        ).strip()
+    specialization = request.form.get(
+        "specialization",
+        ""
+    ).strip()
 
-        address = request.form.get(
-            "address",
-            ""
-        ).strip()
+    description = request.form.get(
+        "description",
+        ""
+    ).strip()
 
-        city = request.form.get(
-            "city",
-            ""
-        ).strip()
+    phone = request.form.get(
+        "phone",
+        ""
+    ).strip()
 
-        country = request.form.get(
-            "country",
-            ""
-        ).strip()
+    email = request.form.get(
+        "email",
+        ""
+    ).strip()
 
-        services = request.form.get(
-            "services",
-            ""
-        ).strip()
+    website = request.form.get(
+        "website",
+        ""
+    ).strip()
 
-        # Validation
+    address = request.form.get(
+        "address",
+        ""
+    ).strip()
 
-        if not company_name:
+    city = request.form.get(
+        "city",
+        ""
+    ).strip()
 
-            flash(
-                "Company name is required.",
-                "error"
-            )
+    country = request.form.get(
+        "country",
+        ""
+    ).strip()
 
-            return redirect(
-                url_for("company_setup")
-            )
+    services = request.form.get(
+        "services",
+        ""
+    ).strip()
 
-        if not industry:
+    
+    # VALIDATION
+    
 
-            flash(
-                "Please select your industry.",
-                "error"
-            )
+    if not company_name:
 
-            return redirect(
-                url_for("company_setup")
-            )
+        flash(
+            "Company name is required.",
+            "error"
+        )
 
-        if not specialization:
+        return redirect(
+            url_for("company_setup")
+        )
 
-            flash(
-                "Please enter your company specialization.",
-                "error"
-            )
+    if not industry:
 
-            return redirect(
-                url_for("company_setup")
-            )
+        flash(
+            "Please select your industry.",
+            "error"
+        )
 
-        if not description:
+        return redirect(
+            url_for("company_setup")
+        )
 
-            flash(
-                "Please provide a company description.",
-                "error"
-            )
+    if not specialization:
 
-            return redirect(
-                url_for("company_setup")
-            )
+        flash(
+            "Please enter your company specialization.",
+            "error"
+        )
 
-        if not services:
+        return redirect(
+            url_for("company_setup")
+        )
 
-            flash(
-                "Please enter your services or products.",
-                "error"
-            )
+    if not description:
 
-            return redirect(
-                url_for("company_setup")
-            )
+        flash(
+            "Please provide a company description.",
+            "error"
+        )
 
+        return redirect(
+            url_for("company_setup")
+        )
 
+    if not services:
 
+        flash(
+            "Please enter your services or products.",
+            "error"
+        )
 
-        # Logo
+        return redirect(
+            url_for("company_setup")
+        )
 
-        logo = request.files.get("logo")
+    
+    # LOGO
+    
 
-        logo_url = None
+    logo = request.files.get("logo")
 
+    logo_url = None
+
+    
+    # UPLOAD LOGO ONLY IF USER SELECTED ONE
+    
 
     if logo and logo.filename:
 
-    
-    # CHECK FILE TYPE
-    
+        # -------------------------------------------------
+        # CHECK FILE TYPE
+        # -------------------------------------------------
 
         if not allowed_file(logo.filename):
 
             flash(
-            "Invalid logo format. Please use PNG, JPG or JPEG.",
-            "error"
-        )
-
-        return redirect(
-            url_for("settings")
-        )
-
-
-    try:
-
-        
-        # UPLOAD LOGO TO CLOUDINARY
-        
-
-        upload_result = cloudinary.uploader.upload(
-
-            logo,
-
-            folder="altair_business_suite/company_logos",
-
-            public_id=f"company_{user_id}",
-
-            overwrite=True,
-
-            resource_type="image"
-        )
-
-
-        
-        # GET PERMANENT CLOUDINARY URL
-        
-
-        logo_url = upload_result.get(
-            "secure_url"
-        )
-
-
-        print(
-            "CLOUDINARY LOGO URL:",
-            logo_url
-        )
-
-
-    except Exception as e:
-
-        print(
-            "CLOUDINARY LOGO UPLOAD ERROR:",
-            e
-        )
-
-        flash(
-            "Could not upload company logo.",
-            "error"
-        )
-
-        return redirect(
-            url_for("settings")
-        )
-
-        db = None
-        cursor = None
-
-        try:
-
-            db = get_db_connection()
-
-            cursor = db.cursor()
-
-            # Prevent duplicate company profile
-
-            cursor.execute(
-                """
-                SELECT id
-                FROM companies
-                WHERE user_id = %s
-                LIMIT 1
-                """,
-                (user_id,)
-            )
-
-            existing_company = cursor.fetchone()
-
-            if existing_company:
-
-                cursor.execute(
-                    """
-                    UPDATE companies
-                    SET
-                        company_name = %s,
-                        industry = %s,
-                        specialization = %s,
-                        description = %s,
-                        phone = %s,
-                        email = %s,
-                        website = %s,
-                        address = %s,
-                        city = %s,
-                        country = %s,
-                        services = %s
-                    WHERE user_id = %s
-                    """,
-                    (
-                        company_name,
-                        industry,
-                        specialization,
-                        description,
-                        phone,
-                        email,
-                        website,
-                        address,
-                        city,
-                        country,
-                        services,
-                        user_id
-                    )
-                )
-
-                if logo_url:
-
-                    cursor.execute(
-                        """
-                        UPDATE companies
-                        SET logo = %s
-                        WHERE user_id = %s
-                        """,
-                        (
-                            logo_url,
-                            user_id
-                        )
-                    )
-
-            else:
-
-                cursor.execute(
-                    """
-                    INSERT INTO companies
-                    (
-                        user_id,
-                        company_name,
-                        industry,
-                        specialization,
-                        description,
-                        phone,
-                        email,
-                        website,
-                        address,
-                        city,
-                        country,
-                        services,
-                        logo
-                    )
-                    VALUES
-                    (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s
-                    )
-                    """,
-                    (
-                        user_id,
-                        company_name,
-                        industry,
-                        specialization,
-                        description,
-                        phone,
-                        email,
-                        website,
-                        address,
-                        city,
-                        country,
-                        services,
-                        logo_url
-                    )
-                )
-
-            db.commit()
-
-            flash(
-                "Company profile created successfully!",
-                "success"
-            )
-
-            return redirect(
-                url_for("dashboard")
-            )
-
-        except Exception as e:
-
-            if db:
-                db.rollback()
-
-            print(
-                "COMPANY SETUP ERROR:",
-                e
-            )
-
-            flash(
-                "Could not save company profile.",
+                "Invalid logo format. Please use PNG, JPG or JPEG.",
                 "error"
             )
 
@@ -836,18 +738,250 @@ def company_setup():
                 url_for("company_setup")
             )
 
-        finally:
+        # -------------------------------------------------
+        # UPLOAD TO CLOUDINARY
+        # -------------------------------------------------
 
-            if cursor:
-                cursor.close()
+        try:
 
-            if db:
-                db.close()
+            upload_result = cloudinary.uploader.upload(
 
-    return render_template(
-        "company_setup.html"
-    )
+                logo,
 
+                folder="altair_business_suite/company_logos",
+
+                public_id=f"company_{user_id}",
+
+                overwrite=True,
+
+                resource_type="image"
+            )
+
+            # -------------------------------------------------
+            # GET PERMANENT CLOUDINARY URL
+            # -------------------------------------------------
+
+            logo_url = upload_result.get(
+                "secure_url"
+            )
+
+            print(
+                "CLOUDINARY LOGO URL:",
+                logo_url
+            )
+
+        except Exception as e:
+
+            print(
+                "CLOUDINARY LOGO UPLOAD ERROR:",
+                e
+            )
+
+            flash(
+                "Could not upload company logo.",
+                "error"
+            )
+
+            return redirect(
+                url_for("company_setup")
+            )
+
+    
+    # DATABASE
+    
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor()
+
+        
+        # CHECK IF COMPANY ALREADY EXISTS
+        
+
+        cursor.execute(
+            """
+            SELECT id, logo
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+
+        existing_company = cursor.fetchone()
+
+        
+        # UPDATE EXISTING COMPANY
+        
+
+        if existing_company:
+
+            cursor.execute(
+                """
+                UPDATE companies
+                SET
+                    company_name = %s,
+                    industry = %s,
+                    specialization = %s,
+                    description = %s,
+                    phone = %s,
+                    email = %s,
+                    website = %s,
+                    address = %s,
+                    city = %s,
+                    country = %s,
+                    services = %s
+                WHERE user_id = %s
+                """,
+                (
+                    company_name,
+                    industry,
+                    specialization,
+                    description,
+                    phone,
+                    email,
+                    website,
+                    address,
+                    city,
+                    country,
+                    services,
+                    user_id
+                )
+            )
+
+            # -------------------------------------------------
+            # ONLY UPDATE LOGO IF A NEW LOGO WAS UPLOADED
+            # -------------------------------------------------
+
+            if logo_url:
+
+                cursor.execute(
+                    """
+                    UPDATE companies
+                    SET logo = %s
+                    WHERE user_id = %s
+                    """,
+                    (
+                        logo_url,
+                        user_id
+                    )
+                )
+
+        
+        # CREATE NEW COMPANY
+        
+
+        else:
+
+            cursor.execute(
+                """
+                INSERT INTO companies
+                (
+                    user_id,
+                    company_name,
+                    industry,
+                    specialization,
+                    description,
+                    phone,
+                    email,
+                    website,
+                    address,
+                    city,
+                    country,
+                    services,
+                    logo
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                """,
+                (
+                    user_id,
+                    company_name,
+                    industry,
+                    specialization,
+                    description,
+                    phone,
+                    email,
+                    website,
+                    address,
+                    city,
+                    country,
+                    services,
+                    logo_url
+                )
+            )
+
+        
+        # COMMIT
+        
+
+        db.commit()
+
+        flash(
+            "Company profile created successfully!",
+            "success"
+        )
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    
+    # DATABASE ERROR
+    
+
+    except Exception as e:
+
+        if db:
+
+            db.rollback()
+
+        print(
+            "COMPANY SETUP ERROR:",
+            e
+        )
+
+        flash(
+            "Could not save company profile.",
+            "error"
+        )
+
+        return redirect(
+            url_for("company_setup")
+        )
+
+    
+    # CLOSE DATABASE
+    
+
+    finally:
+
+        if cursor:
+
+            cursor.close()
+
+        if db:
+
+            db.close()
 
 
 # ALTAIR AI - REVENUE FORECASTING ENGINE
@@ -970,6 +1104,777 @@ def predict_next_month_revenue(monthly_revenue):
     }
 
 
+# ALTAIR PERSONAL NLP ENGINE
+ALTAIR_TRAINING_DATA = [
+
+    
+    # REVENUE
+    
+
+    (
+        "How much revenue did I make?",
+        "revenue"
+    ),
+
+    (
+        "What is my revenue?",
+        "revenue"
+    ),
+
+    (
+        "How much money did my business make?",
+        "revenue"
+    ),
+
+    (
+        "Show me my sales revenue",
+        "revenue"
+    ),
+
+    (
+        "What are my sales?",
+        "revenue"
+    ),
+
+    (
+        "How much have I earned?",
+        "revenue"
+    ),
+
+    (
+        "How is my revenue doing?",
+        "revenue"
+    ),
+
+
+    
+    # FORECAST
+    
+
+    (
+        "What will my revenue be next month?",
+        "forecast"
+    ),
+
+    (
+        "Predict my revenue",
+        "forecast"
+    ),
+
+    (
+        "How much will I make next month?",
+        "forecast"
+    ),
+
+    (
+        "What is my revenue forecast?",
+        "forecast"
+    ),
+
+    (
+        "Can you forecast my sales?",
+        "forecast"
+    ),
+
+    (
+        "What does the model predict?",
+        "forecast"
+    ),
+
+
+    
+    # EXPENSES
+    
+
+    (
+        "How much are my expenses?",
+        "expenses"
+    ),
+
+    (
+        "Show me my expenses",
+        "expenses"
+    ),
+
+    (
+        "How much money am I spending?",
+        "expenses"
+    ),
+
+    (
+        "What are my business expenses?",
+        "expenses"
+    ),
+
+    (
+        "How much have I spent?",
+        "expenses"
+    ),
+
+
+    
+    # INVOICES
+    
+
+    (
+        "How many invoices do I have?",
+        "invoices"
+    ),
+
+    (
+        "Show me my invoices",
+        "invoices"
+    ),
+
+    (
+        "How many invoices are pending?",
+        "invoices"
+    ),
+
+    (
+        "How many invoices are overdue?",
+        "invoices"
+    ),
+
+    (
+        "What invoices have been paid?",
+        "invoices"
+    ),
+
+
+    
+    # CUSTOMERS
+    
+
+    (
+        "How many customers do I have?",
+        "customers"
+    ),
+
+    (
+        "Show me my customers",
+        "customers"
+    ),
+
+    (
+        "How many customers are there?",
+        "customers"
+    ),
+
+    (
+        "Tell me about my customers",
+        "customers"
+    ),
+
+
+    
+    # LEADS
+    
+
+    (
+        "How many leads do I have?",
+        "leads"
+    ),
+
+    (
+        "Show me my leads",
+        "leads"
+    ),
+
+    (
+        "How are my leads performing?",
+        "leads"
+    ),
+
+    (
+        "What is my lead conversion rate?",
+        "leads"
+    ),
+
+    (
+        "How many leads converted?",
+        "leads"
+    ),
+
+
+    
+    # BUSINESS HEALTH
+    
+
+    (
+        "How is my business doing?",
+        "business_health"
+    ),
+
+    (
+        "How healthy is my business?",
+        "business_health"
+    ),
+
+    (
+        "What is my business health score?",
+        "business_health"
+    ),
+
+    (
+        "Is my business performing well?",
+        "business_health"
+    ),
+
+    (
+        "Give me a business overview",
+        "business_health"
+    ),
+
+
+    
+    # RECOMMENDATIONS
+    
+
+    (
+        "What should I do?",
+        "recommendations"
+    ),
+
+    (
+        "Give me business advice",
+        "recommendations"
+    ),
+
+    (
+        "What should I improve?",
+        "recommendations"
+    ),
+
+    (
+        "How can I improve my business?",
+        "recommendations"
+    ),
+
+    (
+        "What do you recommend?",
+        "recommendations"
+    ),
+
+
+    
+    # CASH FLOW
+    
+
+    (
+        "How much money is outstanding?",
+        "cash_flow"
+    ),
+
+    (
+        "How much money am I waiting for?",
+        "cash_flow"
+    ),
+
+    (
+        "What is my cash flow situation?",
+        "cash_flow"
+    ),
+
+    (
+        "How much money is pending?",
+        "cash_flow"
+    ),
+
+    (
+        "How much money is overdue?",
+        "cash_flow"
+    )
+]
+
+
+
+# CREATE TRAINING ARRAYS
+
+
+ALTAIR_QUESTIONS = [
+    item[0]
+    for item in ALTAIR_TRAINING_DATA
+]
+
+ALTAIR_INTENTS = [
+    item[1]
+    for item in ALTAIR_TRAINING_DATA
+]
+
+
+
+# ALTAIR NLP MODEL
+
+
+altair_nlp_model = Pipeline(
+    [
+        (
+            "tfidf",
+            TfidfVectorizer(
+                lowercase=True,
+                ngram_range=(1, 2),
+                sublinear_tf=True
+            )
+        ),
+
+        (
+            "classifier",
+            LogisticRegression(
+                max_iter=1000
+            )
+        )
+    ]
+)
+
+
+
+# TRAIN MODEL
+
+
+altair_nlp_model.fit(
+    ALTAIR_QUESTIONS,
+    ALTAIR_INTENTS
+)
+
+
+print(
+    "ALTAIR NLP MODEL TRAINED"
+)
+
+print(
+    "Training examples:",
+    len(ALTAIR_QUESTIONS)
+)
+
+
+
+# UNDERSTAND USER QUESTION
+
+
+def understand_altair_question(question):
+
+    question = (
+        question
+        .strip()
+        .lower()
+    )
+
+    if not question:
+
+        return {
+            "intent": "unknown",
+            "confidence": 0
+        }
+
+
+    probabilities = (
+        altair_nlp_model
+        .predict_proba(
+            [question]
+        )[0]
+    )
+
+    classes = (
+        altair_nlp_model
+        .classes_
+    )
+
+
+    best_index = probabilities.argmax()
+
+    intent = classes[best_index]
+
+    confidence = (
+        probabilities[best_index]
+        * 100
+    )
+
+
+    return {
+
+        "intent": intent,
+
+        "confidence": round(
+            float(confidence),
+            2
+        )
+    }
+
+
+
+# ALTAIR RESPONSE ENGINE
+
+
+def altair_response_engine(
+    intent,
+    business_data,
+    analysis
+):
+
+    invoices = business_data.get(
+        "invoices",
+        {}
+    )
+
+    customers = business_data.get(
+        "customers",
+        {}
+    )
+
+    leads = business_data.get(
+        "leads",
+        {}
+    )
+
+    expenses = business_data.get(
+        "expenses",
+        {}
+    )
+
+    forecast = business_data.get(
+        "forecast",
+        {}
+    )
+
+
+    
+    # REVENUE
+    
+
+    if intent == "revenue":
+
+        revenue = float(
+            invoices.get(
+                "paid_amount",
+                0
+            ) or 0
+        )
+
+        return (
+            f"Your current recorded paid revenue "
+            f"is {revenue:,.2f}. "
+            f"This figure comes directly from "
+            f"your paid invoices."
+        )
+
+
+    
+    # FORECAST
+    
+
+    if intent == "forecast":
+
+        prediction = float(
+            forecast.get(
+                "prediction",
+                0
+            ) or 0
+        )
+
+        confidence = float(
+            forecast.get(
+                "confidence",
+                0
+            ) or 0
+        )
+
+        return (
+            f"Your current machine-learning forecast "
+            f"for the next month is approximately "
+            f"{prediction:,.2f}. "
+            f"The model confidence is approximately "
+            f"{confidence:.1f}%. "
+            f"This is a prediction, not a guarantee."
+        )
+
+
+    
+    # EXPENSES
+    
+
+    if intent == "expenses":
+
+        total = float(
+            expenses.get(
+                "total",
+                0
+            ) or 0
+        )
+
+        return (
+            f"Your recorded business expenses total "
+            f"{total:,.2f}."
+        )
+
+
+    
+    # INVOICES
+    
+
+    if intent == "invoices":
+
+        total = int(
+            invoices.get(
+                "total",
+                0
+            ) or 0
+        )
+
+        paid = int(
+            invoices.get(
+                "paid_count",
+                0
+            ) or 0
+        )
+
+        pending = int(
+            invoices.get(
+                "pending_count",
+                0
+            ) or 0
+        )
+
+        overdue = int(
+            invoices.get(
+                "overdue_count",
+                0
+            ) or 0
+        )
+
+        return (
+            f"You currently have {total} invoices. "
+            f"{paid} are paid, "
+            f"{pending} are pending, and "
+            f"{overdue} are overdue."
+        )
+
+
+    
+    # CUSTOMERS
+    
+
+    if intent == "customers":
+
+        total = int(
+            customers.get(
+                "total",
+                0
+            ) or 0
+        )
+
+        return (
+            f"You currently have "
+            f"{total} recorded customers."
+        )
+
+
+    
+    # LEADS
+    
+
+    if intent == "leads":
+
+        total = int(
+            leads.get(
+                "total",
+                0
+            ) or 0
+        )
+
+        converted = int(
+            leads.get(
+                "converted",
+                0
+            ) or 0
+        )
+
+        conversion = float(
+            analysis.get(
+                "lead_conversion",
+                0
+            ) or 0
+        )
+
+        return (
+            f"You currently have {total} leads. "
+            f"{converted} have been converted. "
+            f"Your current lead conversion rate "
+            f"is approximately {conversion:.1f}%."
+        )
+
+
+    
+    # BUSINESS HEALTH
+    
+
+    if intent == "business_health":
+
+        score = int(
+            analysis.get(
+                "health_score",
+                0
+            ) or 0
+        )
+
+        revenue = float(
+            analysis.get(
+                "paid_revenue",
+                0
+            ) or 0
+        )
+
+        expenses_total = float(
+            analysis.get(
+                "expenses",
+                0
+            ) or 0
+        )
+
+        return (
+            f"Your current Altair business health "
+            f"score is {score}/100. "
+            f"Recorded paid revenue is "
+            f"{revenue:,.2f}, while recorded expenses "
+            f"are {expenses_total:,.2f}."
+        )
+
+
+    
+    # CASH FLOW
+    
+
+    if intent == "cash_flow":
+
+        pending = float(
+            analysis.get(
+                "pending_amount",
+                0
+            ) or 0
+        )
+
+        overdue = float(
+            analysis.get(
+                "overdue_amount",
+                0
+            ) or 0
+        )
+
+        total_outstanding = (
+            pending +
+            overdue
+        )
+
+        return (
+            f"You currently have "
+            f"{total_outstanding:,.2f} outstanding. "
+            f"Pending invoices account for "
+            f"{pending:,.2f}, while overdue invoices "
+            f"account for {overdue:,.2f}."
+        )
+
+
+    
+    # RECOMMENDATIONS
+    
+
+    if intent == "recommendations":
+
+        recommendations = []
+
+
+        overdue = float(
+            analysis.get(
+                "overdue_amount",
+                0
+            ) or 0
+        )
+
+        conversion = float(
+            analysis.get(
+                "lead_conversion",
+                0
+            ) or 0
+        )
+
+        recurring = float(
+            analysis.get(
+                "monthly_recurring",
+                0
+            ) or 0
+        )
+
+        revenue = float(
+            analysis.get(
+                "paid_revenue",
+                0
+            ) or 0
+        )
+
+
+        if overdue > 0:
+
+            recommendations.append(
+                "Follow up on overdue invoices "
+                "to improve cash flow."
+            )
+
+
+        if conversion < 10:
+
+            recommendations.append(
+                "Improve lead follow-up and "
+                "conversion activities."
+            )
+
+
+        if recurring > revenue:
+
+            recommendations.append(
+                "Review recurring costs because "
+                "they are high compared with "
+                "recorded paid revenue."
+            )
+
+
+        if not recommendations:
+
+            recommendations.append(
+                "Continue monitoring revenue, "
+                "expenses, customers and leads "
+                "and use the forecasting tools "
+                "to identify upcoming changes."
+            )
+
+
+        return (
+            "Here are my current recommendations:\n\n"
+            +
+            "\n".join(
+                [
+                    f"{index + 1}. {item}"
+                    for index, item
+                    in enumerate(
+                        recommendations[:3]
+                    )
+                ]
+            )
+        )
+
+
+    
+    # UNKNOWN
+    
+
+    return (
+        "I understand that you are asking about "
+        "your business, but I do not yet know "
+        "how to classify that question. "
+        "For now please try asking about revenue, expenses, "
+        "customers, invoices, leads, cash flow, "
+        "business health or forecasting."
+    )
+
 # ALTAIR AI 
 def get_business_ai_data(user_id):
 
@@ -978,12 +1883,39 @@ def get_business_ai_data(user_id):
 
     try:
 
-        db = get_db_connection()
+        
+        # SECURITY: RESOLVE COMPANY FROM AUTHENTICATED USER
+    
 
-        cursor = db.cursor(
-            dictionary=True
-        )
+        company = get_current_company()
 
+        if not company:
+            raise PermissionError(
+                "No company is associated with the authenticated user."
+            )
+
+        # Extra ownership verification
+        if int(company["user_id"]) != int(user_id):
+            raise PermissionError(
+                "Company ownership verification failed."
+            )
+
+        company_id = company["id"]
+
+    
+        # VERIFIED COMPANY INFORMATION
+        
+
+        verified_company = {
+            "id": company_id,
+            "company_name": company.get("company_name"),
+            "industry": company.get("industry"),
+            "specialization": company.get("specialization"),
+            "description": company.get("description"),
+            "services": company.get("services"),
+            "city": company.get("city"),
+            "country": company.get("country")
+        }
         data = {}
 
         
@@ -1478,139 +2410,138 @@ def generate_business_advice(business_data):
             "confidence",
             0
         )
-    }
+    }    
 
 
 
-# AI BUSINESS INSIGHTS API
+# ALTAIR BUSINESS SUMMARY ENGINE
 
 
-@app.route(
-    "/api/ai/business-insights",
-    methods=["GET"]
-)
-def api_business_insights():
-
-    if "user_id" not in session:
-
-        return jsonify({
-            "success": False,
-            "message": "Please login first."
-        }), 401
-
-    user_id = session["user_id"]
-
-    try:
-
-        business_data = get_business_ai_data(
-            user_id
-        )
-
-        advice = generate_business_advice(
-            business_data
-        )
-
-        
-        # AI EXPLANATION
-        
-
-        ai_text = ""
-
-        if openai_client:
-
-            prompt = f"""
-You are Altair AI, an expert business
-advisor inside Altair Business Suite.
-
-You are analyzing ONE business.
-
-Never invent numbers.
-
-Use only the supplied data.
-
-Business data:
-
-{json.dumps(
+def altair_business_summary(
     business_data,
-    default=str,
-    indent=2
-)}
+    analysis
+):
 
-Calculated analysis:
+    revenue = float(
+        analysis.get(
+            "paid_revenue",
+            0
+        ) or 0
+    )
 
-{json.dumps(
-    advice,
-    default=str,
-    indent=2
-)}
+    forecast = float(
+        analysis.get(
+            "revenue_prediction",
+            0
+        ) or 0
+    )
 
-Give concise but useful advice.
+    confidence = float(
+        analysis.get(
+            "prediction_confidence",
+            0
+        ) or 0
+    )
 
-Return exactly these sections:
+    overdue = float(
+        analysis.get(
+            "overdue_amount",
+            0
+        ) or 0
+    )
 
-REVENUE:
-Explain the current revenue situation.
+    pending = float(
+        analysis.get(
+            "pending_amount",
+            0
+        ) or 0
+    )
 
-FORECAST:
-Explain the machine-learning revenue prediction
-and its confidence.
+    expenses = float(
+        analysis.get(
+            "expenses",
+            0
+        ) or 0
+    )
 
-CASH FLOW:
-Explain pending and overdue money.
+    conversion = float(
+        analysis.get(
+            "lead_conversion",
+            0
+        ) or 0
+    )
 
-SALES:
-Explain lead performance.
+    health = int(
+        analysis.get(
+            "health_score",
+            0
+        ) or 0
+    )
 
-EXPENSES:
-Explain expenses and recurring costs.
 
-RECOMMENDATION:
-Give the three most important actions
-the business owner should take next.
+    # --------------------------------------------------------
+    # HEALTH DESCRIPTION
+    # --------------------------------------------------------
 
-Do not claim certainty about future results.
-"""
+    if health >= 80:
 
-            response = openai_client.responses.create(
-
-                model="gpt-5.6-luna",
-
-                input=prompt
-            )
-
-            ai_text = response.output_text
-
-        else:
-
-            ai_text = (
-                "AI explanation is unavailable because "
-                "OPENAI_API_KEY has not been configured."
-            )
-
-        return jsonify({
-
-            "success": True,
-
-            "analysis": advice,
-
-            "ai_advice": ai_text
-
-        })
-
-    except Exception as e:
-
-        print(
-            "AI BUSINESS INSIGHTS ERROR:",
-            e
+        health_text = (
+            "The business currently shows "
+            "strong overall indicators."
         )
 
-        return jsonify({
+    elif health >= 60:
 
-            "success": False,
+        health_text = (
+            "The business appears reasonably "
+            "stable, but there are areas that "
+            "should be monitored."
+        )
 
-            "message": str(e)
+    else:
 
-        }), 500
+        health_text = (
+            "The business has several areas "
+            "that require attention."
+        )
+
+
+    # --------------------------------------------------------
+    # BUILD RESPONSE
+    # --------------------------------------------------------
+
+    return (
+        "ALTAIR BUSINESS ANALYSIS\n\n"
+
+        f"REVENUE:\n"
+        f"Recorded paid revenue is "
+        f"{revenue:,.2f}.\n\n"
+
+        f"FORECAST:\n"
+        f"The current machine-learning forecast "
+        f"is {forecast:,.2f} with approximately "
+        f"{confidence:.1f}% confidence. "
+        f"This is a prediction and not a guarantee.\n\n"
+
+        f"CASH FLOW:\n"
+        f"Pending invoices total "
+        f"{pending:,.2f}, while overdue invoices "
+        f"total {overdue:,.2f}.\n\n"
+
+        f"EXPENSES:\n"
+        f"Recorded expenses total "
+        f"{expenses:,.2f}.\n\n"
+
+        f"SALES:\n"
+        f"Lead conversion is currently "
+        f"{conversion:.1f}%.\n\n"
+
+        f"BUSINESS HEALTH:\n"
+        f"Current Altair health score is "
+        f"{health}/100. "
+        f"{health_text}"
+    )
+
 
 
 # ============================================================
@@ -1623,20 +2554,20 @@ Do not claim certainty about future results.
 )
 def altair_ai_chat():
 
+    # --------------------------------------------------------
+    # AUTHENTICATION
+    # --------------------------------------------------------
+
     if "user_id" not in session:
 
         return jsonify({
+
             "success": False,
-            "message": "Please login first."
+
+            "message":
+                "Please login first."
+
         }), 401
-
-
-    if not openai_client:
-
-        return jsonify({
-            "success": False,
-            "message": "AI is not configured."
-        }), 500
 
 
     user_id = session["user_id"]
@@ -1644,12 +2575,22 @@ def altair_ai_chat():
 
     try:
 
-        body = request.get_json(
-            silent=True
-        ) or {}
+        # ----------------------------------------------------
+        # GET USER MESSAGE
+        # ----------------------------------------------------
+
+        body = (
+            request
+            .get_json(
+                silent=True
+            )
+            or {}
+        )
+
 
         message = (
-            body.get(
+            body
+            .get(
                 "message",
                 ""
             )
@@ -1660,13 +2601,17 @@ def altair_ai_chat():
         if not message:
 
             return jsonify({
+
                 "success": False,
-                "message": "Please enter a question."
+
+                "message":
+                    "Please enter a question."
+
             }), 400
 
 
         # ----------------------------------------------------
-        # GET THIS USER'S BUSINESS DATA
+        # GET AUTHENTICATED BUSINESS DATA
         # ----------------------------------------------------
 
         business_data = (
@@ -1676,6 +2621,10 @@ def altair_ai_chat():
         )
 
 
+        # ----------------------------------------------------
+        # CALCULATE BUSINESS ANALYTICS
+        # ----------------------------------------------------
+
         analysis = (
             generate_business_advice(
                 business_data
@@ -1684,91 +2633,87 @@ def altair_ai_chat():
 
 
         # ----------------------------------------------------
-        # AI PROMPT
+        # OUR OWN NLP MODEL
         # ----------------------------------------------------
 
-        prompt = f"""
-
-You are Altair AI Business Advisor.
-
-You are talking to the owner of a business
-inside Altair Business Suite.
-
-You have access only to the business data
-provided below.
-
-IMPORTANT RULES:
-
-1. Never invent financial numbers.
-2. Never claim something exists if it is not
-   in the supplied data.
-3. Use the actual business data.
-4. Give practical business advice.
-5. Explain your reasoning.
-6. If there is insufficient data, say so.
-7. Never reveal another user's information.
-8. Never reveal database credentials.
-9. Do not expose SQL queries to the user.
-
-BUSINESS DATA:
-
-{json.dumps(
-    business_data,
-    default=str,
-    indent=2
-)}
-
-
-CALCULATED ML / ANALYTICS:
-
-{json.dumps(
-    analysis,
-    default=str,
-    indent=2
-)}
-
-
-USER QUESTION:
-
-{message}
-
-
-Answer the user's question professionally.
-
-If the question involves money,
-include the relevant figures.
-
-If the question asks for advice,
-give practical actions.
-
-If the question asks for a prediction,
-clearly state that it is a prediction and
-explain the confidence/limitations.
-
-"""
-
-
-        response = (
-            openai_client
-            .responses
-            .create(
-                model="gpt-5.6-luna",
-                input=prompt
+        understanding = (
+            understand_altair_question(
+                message
             )
         )
 
 
-        reply = (
-            response
-            .output_text
+        intent = understanding.get(
+            "intent",
+            "unknown"
         )
 
+
+        confidence = float(
+            understanding.get(
+                "confidence",
+                0
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # LOW CONFIDENCE
+        # ----------------------------------------------------
+
+        if confidence < 35:
+
+            return jsonify({
+
+                "success": True,
+
+                "reply":
+                    "I am still learning how to "
+                    "understand that type of question. "
+                    "Try asking about revenue, "
+                    "expenses, invoices, customers, "
+                    "leads, cash flow, forecasting "
+                    "or business health.",
+
+                "intent": "unknown",
+
+                "confidence": round(
+                    confidence,
+                    2
+                )
+
+            })
+
+
+        # ----------------------------------------------------
+        # GENERATE ANSWER
+        # ----------------------------------------------------
+
+        reply = (
+            altair_response_engine(
+                intent,
+                business_data,
+                analysis
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # RETURN RESPONSE
+        # ----------------------------------------------------
 
         return jsonify({
 
             "success": True,
 
-            "reply": reply
+            "reply": reply,
+
+            "intent": intent,
+
+            "confidence": round(
+                confidence,
+                2
+            )
 
         })
 
@@ -1786,9 +2731,11 @@ explain the confidence/limitations.
             "success": False,
 
             "message":
-                "Altair AI could not process your question."
+                "Altair AI could not process "
+                "your question."
 
         }), 500
+
 
 
 # DASHBOARD
