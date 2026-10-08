@@ -107,25 +107,6 @@
             min-width: 0;
         }
 
-        .logo img,
-        .company-logo-placeholder {
-            width: 40px;
-            height: 40px;
-
-            flex-shrink: 0;
-
-            border-radius: 12px;
-
-            object-fit: cover;
-        }
-
-        .logo img {
-            display: block;
-
-            background: #242435;
-
-            border: 1px solid rgba(255, 255, 255, 0.10);
-        }
 
         .company-logo-placeholder {
             display: flex;
@@ -1218,6 +1199,1146 @@
             box-shadow:
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
+
+
+        /* =========================================================
+   ALTAIR AI BUSINESS ADVISOR
+========================================================= */
+
+        .altair-ai-overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            z-index: 9999;
+
+            background:
+                radial-gradient(circle at 50% 20%,
+                    rgba(0, 240, 255, 0.08),
+                    transparent 35%),
+                rgba(5, 5, 12, 0.78);
+
+            backdrop-filter: blur(10px);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+        }
+
+
+        /* =========================================================
+   WINDOW
+========================================================= */
+
+        .altair-ai-window {
+
+            width: min(100%, 1050px);
+
+            height: min(720px, calc(100vh - 36px));
+
+            background:
+                linear-gradient(145deg,
+                    #12121f,
+                    #0e0e18);
+
+            border: 1px solid rgba(0, 240, 255, 0.16);
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.55),
+                0 0 50px rgba(0, 240, 255, 0.08);
+
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+
+            color: #fff;
+
+        }
+
+
+        /* =========================================================
+   HEADER
+========================================================= */
+
+        .altair-ai-header {
+
+            height: 70px;
+
+            padding: 0 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .07);
+
+            background:
+                rgba(255, 255, 255, .015);
+
+        }
+
+
+        .altair-ai-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+        }
+
+
+        .altair-ai-avatar {
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 19px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            box-shadow:
+                0 0 22px rgba(0, 240, 255, .18);
+
+        }
+
+
+        .altair-ai-title h2 {
+
+            margin: 0;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+        }
+
+
+        .altair-ai-title p {
+
+            margin: 2px 0 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-header-right {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+        }
+
+
+        .altair-ai-status {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 11px;
+
+            color: #9ba0ad;
+
+        }
+
+
+        .altair-ai-status span {
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+
+            box-shadow:
+                0 0 8px rgba(34, 197, 94, .7);
+
+        }
+
+
+        .altair-ai-close {
+
+            width: 34px;
+            height: 34px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: rgba(255, 255, 255, .06);
+
+            color: #aaa;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-close:hover {
+
+            background: rgba(255, 255, 255, .12);
+
+            color: #fff;
+
+        }
+
+
+        /* =========================================================
+   STATS
+========================================================= */
+
+        .altair-ai-stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+
+            padding: 12px 18px;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-stat {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 10px 12px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .055);
+
+            border-radius: 12px;
+
+        }
+
+
+        .stat-icon {
+
+            width: 31px;
+            height: 31px;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+
+        }
+
+
+        .stat-icon.cyan {
+
+            background:
+                rgba(0, 240, 255, .10);
+
+        }
+
+
+        .stat-icon.purple {
+
+            background:
+                rgba(157, 78, 221, .12);
+
+        }
+
+
+        .stat-icon.pink {
+
+            background:
+                rgba(255, 0, 212, .10);
+
+        }
+
+
+        .stat-icon.green {
+
+            background:
+                rgba(34, 197, 94, .10);
+
+        }
+
+
+        .altair-ai-stat span {
+
+            display: block;
+
+            color: #858595;
+
+            font-size: 9px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .altair-ai-stat strong {
+
+            display: block;
+
+            font-size: 13px;
+
+            color: #fff;
+
+        }
+
+
+        /* =========================================================
+   BODY
+========================================================= */
+
+        .altair-ai-body {
+
+            flex: 1;
+
+            min-height: 0;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) 250px;
+
+            gap: 14px;
+
+            padding: 14px 18px;
+
+            overflow: hidden;
+
+        }
+
+
+        .altair-ai-main {
+
+            min-width: 0;
+
+            overflow-y: auto;
+
+            padding-right: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar {
+
+            width: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar-thumb {
+
+            background: rgba(255, 255, 255, .12);
+
+            border-radius: 10px;
+
+        }
+
+
+        /* =========================================================
+   WELCOME
+========================================================= */
+
+        .advisor-welcome {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 13px 14px;
+
+            margin-bottom: 10px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(135deg,
+                    rgba(0, 240, 255, .07),
+                    rgba(255, 0, 212, .04));
+
+            border:
+                1px solid rgba(0, 240, 255, .10);
+
+        }
+
+
+        .advisor-welcome-icon {
+
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 16px;
+
+        }
+
+
+        .advisor-welcome h3 {
+
+            margin: 0 0 3px;
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-welcome p {
+
+            margin: 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =========================================================
+   RECOMMENDATION
+========================================================= */
+
+        .advisor-recommendation {
+
+            padding: 14px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 9px;
+
+        }
+
+
+        .advisor-section-title>div {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .section-icon {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-section-title strong {
+
+            font-size: 12px;
+
+        }
+
+
+        .advisor-badge {
+
+            font-size: 8px;
+
+            padding: 4px 7px;
+
+            border-radius: 20px;
+
+            color: #00f0ff;
+
+            background:
+                rgba(0, 240, 255, .08);
+
+            border:
+                1px solid rgba(0, 240, 255, .12);
+
+        }
+
+
+        .advisor-recommendation p {
+
+            margin: 0;
+
+            color: #b8bac5;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+
+        }
+
+
+        /* =========================================================
+   QUESTIONS
+========================================================= */
+
+        .advisor-questions {
+
+            margin-top: 12px;
+
+        }
+
+
+        .advisor-section-heading {
+
+            color: #858595;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .advisor-question-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 7px;
+
+        }
+
+
+        .advisor-question-grid button {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 9px 10px;
+
+            border-radius: 10px;
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            color: #c6c8d2;
+
+            text-align: left;
+
+            font-size: 10px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .advisor-question-grid button span {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-question-grid button:hover {
+
+            border-color:
+                rgba(0, 240, 255, .20);
+
+            background:
+                rgba(0, 240, 255, .05);
+
+            color: #fff;
+
+        }
+
+
+        /* =========================================================
+   CHAT
+========================================================= */
+
+        .altair-chat-messages {
+
+            margin-top: 12px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .altair-ai-message {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 8px;
+
+        }
+
+
+        .chat-avatar {
+
+            width: 27px;
+            height: 27px;
+
+            flex-shrink: 0;
+
+            border-radius: 8px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 12px;
+
+        }
+
+
+        .chat-bubble {
+
+            max-width: 90%;
+
+            padding: 9px 11px;
+
+            border-radius: 10px;
+
+            background:
+                rgba(0, 240, 255, .045);
+
+            border:
+                1px solid rgba(0, 240, 255, .08);
+
+        }
+
+
+        .chat-bubble strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 4px;
+
+            color: #00f0ff;
+
+        }
+
+
+        .chat-bubble p {
+
+            margin: 0;
+
+            color: #aaaebb;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* =========================================================
+   RIGHT SIDE
+========================================================= */
+
+        .altair-ai-side {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            min-width: 0;
+
+        }
+
+
+        .advisor-side-card {
+
+            padding: 13px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-side-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .advisor-intelligence {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .advisor-intelligence>div {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+        }
+
+
+        .advisor-intelligence span {
+
+            color: #858595;
+
+            font-size: 9px;
+
+        }
+
+
+        .advisor-intelligence strong {
+
+            font-size: 11px;
+
+        }
+
+
+        .warning-value {
+
+            color: #f59e0b;
+
+        }
+
+
+        /* =========================================================
+   FOCUS
+========================================================= */
+
+        .advisor-focus {
+
+            flex: 1;
+
+        }
+
+
+        .focus-item {
+
+            display: flex;
+
+            gap: 9px;
+
+            margin-bottom: 13px;
+
+        }
+
+
+        .focus-item>span {
+
+            width: 22px;
+            height: 22px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 7px;
+
+            background:
+                rgba(0, 240, 255, .07);
+
+            color: #00f0ff;
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+        }
+
+
+        .focus-item strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .focus-item p {
+
+            margin: 0;
+
+            color: #777988;
+
+            font-size: 9px;
+
+            line-height: 1.45;
+
+        }
+
+
+        /* =========================================================
+   INPUT
+========================================================= */
+
+        .altair-ai-input-area {
+
+            padding: 11px 18px 13px;
+
+            border-top:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-input-wrapper {
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 4px 5px 4px 12px;
+
+            border-radius: 12px;
+
+            background:
+                #181824;
+
+            border:
+                1px solid rgba(255, 255, 255, .08);
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-input-wrapper:focus-within {
+
+            border-color:
+                rgba(0, 240, 255, .35);
+
+            box-shadow:
+                0 0 18px rgba(0, 240, 255, .06);
+
+        }
+
+
+        .input-ai-icon {
+
+            color: #00f0ff;
+
+            font-size: 14px;
+
+        }
+
+
+        .altair-ai-input-wrapper input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            border: 0;
+
+            outline: 0;
+
+            background: transparent;
+
+            color: #fff;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-input-wrapper input::placeholder {
+
+            color: #656675;
+
+        }
+
+
+        .altair-send-button {
+
+            height: 33px;
+
+            padding: 0 13px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            background:
+                linear-gradient(135deg,
+                    #00dff0,
+                    #00aeca);
+
+            color: #031014;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+        }
+
+
+        .altair-ai-input-area small {
+
+            display: block;
+
+            margin-top: 5px;
+
+            color: #555665;
+
+            font-size: 8px;
+
+        }
+
+
+        /* =========================================================
+   MOBILE
+========================================================= */
+
+        @media (max-width: 800px) {
+
+            .altair-ai-window {
+
+                height:
+                    calc(100vh - 20px);
+
+                border-radius: 16px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+
+            .altair-ai-body {
+
+                grid-template-columns: 1fr;
+
+                overflow-y: auto;
+
+            }
+
+
+            .altair-ai-side {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-main {
+
+                overflow: visible;
+
+            }
+
+        }
+
+
+        @media (max-width: 500px) {
+
+            .altair-ai-overlay {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-header {
+
+                height: 62px;
+
+                padding: 0 13px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                padding: 9px;
+
+                gap: 6px;
+
+            }
+
+
+            .altair-ai-stat {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-body {
+
+                padding: 10px;
+
+            }
+
+
+            .advisor-question-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .altair-ai-status {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-input-area {
+
+                padding: 8px 10px 10px;
+
+            }
+
+        }
     </style>
 
 </head>
@@ -1241,7 +2362,7 @@
 
                 {% if company and company.logo %}
 
-                <img src="{{ company.logo }}" alt="{{ company.company_name }}" class="company-logo-image"
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
 
                 <div class="company-logo-placeholder" style="display:none;">
@@ -1879,156 +3000,469 @@
             </section>
 
 
-            <!-- 
-     ALTAIR AI CHAT
- -->
-
-            <div id="altairAIOverlay" style="
-        display:none;
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.65);
-        z-index:9999;
-        align-items:center;
-        justify-content:center;
-        padding:20px;
-    ">
 
 
-                <div style="
-            width:100%;
-            max-width:700px;
-            height:650px;
-            background:#11111c;
-            border:1px solid rgba(0,240,255,.25);
-            border-radius:20px;
-            box-shadow:0 0 50px rgba(0,240,255,.15);
-            display:flex;
-            flex-direction:column;
-            overflow:hidden;
-        ">
+            <!-- =========================================================
+     ALTAIR AI BUSINESS ADVISOR
+========================================================= -->
 
+            <div id="altairAIOverlay" class="altair-ai-overlay">
 
-                    <!-- HEADER -->
+                <div class="altair-ai-window">
 
-                    <div style="
-                padding:18px 20px;
-                border-bottom:1px solid rgba(255,255,255,.08);
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
+                    <!-- ================= HEADER ================= -->
 
-                        <div>
+                    <div class="altair-ai-header">
 
-                            <strong style="
-                        font-size:18px;
-                        color:#fff;
-                    ">
-                                🤖 Altair AI Business Advisor
-                            </strong>
+                        <div class="altair-ai-title">
 
-                            <div style="
-                        color:#9ca3af;
-                        font-size:12px;
-                        margin-top:4px;
-                    ">
-                                Your business data. Your AI advisor.
+                            <div class="altair-ai-avatar">
+                                ✦
+                            </div>
+
+                            <div>
+
+                                <h2>
+                                    Altair AI
+                                </h2>
+
+                                <p>
+                                    Business Advisor
+                                </p>
+
                             </div>
 
                         </div>
 
 
-                        <button onclick="closeAltairAI()" style="
-                    background:none;
-                    border:none;
-                    color:#aaa;
-                    font-size:24px;
-                    cursor:pointer;
-                ">
-                            ×
-                        </button>
+                        <div class="altair-ai-header-right">
 
-                    </div>
+                            <span class="altair-ai-status">
+                                <span></span>
+                                Online
+                            </span>
 
-
-                    <!-- CHAT -->
-
-                    <div id="altairChatMessages" style="
-                flex:1;
-                overflow-y:auto;
-                padding:20px;
-                display:flex;
-                flex-direction:column;
-                gap:12px;
-            ">
-
-                        <div style="
-                    background:rgba(0,240,255,.08);
-                    border:1px solid rgba(0,240,255,.12);
-                    padding:14px;
-                    border-radius:14px;
-                    color:#fff;
-                    max-width:85%;
-                ">
-                            👋 Hi {{ user_name }}.
-
-                            <br><br>
-
-                            I'm Altair AI. I can analyze your
-                            revenue, invoices, customers, expenses,
-                            investments, inventory and leads.
-
-                            <br><br>
-
-                            Ask me something like:
-
-                            <br>
-
-                            <strong>
-                                "How is my business performing?"
-                            </strong>
+                            <button type="button" class="altair-ai-close" onclick="closeAltairAI()">
+                                ×
+                            </button>
 
                         </div>
 
                     </div>
 
 
-                    <!-- INPUT -->
+                    <!-- ================= QUICK STATS ================= -->
 
-                    <div style="
-                padding:15px;
-                border-top:1px solid rgba(255,255,255,.08);
-                display:flex;
-                gap:10px;
-            ">
+                    <div class="altair-ai-stats">
 
-                        <input id="altairChatInput" type="text" placeholder="Ask Altair AI about your business..."
-                            onkeydown="
-                    if(event.key === 'Enter'){
-                        sendAltairMessage();
-                    }
-                " style="
-                    flex:1;
-                    padding:13px;
-                    border-radius:12px;
-                    border:1px solid rgba(255,255,255,.12);
-                    background:#181824;
-                    color:#fff;
-                    outline:none;
-                ">
+                        <div class="altair-ai-stat">
+
+                            <div class="stat-icon cyan">
+                                📈
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Revenue Forecast
+                                </span>
+
+                                <strong id="advisorRevenue">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
 
 
-                        <button onclick="sendAltairMessage()" class="ai-btn" style="width:auto;">
-                            Send
-                        </button>
+                        <div class="altair-ai-stat">
+
+                            <div class="stat-icon purple">
+                                💰
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Cash Flow
+                                </span>
+
+                                <strong id="advisorCash">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="altair-ai-stat">
+
+                            <div class="stat-icon pink">
+                                👥
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Customers
+                                </span>
+
+                                <strong id="advisorCustomers">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="altair-ai-stat">
+
+                            <div class="stat-icon green">
+                                🧠
+                            </div>
+
+                            <div>
+
+                                <span>
+                                    Business Health
+                                </span>
+
+                                <strong id="advisorHealth">
+                                    --
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= MAIN AREA ================= -->
+
+                    <div class="altair-ai-body">
+
+
+                        <!-- LEFT SIDE -->
+
+                        <div class="altair-ai-main">
+
+
+                            <!-- WELCOME -->
+
+                            <div class="advisor-welcome">
+
+                                <div class="advisor-welcome-icon">
+                                    ✦
+                                </div>
+
+                                <div>
+
+                                    <h3>
+                                        Good to see you, {{ user_name }}.
+                                    </h3>
+
+                                    <p>
+                                        I'm Altair AI. I can help you understand
+                                        your business and make better decisions.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- AI RECOMMENDATION -->
+
+                            <div class="advisor-recommendation">
+
+                                <div class="advisor-section-title">
+
+                                    <div>
+
+                                        <span class="section-icon">
+                                            💡
+                                        </span>
+
+                                        <strong>
+                                            AI Recommendation
+                                        </strong>
+
+                                    </div>
+
+                                    <span class="advisor-badge">
+                                        LIVE ANALYSIS
+                                    </span>
+
+                                </div>
+
+
+                                <p id="advisorRecommendation">
+
+                                    Analyzing your business data...
+
+                                </p>
+
+                            </div>
+
+
+                            <!-- QUICK QUESTIONS -->
+
+                            <div class="advisor-questions">
+
+                                <div class="advisor-section-heading">
+                                    Ask Altair
+                                </div>
+
+
+                                <div class="advisor-question-grid">
+
+                                    <button onclick="askAdvisorQuestion('How is my business performing?')">
+                                        <span>📊</span>
+                                        Business performance
+                                    </button>
+
+
+                                    <button onclick="askAdvisorQuestion('What should I focus on to increase revenue?')">
+                                        <span>📈</span>
+                                        Increase revenue
+                                    </button>
+
+
+                                    <button onclick="askAdvisorQuestion('How can I improve my cash flow?')">
+                                        <span>💰</span>
+                                        Improve cash flow
+                                    </button>
+
+
+                                    <button onclick="askAdvisorQuestion('Which areas of my business need attention?')">
+                                        <span>🎯</span>
+                                        Areas needing attention
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- CHAT -->
+
+                            <div id="altairChatMessages" class="altair-chat-messages">
+
+                                <div class="altair-ai-message">
+
+                                    <div class="chat-avatar">
+                                        ✦
+                                    </div>
+
+                                    <div class="chat-bubble">
+
+                                        <strong>
+                                            Altair AI
+                                        </strong>
+
+                                        <p>
+                                            Ask me anything about your business.
+                                            I can analyze your revenue, customers,
+                                            invoices, expenses, investments and leads.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- RIGHT SIDE -->
+
+                        <aside class="altair-ai-side">
+
+
+                            <div class="advisor-side-card">
+
+                                <div class="advisor-side-title">
+
+                                    <span>
+                                        🧠
+                                    </span>
+
+                                    Business Intelligence
+
+                                </div>
+
+
+                                <div class="advisor-intelligence">
+
+                                    <div>
+
+                                        <span>
+                                            Lead Conversion
+                                        </span>
+
+                                        <strong id="advisorConversion">
+                                            --
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Recurring Costs
+                                        </span>
+
+                                        <strong id="advisorRecurring">
+                                            --
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Overdue
+                                        </span>
+
+                                        <strong id="advisorOverdue" class="warning-value">
+                                            --
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="advisor-side-card advisor-focus">
+
+                                <div class="advisor-side-title">
+
+                                    <span>
+                                        🎯
+                                    </span>
+
+                                    Recommended Focus
+
+                                </div>
+
+
+                                <div class="focus-item">
+
+                                    <span>
+                                        01
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            Cash Flow
+                                        </strong>
+
+                                        <p>
+                                            Monitor outstanding invoices
+                                            and incoming payments.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="focus-item">
+
+                                    <span>
+                                        02
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            Customer Growth
+                                        </strong>
+
+                                        <p>
+                                            Follow up with qualified leads
+                                            and existing customers.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="focus-item">
+
+                                    <span>
+                                        03
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            Revenue
+                                        </strong>
+
+                                        <p>
+                                            Use the forecast to plan
+                                            upcoming business activity.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </aside>
+
+                    </div>
+
+
+                    <!-- ================= INPUT ================= -->
+
+                    <div class="altair-ai-input-area">
+
+                        <div class="altair-ai-input-wrapper">
+
+                            <span class="input-ai-icon">
+                                ✦
+                            </span>
+
+                            <input id="altairChatInput" type="text" placeholder="Ask Altair about your business..."
+                                autocomplete="off" onkeydown="
+                        if(event.key === 'Enter'){
+                            sendAltairMessage();
+                        }
+                    ">
+
+                            <button type="button" onclick="sendAltairMessage()" class="altair-send-button">
+                                <span>
+                                    Send
+                                </span>
+                                ➤
+                            </button>
+
+                        </div>
+
+                        <small>
+                            Altair AI uses your business data to provide insights.
+                        </small>
 
                     </div>
 
                 </div>
 
             </div>
-
 
 
 
@@ -2855,6 +4289,179 @@ DATABASE + ML REVENUE CHART
 
             }
         );
+
+
+
+        /* =========================================================
+   ALTAIR AI QUICK QUESTIONS
+========================================================= */
+
+        function askAdvisorQuestion(question) {
+
+            const input =
+                document.getElementById("altairChatInput");
+
+            if (!input) {
+                return;
+            }
+
+            input.value = question;
+
+            sendAltairMessage();
+
+        }
+
+
+        /* =========================================================
+           LOAD ADVISOR DATA
+        ========================================================= */
+
+        function updateAltairAdvisorStats(data) {
+
+            if (!data) {
+                return;
+            }
+
+
+            const revenue =
+                document.getElementById("advisorRevenue");
+
+            const cash =
+                document.getElementById("advisorCash");
+
+            const customers =
+                document.getElementById("advisorCustomers");
+
+            const health =
+                document.getElementById("advisorHealth");
+
+            const conversion =
+                document.getElementById("advisorConversion");
+
+            const recurring =
+                document.getElementById("advisorRecurring");
+
+            const overdue =
+                document.getElementById("advisorOverdue");
+
+            const recommendation =
+                document.getElementById(
+                    "advisorRecommendation"
+                );
+
+
+            if (revenue) {
+
+                revenue.innerText =
+                    "R" +
+                    Number(
+                        data.revenue_prediction || 0
+                    ).toLocaleString();
+
+            }
+
+
+            if (cash) {
+
+                const overdueAmount =
+                    Number(
+                        data.overdue_amount || 0
+                    );
+
+                const pendingAmount =
+                    Number(
+                        data.pending_amount || 0
+                    );
+
+                cash.innerText =
+                    "R" +
+                    Number(
+                        pendingAmount - overdueAmount
+                    ).toLocaleString();
+
+            }
+
+
+            if (customers) {
+
+                customers.innerText =
+                    Number(
+                        data.customers || 0
+                    ).toLocaleString();
+
+            }
+
+
+            if (health) {
+
+                health.innerText =
+                    (data.health_score || 0) +
+                    "%";
+
+            }
+
+
+            if (conversion) {
+
+                conversion.innerText =
+                    (data.lead_conversion || 0) +
+                    "%";
+
+            }
+
+
+            if (recurring) {
+
+                recurring.innerText =
+                    "R" +
+                    Number(
+                        data.monthly_recurring || 0
+                    ).toLocaleString();
+
+            }
+
+
+            if (overdue) {
+
+                overdue.innerText =
+                    "R" +
+                    Number(
+                        data.overdue_amount || 0
+                    ).toLocaleString();
+
+            }
+
+
+            if (recommendation) {
+
+                if (
+                    Number(data.overdue_amount || 0) > 0
+                ) {
+
+                    recommendation.innerText =
+                        "Your priority should be collecting overdue invoices. Improving cash collection will strengthen your available working capital.";
+
+                }
+
+                else if (
+                    Number(data.lead_conversion || 0) < 10
+                ) {
+
+                    recommendation.innerText =
+                        "Your lead conversion is currently low. Focus on following up with qualified leads and improving your sales process.";
+
+                }
+
+                else {
+
+                    recommendation.innerText =
+                        "Your business indicators are looking healthy. Continue monitoring revenue, customer growth and cash flow.";
+
+                }
+
+            }
+
+        }
 
     </script>
 
