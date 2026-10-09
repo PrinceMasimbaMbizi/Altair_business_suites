@@ -757,6 +757,22 @@
             border-bottom: none;
         }
 
+        .transaction>div {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .transaction-heading {
+            color: #777789;
+            font-size: 10px;
+        }
+
+        .transaction-empty {
+            color: #888;
+            padding: 18px 0;
+            font-size: 12px;
+        }
+
         .customer {
             font-weight: 600;
         }
@@ -773,8 +789,12 @@
 
         .pending {
             color: #d97706;
-
             font-weight: 600;
+        }
+
+        .overdue-status {
+            color: #dc2626;
+            font-weight: 700;
         }
 
 
@@ -799,9 +819,9 @@
         /* 
            MOBILE
          */
-        /* =========================================================
+        /* 
    ALTAIR AI INSIGHT CARDS
-========================================================= */
+ */
 
         .ai-insight-grid {
             display: grid;
@@ -1201,9 +1221,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    ALTAIR AI BUSINESS ADVISOR
-========================================================= */
+ */
 
         .altair-ai-overlay {
             display: none;
@@ -1228,9 +1248,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    WINDOW
-========================================================= */
+ */
 
         .altair-ai-window {
 
@@ -1261,9 +1281,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    HEADER
-========================================================= */
+ */
 
         .altair-ai-header {
 
@@ -1416,9 +1436,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    STATS
-========================================================= */
+ */
 
         .altair-ai-stats {
 
@@ -1531,9 +1551,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    BODY
-========================================================= */
+ */
 
         .altair-ai-body {
 
@@ -1582,9 +1602,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    WELCOME
-========================================================= */
+ */
 
         .advisor-welcome {
 
@@ -1657,9 +1677,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    RECOMMENDATION
-========================================================= */
+ */
 
         .advisor-recommendation {
 
@@ -1746,9 +1766,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    QUESTIONS
-========================================================= */
+ */
 
         .advisor-questions {
 
@@ -1837,9 +1857,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    CHAT
-========================================================= */
+ */
 
         .altair-chat-messages {
 
@@ -1932,9 +1952,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    RIGHT SIDE
-========================================================= */
+ */
 
         .altair-ai-side {
 
@@ -2026,9 +2046,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    FOCUS
-========================================================= */
+ */
 
         .advisor-focus {
 
@@ -2098,9 +2118,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    INPUT
-========================================================= */
+ */
 
         .altair-ai-input-area {
 
@@ -2228,9 +2248,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    MOBILE
-========================================================= */
+ */
 
         @media (max-width: 800px) {
 
@@ -2655,7 +2675,7 @@
                     </div>
 
                     <h2>
-                        {{ total_invoices }}
+                        <span id="totalInvoices">0</span>
                     </h2>
 
                     <div class="growth">
@@ -2682,7 +2702,7 @@
                     </div>
 
                     <h2>
-                        {{ paid_invoices }}
+                        <span id="paidInvoices">0</span>
                     </h2>
 
                     <div class="growth">
@@ -2709,7 +2729,7 @@
                     </div>
 
                     <h2>
-                        {{ pending_invoices }}
+                        <span id="pendingInvoices">0</span>
                     </h2>
 
                     <div class="growth">
@@ -2736,7 +2756,7 @@
                     </div>
 
                     <h2>
-                        {{ overdue_invoices }}
+                        <span id="overdueInvoices">0</span>
                     </h2>
 
                     <div class="growth">
@@ -2775,7 +2795,7 @@
                             </h3>
 
                             <span>
-                                Historical performance + ML forecast
+                                Revenue, expenses, profit and ML forecast
                             </span>
 
                         </div>
@@ -2788,10 +2808,11 @@
 
 
                     <div class="chart-container">
-
-                        <canvas id="revenueChart"></canvas>
-
+                        <canvas id="revenueChart"
+                            aria-label="Monthly revenue, expenses, profit and machine-learning forecast"></canvas>
                     </div>
+                    <div id="chartSummary" style="margin-top:10px;color:#777;font-size:11px;line-height:1.6;">Loading
+                        actual financial history...</div>
 
                 </div>
 
@@ -2807,7 +2828,7 @@
                         <div>
 
                             <h3>
-                                AI Business Insights
+                                Otis | Business Advisor
                             </h3>
 
                             <span style="display:block;margin-top:4px;">
@@ -2817,7 +2838,7 @@
                         </div>
 
                         <span class="ai-badge">
-                            ALTAIR AI
+                            OTIS ADVISOR
                         </span>
 
                     </div>
@@ -2893,7 +2914,7 @@
 
                     <button type="button" class="ai-btn" onclick="openAltairAI()">
 
-                        🤖 Ask Altair AI
+                        ✦ Ask Otis
 
                     </button>
 
@@ -3002,9 +3023,9 @@
 
 
 
-            <!-- =========================================================
+            <!-- 
      ALTAIR AI BUSINESS ADVISOR
-========================================================= -->
+ -->
 
             <div id="altairAIOverlay" class="altair-ai-overlay">
 
@@ -3023,7 +3044,7 @@
                             <div>
 
                                 <h2>
-                                    Altair AI
+                                    Otis
                                 </h2>
 
                                 <p>
@@ -3166,7 +3187,7 @@
                                     </h3>
 
                                     <p>
-                                        I'm Altair AI. I can help you understand
+                                        I'm Otis, your business advisor. I can help you understand
                                         your business and make better decisions.
                                     </p>
 
@@ -3214,7 +3235,7 @@
                             <div class="advisor-questions">
 
                                 <div class="advisor-section-heading">
-                                    Ask Altair
+                                    Ask Otis
                                 </div>
 
 
@@ -3261,7 +3282,7 @@
                                     <div class="chat-bubble">
 
                                         <strong>
-                                            Altair AI
+                                            Otis
                                         </strong>
 
                                         <p>
@@ -3438,7 +3459,7 @@
                                 ✦
                             </span>
 
-                            <input id="altairChatInput" type="text" placeholder="Ask Altair about your business..."
+                            <input id="altairChatInput" type="text" placeholder="Ask Otis about your business..."
                                 autocomplete="off" onkeydown="
                         if(event.key === 'Enter'){
                             sendAltairMessage();
@@ -3455,7 +3476,7 @@
                         </div>
 
                         <small>
-                            Altair AI uses your business data to provide insights.
+                            Otis uses your business data to provide practical business insights.
                         </small>
 
                     </div>
@@ -3488,87 +3509,17 @@
                 </div>
 
 
-                <div class="transaction" style="font-weight:600;">
-
-                    <div>
-                        Customer
-                    </div>
-
-                    <div>
-                        Invoice
-                    </div>
-
-                    <div>
-                        Amount
-                    </div>
-
-                    <div>
-                        Status
-                    </div>
-
+                <div class="transaction transaction-heading" style="font-weight:600;">
+                    <div>Party / Source</div>
+                    <div>Reference</div>
+                    <div>Amount</div>
+                    <div>Status</div>
                 </div>
 
-
-                <div class="transaction">
-
-                    <div class="customer">
-                        James M.
+                <div id="recentTransactions">
+                    <div class="transaction">
+                        <div class="muted" style="grid-column:1/-1;">Loading real transactions...</div>
                     </div>
-
-                    <div class="muted">
-                        #INV-1042
-                    </div>
-
-                    <div>
-                        R2,450
-                    </div>
-
-                    <div class="paid">
-                        Paid
-                    </div>
-
-                </div>
-
-
-                <div class="transaction">
-
-                    <div class="customer">
-                        Sarah K.
-                    </div>
-
-                    <div class="muted">
-                        #INV-1041
-                    </div>
-
-                    <div>
-                        R1,820
-                    </div>
-
-                    <div class="paid">
-                        Paid
-                    </div>
-
-                </div>
-
-
-                <div class="transaction">
-
-                    <div class="customer">
-                        Daniel T.
-                    </div>
-
-                    <div class="muted">
-                        #INV-1040
-                    </div>
-
-                    <div>
-                        R4,200
-                    </div>
-
-                    <div class="pending">
-                        Pending
-                    </div>
-
                 </div>
 
             </section>
@@ -3682,6 +3633,11 @@
 
         let altairBusinessData = null;
 
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, character => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+            })[character]);
+        }
 
         async function loadAltairInsights() {
 
@@ -3710,159 +3666,85 @@
                     result.analysis;
 
 
-                /* =========================================================
-DATABASE + ML REVENUE CHART
-========================================================= */
+                /* 
+                   LIVE REVENUE / EXPENSE / PROFIT + ML FORECAST CHART
+                 */
 
-                const revenueData =
-                    result.analysis.revenue_history || [];
+                const labels = result.analysis.chart_labels || [];
+                const revenueValues = result.analysis.revenue_history || [];
+                const expenseValues = result.analysis.expense_history || [];
+                const profitValues = result.analysis.profit_history || [];
+                const forecastValue = Number(result.analysis.revenue_prediction || 0);
+                const chartCanvas = document.getElementById("revenueChart");
 
-                const chartLabels =
-                    revenueData.map(item => item.month);
+                if (chartCanvas && typeof Chart !== "undefined") {
+                    const existingChart = Chart.getChart(chartCanvas);
+                    if (existingChart) existingChart.destroy();
 
-                const chartValues =
-                    revenueData.map(item => Number(item.revenue || 0));
-
-                const forecastValue =
-                    Number(
-                        result.analysis.revenue_prediction || 0
-                    );
-
-                const chartCanvas =
-                    document.getElementById("revenueChart");
-
-                if (chartCanvas) {
-
-                    const existingChart =
-                        Chart.getChart(chartCanvas);
-
-                    if (existingChart) {
-                        existingChart.destroy();
+                    const chartLabels = [...labels, "Next month (forecast)"];
+                    const actualWithGap = values => [...values, null];
+                    const forecastSeries = labels.map(() => null);
+                    if (forecastSeries.length) {
+                        forecastSeries[forecastSeries.length - 1] = Number(revenueValues[revenueValues.length - 1] || 0);
                     }
-
-                    const labels =
-                        [...chartLabels, "Next Month"];
-
-                    const actualValues =
-                        [...chartValues, null];
-
-                    const forecastValues =
-                        chartLabels.map(() => null);
-
-                    forecastValues.push(forecastValue);
+                    forecastSeries.push(forecastValue);
 
                     new Chart(chartCanvas, {
-
                         type: "line",
-
                         data: {
-
-                            labels: labels,
-
+                            labels: chartLabels,
                             datasets: [
-
-                                {
-                                    label: "Actual Revenue",
-
-                                    data: actualValues,
-
-                                    borderWidth: 3,
-
-                                    tension: 0.4,
-
-                                    fill: false,
-
-                                    pointRadius: 4,
-
-                                    pointHoverRadius: 6
-                                },
-
-                                {
-                                    label: "ML Forecast",
-
-                                    data: forecastValues,
-
-                                    borderWidth: 3,
-
-                                    borderDash: [7, 6],
-
-                                    tension: 0.4,
-
-                                    fill: false,
-
-                                    pointRadius: 5,
-
-                                    pointHoverRadius: 7
-                                }
-
+                                { label: "Revenue (paid invoices)", data: actualWithGap(revenueValues), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,.08)", borderWidth: 3, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Expenses", data: actualWithGap(expenseValues), borderColor: "#f97316", backgroundColor: "rgba(249,115,22,.06)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Profit (revenue − expenses)", data: actualWithGap(profitValues), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,.07)", borderWidth: 2.5, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "ML revenue forecast", data: forecastSeries, borderColor: "#a855f7", backgroundColor: "rgba(168,85,247,.08)", borderWidth: 3, borderDash: [7, 5], tension: .25, pointRadius: 5, spanGaps: false }
                             ]
-
                         },
-
                         options: {
-
-                            responsive: true,
-
-                            maintainAspectRatio: false,
-
-                            interaction: {
-                                intersect: false,
-                                mode: "index"
-                            },
-
+                            responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: "index" },
                             plugins: {
-
-                                legend: {
-                                    display: true
-                                },
-
-                                tooltip: {
-                                    callbacks: {
-
-                                        label: function (context) {
-
-                                            return (
-                                                context.dataset.label +
-                                                ": R" +
-                                                Number(
-                                                    context.raw || 0
-                                                ).toLocaleString()
-                                            );
-
-                                        }
-
-                                    }
-                                }
-
+                                legend: { display: true, position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: 14 } },
+                                tooltip: { callbacks: { label: context => `${context.dataset.label}: R${Number(context.raw || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}` } }
                             },
-
                             scales: {
-
-                                y: {
-
-                                    beginAtZero: true,
-
-                                    ticks: {
-
-                                        callback: function (value) {
-
-                                            return (
-                                                "R" +
-                                                Number(value).toLocaleString()
-                                            );
-
-                                        }
-
-                                    }
-
-                                }
-
+                                y: { beginAtZero: true, ticks: { callback: value => "R" + Number(value).toLocaleString() }, grid: { color: "rgba(120,120,140,.12)" } },
+                                x: { grid: { display: false } }
                             }
-
                         }
-
                     });
+                }
 
+                const chartSummary = document.getElementById("chartSummary");
+                if (chartSummary) {
+                    const latestRevenue = Number(revenueValues[revenueValues.length - 1] || 0);
+                    const latestExpense = Number(expenseValues[expenseValues.length - 1] || 0);
+                    const latestProfit = Number(profitValues[profitValues.length - 1] || 0);
+                    chartSummary.textContent = `Latest recorded month: revenue R${latestRevenue.toLocaleString()} · expenses R${latestExpense.toLocaleString()} · profit R${latestProfit.toLocaleString()}. Forecast is a model estimate, not guaranteed income.`;
+                }
+
+                // Populate invoice counters and real recent transactions.
+                [
+                    ["totalInvoices", result.analysis.total_invoices],
+                    ["paidInvoices", result.analysis.paid_invoices],
+                    ["pendingInvoices", result.analysis.pending_invoices],
+                    ["overdueInvoices", result.analysis.overdue_invoices]
+                ].forEach(([id, value]) => {
+                    const node = document.getElementById(id);
+                    if (node) node.textContent = Number(value || 0).toLocaleString();
+                });
+
+                const transactionsNode = document.getElementById("recentTransactions");
+                if (transactionsNode) {
+                    const rows = result.analysis.recent_transactions || [];
+                    if (!rows.length) {
+                        transactionsNode.innerHTML = '<div class="transaction-empty">No invoices or expenses have been recorded yet.</div>';
+                    } else {
+                        transactionsNode.innerHTML = rows.map(row => {
+                            const status = String(row.status || "Recorded");
+                            const statusClass = status.toLowerCase() === "paid" ? "paid" : (status.toLowerCase() === "overdue" ? "overdue-status" : (status.toLowerCase() === "pending" ? "pending" : "muted"));
+                            return `<div class="transaction"><div class="customer" title="${escapeHtml(row.party || '')}">${escapeHtml(row.party || 'Business transaction')}</div><div class="muted" title="${escapeHtml(row.reference || '')}">${escapeHtml(row.reference || '—')}</div><div>R${Number(row.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</div><div class="${statusClass}">${escapeHtml(status)}</div></div>`;
+                        }).join("");
+                    }
                 }
 
                 /* -----------------------------------------------
@@ -4179,7 +4061,7 @@ DATABASE + ML REVENUE CHART
     `;
 
             loading.innerText =
-                "🤖 Altair AI is analyzing your business...";
+                "🤖 Otis is analyzing your business...";
 
             messages.appendChild(
                 loading
@@ -4247,7 +4129,7 @@ DATABASE + ML REVENUE CHART
                         "⚠️ " +
                         (
                             result.message ||
-                            "Unable to contact Altair AI."
+                            "Unable to contact Otis."
                         );
 
                 }
@@ -4266,7 +4148,7 @@ DATABASE + ML REVENUE CHART
             catch (error) {
 
                 loading.innerText =
-                    "⚠️ Unable to contact Altair AI.";
+                    "⚠️ Unable to contact Otis.";
 
                 console.error(
                     error
@@ -4292,9 +4174,9 @@ DATABASE + ML REVENUE CHART
 
 
 
-        /* =========================================================
+        /* 
    ALTAIR AI QUICK QUESTIONS
-========================================================= */
+ */
 
         function askAdvisorQuestion(question) {
 
@@ -4312,9 +4194,9 @@ DATABASE + ML REVENUE CHART
         }
 
 
-        /* =========================================================
+        /* 
            LOAD ADVISOR DATA
-        ========================================================= */
+         */
 
         function updateAltairAdvisorStats(data) {
 

@@ -3048,11 +3048,24 @@ def altair_ai_chat():
         }), 500
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route("/api/ai/business-insights", methods=["GET"])
 def api_business_insights():
 
     if "user_id" not in session:
-
         return jsonify({
             "success": False,
             "message": "Please login first."
@@ -3060,24 +3073,388 @@ def api_business_insights():
 
     user_id = session["user_id"]
 
+    db = None
+    cursor = None
+
     try:
+
+        
+        # GET REAL BUSINESS DATA
+        
 
         business_data = get_business_ai_data(user_id)
 
-        advice = generate_business_advice(
+        analysis = generate_business_advice(
             business_data
         )
 
         ai_text = altair_business_summary(
             business_data,
-            advice
+            analysis
         )
+
+        
+        # REAL INVOICE STATISTICS
+        
+
+        invoice_data = (
+            business_data.get("invoices", {})
+            or {}
+        )
+
+        analysis["total_invoices"] = int(
+            invoice_data.get("total", 0) or 0
+        )
+
+        analysis["paid_invoices"] = int(
+            invoice_data.get("paid_count", 0) or 0
+        )
+
+        analysis["pending_invoices"] = int(
+            invoice_data.get("pending_count", 0) or 0
+        )
+
+        analysis["overdue_invoices"] = int(
+            invoice_data.get("overdue_count", 0) or 0
+        )
+
+        
+        # CONNECT TO MYSQL
+        
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        
+        # MONTHLY REVENUE
+        
+
+        cursor.execute("""
+            SELECT
+                DATE_FORMAT(
+                    invoice_date,
+                    '%Y-%m'
+                ) AS month,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status = 'Paid'
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS revenue
+
+            FROM invoices
+
+            WHERE user_id = %s
+
+            AND invoice_date >= DATE_SUB(
+                CURDATE(),
+                INTERVAL 11 MONTH
+            )
+
+            GROUP BY DATE_FORMAT(
+                invoice_date,
+                '%Y-%m'
+            )
+
+            ORDER BY month ASC
+
+        """, (user_id,))
+
+        revenue_rows = (
+            cursor.fetchall() or []
+        )
+
+        
+        # MONTHLY EXPENSES
+        
+
+        cursor.execute("""
+            SELECT
+                DATE_FORMAT(
+                    expense_date,
+                    '%Y-%m'
+                ) AS month,
+
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS expenses
+
+            FROM expenses
+
+            WHERE user_id = %s
+
+            AND expense_date >= DATE_SUB(
+                CURDATE(),
+                INTERVAL 11 MONTH
+            )
+
+            GROUP BY DATE_FORMAT(
+                expense_date,
+                '%Y-%m'
+            )
+
+            ORDER BY month ASC
+
+        """, (user_id,))
+
+        expense_rows = (
+            cursor.fetchall() or []
+        )
+
+        
+        # PREPARE MONTHLY DATA
+        
+
+        revenue_by_month = {
+            str(row["month"]): float(
+                row.get("revenue", 0) or 0
+            )
+            for row in revenue_rows
+            if row.get("month")
+        }
+
+        expenses_by_month = {
+            str(row["month"]): float(
+                row.get("expenses", 0) or 0
+            )
+            for row in expense_rows
+            if row.get("month")
+        }
+
+        
+        # BUILD A CONTINUOUS 12-MONTH TIMELINE
+        
+
+        now = datetime.now()
+
+        chart_labels = []
+        revenue_history = []
+        expense_history = []
+        profit_history = []
+
+        for offset in range(11, -1, -1):
+
+            month_index = (
+                now.year * 12
+                + now.month
+                - 1
+            ) - offset
+
+            year = month_index // 12
+
+            month_number = (
+                month_index % 12
+            ) + 1
+
+            month_key = (
+                f"{year:04d}-{month_number:02d}"
+            )
+
+            month_date = datetime(
+                year,
+                month_number,
+                1
+            )
+
+            revenue_value = round(
+                revenue_by_month.get(
+                    month_key,
+                    0.0
+                ),
+                2
+            )
+
+            expense_value = round(
+                expenses_by_month.get(
+                    month_key,
+                    0.0
+                ),
+                2
+            )
+
+            profit_value = round(
+                revenue_value - expense_value,
+                2
+            )
+
+            chart_labels.append(
+                month_date.strftime("%b %Y")
+            )
+
+            revenue_history.append(
+                revenue_value
+            )
+
+            expense_history.append(
+                expense_value
+            )
+
+            profit_history.append(
+                profit_value
+            )
+
+        
+        # SEND GRAPH DATA TO DASHBOARD
+        
+
+        analysis["chart_labels"] = (
+            chart_labels
+        )
+
+        analysis["revenue_history"] = (
+            revenue_history
+        )
+
+        analysis["expense_history"] = (
+            expense_history
+        )
+
+        analysis["profit_history"] = (
+            profit_history
+        )
+
+        
+        # RECENT INVOICES
+        
+
+        cursor.execute("""
+            SELECT
+                customer_name AS party,
+
+                invoice_number AS reference,
+
+                amount,
+
+                status,
+
+                invoice_date AS transaction_date
+
+            FROM invoices
+
+            WHERE user_id = %s
+
+            ORDER BY
+                invoice_date DESC,
+                id DESC
+
+            LIMIT 8
+
+        """, (user_id,))
+
+        invoice_transactions = (
+            cursor.fetchall() or []
+        )
+
+        
+        # RECENT EXPENSES
+        
+
+        cursor.execute("""
+            SELECT
+                expense_name AS party,
+
+                category AS reference,
+
+                amount,
+
+                'Expense' AS status,
+
+                expense_date AS transaction_date
+
+            FROM expenses
+
+            WHERE user_id = %s
+
+            ORDER BY
+                expense_date DESC,
+                id DESC
+
+            LIMIT 8
+
+        """, (user_id,))
+
+        expense_transactions = (
+            cursor.fetchall() or []
+        )
+
+        
+        # COMBINE TRANSACTIONS
+        
+
+        transactions = []
+
+        for row in (
+            invoice_transactions
+            + expense_transactions
+        ):
+
+            transaction_date = row.get(
+                "transaction_date"
+            )
+
+            transactions.append({
+
+                "party": str(
+                    row.get("party")
+                    or "Business transaction"
+                ),
+
+                "reference": str(
+                    row.get("reference")
+                    or "—"
+                ),
+
+                "amount": round(
+                    float(
+                        row.get("amount", 0)
+                        or 0
+                    ),
+                    2
+                ),
+
+                "status": str(
+                    row.get("status")
+                    or "Recorded"
+                ),
+
+                "transaction_date": (
+                    transaction_date.isoformat()
+                    if transaction_date
+                    else ""
+                )
+
+            })
+
+        # Newest transactions first.
+        transactions.sort(
+            key=lambda item: (
+                item["transaction_date"]
+            ),
+            reverse=True
+        )
+
+        analysis["recent_transactions"] = (
+            transactions[:8]
+        )
+
+        
+        # RETURN DASHBOARD DATA
+        
 
         return jsonify({
 
             "success": True,
 
-            "analysis": advice,
+            "analysis": analysis,
 
             "ai_advice": ai_text
 
@@ -3094,10 +3471,22 @@ def api_business_insights():
 
             "success": False,
 
-            "message":
-                "Altair AI could not analyze the business."
+            "message": (
+                "Otis could not load your "
+                "business insights. Check "
+                "the Flask console for the "
+                "actual error."
+            )
 
         }), 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
 
 
 # DASHBOARD
