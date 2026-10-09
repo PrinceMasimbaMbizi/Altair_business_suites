@@ -700,9 +700,9 @@ def company_setup():
 
     if logo and logo.filename:
 
-        # -------------------------------------------------
+        
         # CHECK FILE TYPE
-        # -------------------------------------------------
+        
 
         if not allowed_file(logo.filename):
 
@@ -715,9 +715,9 @@ def company_setup():
                 url_for("company_setup")
             )
 
-        # -------------------------------------------------
+        
         # UPLOAD TO CLOUDINARY
-        # -------------------------------------------------
+        
 
         try:
 
@@ -735,10 +735,8 @@ def company_setup():
             )
             logo_url = upload_result.get("secure_url")
 
-            # -------------------------------------------------
+            
             # GET PERMANENT CLOUDINARY URL
-            # -------------------------------------------------
-
             logo_url = upload_result.get(
                 "secure_url"
             )
@@ -832,9 +830,9 @@ def company_setup():
                 )
             )
 
-            # -------------------------------------------------
+            
             # ONLY UPDATE LOGO IF A NEW LOGO WAS UPLOADED
-            # -------------------------------------------------
+            
 
             if logo_url:
 
@@ -1427,431 +1425,293 @@ print(
 
 
 
-# UNDERSTAND USER QUESTION
+
+# ALTAIR AI - IMPROVED QUESTION UNDERSTANDING
+
+
+import re
 
 
 def understand_altair_question(question):
 
-    question = (
-        question
-        .strip()
-        .lower()
-    )
-
-    if not question:
+    if not isinstance(question, str) or not question.strip():
 
         return {
             "intent": "unknown",
             "confidence": 0
         }
 
+    
+    # NORMALISE THE QUESTION
+    
 
-    probabilities = (
-        altair_nlp_model
-        .predict_proba(
-            [question]
-        )[0]
+    question = question.lower().strip()
+
+    question = re.sub(
+        r"[^a-z0-9\s]",
+        " ",
+        question
     )
 
-    classes = (
-        altair_nlp_model
-        .classes_
-    )
+    question = re.sub(
+        r"\s+",
+        " ",
+        question
+    ).strip()
 
+    
+    # HELPER: MATCH BUSINESS PHRASES
+    
 
-    best_index = probabilities.argmax()
+    def contains_any(*phrases):
 
-    intent = classes[best_index]
-
-    confidence = (
-        probabilities[best_index]
-        * 100
-    )
-
-
-    return {
-
-        "intent": intent,
-
-        "confidence": round(
-            float(confidence),
-            2
+        return any(
+            phrase in question
+            for phrase in phrases
         )
-    }
 
+    
+    # 1. BUSINESS IMPROVEMENT AND RECOMMENDATIONS    
 
+    if contains_any(
+        "improve my business",
+        "improve my cash flow",
+        "improve cash flow",
+        "increase my profits",
+        "increase profits",
+        "reduce my expenses",
+        "reduce expenses",
+        "reduce costs",
+        "grow my business",
+        "grow the business",
+        "what should i focus on",
+        "what should i do",
+        "what should i improve",
+        "what do you recommend",
+        "give me business advice",
+        "areas need attention",
+        "areas of my business need attention",
+        "which areas need attention",
+        "areas to improve",
+        "business priorities",
+        "how can i improve",
+        "how do i improve",
+        "how can i increase sales",
+        "how do i increase sales"
+    ):
 
-# ALTAIR RESPONSE ENGINE
+        return {
+            "intent": "recommendations",
+            "confidence": 99.0
+        }
 
+    
+    # 2. OVERALL BUSINESS HEALTH
+    
 
-def altair_response_engine(
-    intent,
-    business_data,
-    analysis
-):
+    if contains_any(
+        "how is my business performing",
+        "how is my business doing",
+        "how is the business performing",
+        "how is the business doing",
+        "business performance",
+        "business health",
+        "how healthy is my business",
+        "is my business performing well",
+        "is my business doing well",
+        "business overview",
+        "overall business performance",
+        "analyse my business",
+        "analyze my business",
+        "how well is my business doing",
+        "how well is my business performing"
+    ):
 
-    invoices = business_data.get(
-        "invoices",
-        {}
-    )
+        return {
+            "intent": "business_health",
+            "confidence": 99.0
+        }
 
-    customers = business_data.get(
-        "customers",
-        {}
-    )
+    
+    # 3. CASH FLOW
+    
 
-    leads = business_data.get(
-        "leads",
-        {}
-    )
+    if contains_any(
+        "cash flow",
+        "cashflow",
+        "outstanding invoices",
+        "money outstanding",
+        "money am i waiting for",
+        "unpaid invoices",
+        "money owed to me",
+        "amount owed to me",
+        "pending payments",
+        "overdue payments",
+        "receivables",
+        "how much money is pending",
+        "how much money is overdue"
+    ):
 
-    expenses = business_data.get(
+        return {
+            "intent": "cash_flow",
+            "confidence": 99.0
+        }
+
+    
+    # 4. REVENUE
+    
+
+    if contains_any(
+        "revenue",
+        "sales revenue",
+        "money did my business make",
+        "how much have i earned",
+        "how much did i earn",
+        "how much have we earned",
+        "income generated",
+        "money made",
+        "total sales",
+        "sales performance"
+    ):
+
+        return {
+            "intent": "revenue",
+            "confidence": 99.0
+        }
+
+    
+    # 5. EXPENSES
+    
+
+    if contains_any(
         "expenses",
-        {}
-    )
+        "business spending",
+        "money am i spending",
+        "money have i spent",
+        "how much did i spend",
+        "total spending",
+        "operating costs",
+        "business costs"
+    ):
 
-    forecast = business_data.get(
+        return {
+            "intent": "expenses",
+            "confidence": 99.0
+        }
+
+    
+    # 6. FORECASTING
+    
+
+    if contains_any(
         "forecast",
-        {}
-    )
+        "forecasting",
+        "predict my revenue",
+        "predict my sales",
+        "next month revenue",
+        "next month's revenue",
+        "future revenue",
+        "future sales",
+        "revenue prediction",
+        "sales prediction"
+    ):
 
+        return {
+            "intent": "forecast",
+            "confidence": 99.0
+        }
 
     
-    # REVENUE
+    # 7. INVOICES
     
 
-    if intent == "revenue":
+    if contains_any(
+        "invoices",
+        "invoice",
+        "invoice status",
+        "paid invoices",
+        "pending invoices",
+        "overdue invoices"
+    ):
 
-        revenue = float(
-            invoices.get(
-                "paid_amount",
-                0
-            ) or 0
+        return {
+            "intent": "invoices",
+            "confidence": 99.0
+        }
+
+    
+    # 8. CUSTOMERS
+    
+
+    if contains_any(
+        "customers",
+        "customer",
+        "client list",
+        "how many clients",
+        "my clients"
+    ):
+
+        return {
+            "intent": "customers",
+            "confidence": 99.0
+        }
+
+    
+    # 9. LEADS
+    
+
+    if contains_any(
+        "leads",
+        "lead conversion",
+        "potential customers",
+        "prospects",
+        "lead performance"
+    ):
+
+        return {
+            "intent": "leads",
+            "confidence": 99.0
+        }
+
+    
+    # 10. EXISTING MACHINE-LEARNING MODEL
+    
+    # If no rule matches, let the existing NLP model decide.
+    
+
+    try:
+
+        probabilities = (
+            altair_nlp_model
+            .predict_proba([question])[0]
         )
 
-        return (
-            f"Your current recorded paid revenue "
-            f"is {revenue:,.2f}. "
-            f"This figure comes directly from "
-            f"your paid invoices."
-        )
+        classes = altair_nlp_model.classes_
 
+        best_index = probabilities.argmax()
 
-    
-    # FORECAST
-    
-
-    if intent == "forecast":
-
-        prediction = float(
-            forecast.get(
-                "prediction",
-                0
-            ) or 0
-        )
+        intent = classes[best_index]
 
         confidence = float(
-            forecast.get(
-                "confidence",
-                0
-            ) or 0
+            probabilities[best_index] * 100
         )
 
-        return (
-            f"Your current machine-learning forecast "
-            f"for the next month is approximately "
-            f"{prediction:,.2f}. "
-            f"The model confidence is approximately "
-            f"{confidence:.1f}%. "
-            f"This is a prediction, not a guarantee."
+        return {
+            "intent": intent,
+            "confidence": round(confidence, 2)
+        }
+
+    except Exception as e:
+
+        print(
+            "ALTAIR QUESTION UNDERSTANDING ERROR:",
+            e
         )
 
-
-    
-    # EXPENSES
-    
-
-    if intent == "expenses":
-
-        total = float(
-            expenses.get(
-                "total",
-                0
-            ) or 0
-        )
-
-        return (
-            f"Your recorded business expenses total "
-            f"{total:,.2f}."
-        )
-
-
-    
-    # INVOICES
-    
-
-    if intent == "invoices":
-
-        total = int(
-            invoices.get(
-                "total",
-                0
-            ) or 0
-        )
-
-        paid = int(
-            invoices.get(
-                "paid_count",
-                0
-            ) or 0
-        )
-
-        pending = int(
-            invoices.get(
-                "pending_count",
-                0
-            ) or 0
-        )
-
-        overdue = int(
-            invoices.get(
-                "overdue_count",
-                0
-            ) or 0
-        )
-
-        return (
-            f"You currently have {total} invoices. "
-            f"{paid} are paid, "
-            f"{pending} are pending, and "
-            f"{overdue} are overdue."
-        )
-
-
-    
-    # CUSTOMERS
-    
-
-    if intent == "customers":
-
-        total = int(
-            customers.get(
-                "total",
-                0
-            ) or 0
-        )
-
-        return (
-            f"You currently have "
-            f"{total} recorded customers."
-        )
-
-
-    
-    # LEADS
-    
-
-    if intent == "leads":
-
-        total = int(
-            leads.get(
-                "total",
-                0
-            ) or 0
-        )
-
-        converted = int(
-            leads.get(
-                "converted",
-                0
-            ) or 0
-        )
-
-        conversion = float(
-            analysis.get(
-                "lead_conversion",
-                0
-            ) or 0
-        )
-
-        return (
-            f"You currently have {total} leads. "
-            f"{converted} have been converted. "
-            f"Your current lead conversion rate "
-            f"is approximately {conversion:.1f}%."
-        )
-
-
-    
-    # BUSINESS HEALTH
-    
-
-    if intent == "business_health":
-
-        score = int(
-            analysis.get(
-                "health_score",
-                0
-            ) or 0
-        )
-
-        revenue = float(
-            analysis.get(
-                "paid_revenue",
-                0
-            ) or 0
-        )
-
-        expenses_total = float(
-            analysis.get(
-                "expenses",
-                0
-            ) or 0
-        )
-
-        return (
-            f"Your current Altair business health "
-            f"score is {score}/100. "
-            f"Recorded paid revenue is "
-            f"{revenue:,.2f}, while recorded expenses "
-            f"are {expenses_total:,.2f}."
-        )
-
-
-    
-    # CASH FLOW
-    
-
-    if intent == "cash_flow":
-
-        pending = float(
-            analysis.get(
-                "pending_amount",
-                0
-            ) or 0
-        )
-
-        overdue = float(
-            analysis.get(
-                "overdue_amount",
-                0
-            ) or 0
-        )
-
-        total_outstanding = (
-            pending +
-            overdue
-        )
-
-        return (
-            f"You currently have "
-            f"{total_outstanding:,.2f} outstanding. "
-            f"Pending invoices account for "
-            f"{pending:,.2f}, while overdue invoices "
-            f"account for {overdue:,.2f}."
-        )
-
-
-    
-    # RECOMMENDATIONS
-    
-
-    if intent == "recommendations":
-
-        recommendations = []
-
-
-        overdue = float(
-            analysis.get(
-                "overdue_amount",
-                0
-            ) or 0
-        )
-
-        conversion = float(
-            analysis.get(
-                "lead_conversion",
-                0
-            ) or 0
-        )
-
-        recurring = float(
-            analysis.get(
-                "monthly_recurring",
-                0
-            ) or 0
-        )
-
-        revenue = float(
-            analysis.get(
-                "paid_revenue",
-                0
-            ) or 0
-        )
-
-
-        if overdue > 0:
-
-            recommendations.append(
-                "Follow up on overdue invoices "
-                "to improve cash flow."
-            )
-
-
-        if conversion < 10:
-
-            recommendations.append(
-                "Improve lead follow-up and "
-                "conversion activities."
-            )
-
-
-        if recurring > revenue:
-
-            recommendations.append(
-                "Review recurring costs because "
-                "they are high compared with "
-                "recorded paid revenue."
-            )
-
-
-        if not recommendations:
-
-            recommendations.append(
-                "Continue monitoring revenue, "
-                "expenses, customers and leads "
-                "and use the forecasting tools "
-                "to identify upcoming changes."
-            )
-
-
-        return (
-            "Here are my current recommendations:\n\n"
-            +
-            "\n".join(
-                [
-                    f"{index + 1}. {item}"
-                    for index, item
-                    in enumerate(
-                        recommendations[:3]
-                    )
-                ]
-            )
-        )
-
-
-    
-    # UNKNOWN
-    
-
-    return (
-        "I understand that you are asking about "
-        "your business, but I do not yet know "
-        "how to classify that question. "
-        "For now please try asking about revenue, expenses, "
-        "customers, invoices, leads, cash flow, "
-        "business health or forecasting."
-    )
+        return {
+            "intent": "unknown",
+            "confidence": 0
+        }
 
 # ALTAIR AI 
 def get_business_ai_data(user_id):
@@ -1876,12 +1736,6 @@ def get_business_ai_data(user_id):
         
 
         company = get_current_company()
-
-
-
-
-
-
 
 
         if not company:
@@ -2560,9 +2414,451 @@ def altair_business_summary(
 
 
 
+# ALTAIR AI RESPONSE ENGINE
+# Generates answers from the authenticated user's business data
+
+def altair_response_engine(intent, business_data, analysis):
+
+    
+    # SAFELY READ BUSINESS DATA
+    
+
+    business_data = business_data or {}
+    analysis = analysis or {}
+
+    invoices = business_data.get("invoices") or {}
+    customers = business_data.get("customers") or {}
+    leads = business_data.get("leads") or {}
+    expenses = business_data.get("expenses") or {}
+    forecast = business_data.get("forecast") or {}
+    recurring = business_data.get("recurring") or {}
+    investments = business_data.get("investments") or {}
+    inventory = business_data.get("inventory") or {}
+
+    def number(data, key):
+        try:
+            return float(data.get(key, 0) or 0)
+        except (TypeError, ValueError, AttributeError):
+            return 0.0
+
+    def count(data, key):
+        return int(number(data, key))
+
+    def money(value):
+        return f"{value:,.2f}"
+
+    
+    # REVENUE
+    
+
+    if intent == "revenue":
+
+        paid_revenue = number(invoices, "paid_amount")
+
+        pending_amount = number(invoices, "pending_amount")
+
+        overdue_amount = number(invoices, "overdue_amount")
+
+        return (
+            "Here is your recorded revenue overview:\n\n"
+            f"Paid revenue: {money(paid_revenue)}\n"
+            f"Pending invoices: {money(pending_amount)}\n"
+            f"Overdue invoices: {money(overdue_amount)}\n\n"
+            "Paid revenue represents money recorded against paid "
+            "invoices. Pending and overdue invoices are amounts "
+            "you may still need to collect."
+        )
+
+    
+    # EXPENSES
+    
+
+    if intent == "expenses":
+
+        total_expenses = number(expenses, "total")
+
+        monthly_recurring = number(recurring, "monthly_cost")
+
+        if total_expenses == 0:
+
+            return (
+                "Your current business data shows no recorded "
+                "expenses in the expense total.\n\n"
+                "If you have already recorded expenses, check that "
+                "they are being saved correctly and associated "
+                "with your account."
+            )
+
+        return (
+            "Here is your expense overview:\n\n"
+            f"Recorded expenses: {money(total_expenses)}\n"
+            f"Estimated monthly recurring costs: "
+            f"{money(monthly_recurring)}\n\n"
+            "To control spending, review your largest expenses, "
+            "compare recurring payments with your revenue, and "
+            "identify costs that can be reduced without harming "
+            "business operations."
+        )
+
+    
+    # CASH FLOW
+    
+
+    if intent == "cash_flow":
+
+        paid_revenue = number(invoices, "paid_amount")
+
+        pending_amount = number(invoices, "pending_amount")
+
+        overdue_amount = number(invoices, "overdue_amount")
+
+        total_expenses = number(expenses, "total")
+
+        monthly_recurring = number(recurring, "monthly_cost")
+
+        outstanding = pending_amount + overdue_amount
+
+        estimated_difference = paid_revenue - total_expenses
+
+        return (
+            "Here is your recorded cash-flow overview:\n\n"
+            f"Paid invoice revenue: {money(paid_revenue)}\n"
+            f"Pending invoices: {money(pending_amount)}\n"
+            f"Overdue invoices: {money(overdue_amount)}\n"
+            f"Total outstanding invoices: {money(outstanding)}\n"
+            f"Recorded expenses: {money(total_expenses)}\n"
+            f"Monthly recurring costs: {money(monthly_recurring)}\n\n"
+            f"Paid revenue minus recorded expenses: "
+            f"{money(estimated_difference)}\n\n"
+            "Recommended actions:\n"
+            "1. Follow up on overdue invoices.\n"
+            "2. Contact customers with pending payments.\n"
+            "3. Review recurring payments and unnecessary costs.\n"
+            "4. Plan upcoming payments around expected collections.\n\n"
+            "Important: The difference above is a simple comparison "
+            "of the recorded totals. It is not necessarily your "
+            "actual cash balance or accounting profit."
+        )
+
+    
+    # INVOICES
+    
+
+    if intent == "invoices":
+
+        total = count(invoices, "total")
+
+        paid_count = count(invoices, "paid_count")
+
+        pending_count = count(invoices, "pending_count")
+
+        overdue_count = count(invoices, "overdue_count")
+
+        pending_amount = number(invoices, "pending_amount")
+
+        overdue_amount = number(invoices, "overdue_amount")
+
+        return (
+            "Here is your invoice overview:\n\n"
+            f"Total invoices: {total}\n"
+            f"Paid invoices: {paid_count}\n"
+            f"Pending invoices: {pending_count}\n"
+            f"Overdue invoices: {overdue_count}\n\n"
+            f"Pending amount: {money(pending_amount)}\n"
+            f"Overdue amount: {money(overdue_amount)}\n\n"
+            "Recommended action: Prioritise overdue invoices, "
+            "then follow up on pending payments."
+        )
+
+    
+    # CUSTOMERS
+    
+
+    if intent == "customers":
+
+        total_customers = count(customers, "total")
+
+        return (
+            "Here is your customer overview:\n\n"
+            f"Total recorded customers: {total_customers}\n\n"
+            "To improve customer retention, follow up with existing "
+            "customers, respond quickly to enquiries, and identify "
+            "customers who may need your services again.\n\n"
+            "This summary uses your recorded customer count. "
+            "Customer spending and retention trends require those "
+            "additional figures to be available in your business data."
+        )
+
+    
+    # LEADS
+    
+
+    if intent == "leads":
+
+        total_leads = count(leads, "total")
+
+        converted_leads = count(leads, "converted")
+
+        if total_leads > 0:
+
+            conversion_rate = (
+                converted_leads / total_leads
+            ) * 100
+
+        else:
+
+            conversion_rate = 0
+
+        unconverted_leads = max(
+            total_leads - converted_leads,
+            0
+        )
+
+        return (
+            "Here is your lead overview:\n\n"
+            f"Total recorded leads: {total_leads}\n"
+            f"Converted leads: {converted_leads}\n"
+            f"Leads not recorded as converted: {unconverted_leads}\n"
+            f"Recorded conversion rate: {conversion_rate:.1f}%\n\n"
+            "Recommended actions:\n"
+            "1. Follow up with promising leads.\n"
+            "2. Contact leads who have not responded.\n"
+            "3. Record lead outcomes accurately.\n"
+            "4. Compare conversion rates over time.\n\n"
+            "The conversion rate depends on the lead statuses "
+            "recorded in your database."
+        )
+
+    
+    # FORECASTING
+    
+
+    if intent == "forecast":
+
+        prediction = number(forecast, "prediction")
+
+        confidence = number(forecast, "confidence")
+
+        if not forecast or "prediction" not in forecast:
+
+            return (
+                "I could not find a revenue forecast in your "
+                "current business data.\n\n"
+                "Check that your forecasting model has generated "
+                "a prediction and that the result is included "
+                "in get_business_ai_data()."
+            )
+
+        return (
+            "Here is your revenue forecast:\n\n"
+            f"Predicted revenue for the next month: "
+            f"{money(prediction)}\n"
+            f"Model confidence reported by your application: "
+            f"{confidence:.1f}%\n\n"
+            "This is a model-generated estimate, not a guarantee "
+            "of future revenue. Its usefulness depends on the "
+            "quality and quantity of your historical data."
+        )
+
+    
+    # BUSINESS HEALTH
+    
+
+    if intent == "business_health":
+
+        health_score = number(analysis, "health_score")
+
+        paid_revenue = number(invoices, "paid_amount")
+
+        total_expenses = number(expenses, "total")
+
+        pending_amount = number(invoices, "pending_amount")
+
+        overdue_amount = number(invoices, "overdue_amount")
+
+        total_leads = count(leads, "total")
+
+        converted_leads = count(leads, "converted")
+
+        outstanding = pending_amount + overdue_amount
+
+        if total_leads > 0:
+
+            conversion_rate = (
+                converted_leads / total_leads
+            ) * 100
+
+        else:
+
+            conversion_rate = 0
+
+        if health_score <= 0:
+
+            health_description = (
+                "A health score is not currently available."
+            )
+
+        elif health_score >= 80:
+
+            health_description = (
+                "Your recorded indicators suggest a strong position."
+            )
+
+        elif health_score >= 60:
+
+            health_description = (
+                "Your recorded indicators suggest room for improvement."
+            )
+
+        else:
+
+            health_description = (
+                "Your recorded indicators suggest that several "
+                "areas may need attention."
+            )
+
+        return (
+            "Here is your business performance overview:\n\n"
+            f"Business health score: {health_score:.0f}/100\n"
+            f"Paid invoice revenue: {money(paid_revenue)}\n"
+            f"Recorded expenses: {money(total_expenses)}\n"
+            f"Outstanding invoices: {money(outstanding)}\n"
+            f"Recorded leads: {total_leads}\n"
+            f"Converted leads: {converted_leads}\n"
+            f"Lead conversion rate: {conversion_rate:.1f}%\n\n"
+            f"{health_description}\n\n"
+            "These figures describe the data currently available "
+            "to Altair. The health score is an internal indicator, "
+            "not a formal financial assessment."
+        )
+
+    
+    # RECOMMENDATIONS
+    
+
+    if intent == "recommendations":
+
+        recommendations = []
+
+        pending_amount = number(invoices, "pending_amount")
+
+        overdue_amount = number(invoices, "overdue_amount")
+
+        paid_revenue = number(invoices, "paid_amount")
+
+        total_expenses = number(expenses, "total")
+
+        monthly_recurring = number(recurring, "monthly_cost")
+
+        total_leads = count(leads, "total")
+
+        converted_leads = count(leads, "converted")
+
+        # Overdue invoices
+
+        if overdue_amount > 0:
+
+            recommendations.append(
+                f"COLLECT OVERDUE PAYMENTS: You have "
+                f"{money(overdue_amount)} in overdue invoices. "
+                "Contact the affected customers and agree on "
+                "payment dates."
+            )
+
+        # Pending invoices
+
+        if pending_amount > 0:
+
+            recommendations.append(
+                f"FOLLOW UP ON PENDING INVOICES: "
+                f"{money(pending_amount)} is pending. "
+                "Send payment reminders and confirm expected "
+                "payment dates."
+            )
+
+        # Expenses
+
+        if total_expenses > 0:
+
+            recommendations.append(
+                f"REVIEW EXPENSES: Your recorded expense total is "
+                f"{money(total_expenses)}. Review expense categories "
+                "and identify avoidable costs."
+            )
+
+        # Recurring payments
+
+        if monthly_recurring > 0:
+
+            recommendations.append(
+                f"CHECK RECURRING COSTS: Your estimated monthly "
+                f"recurring payments are {money(monthly_recurring)}. "
+                "Check whether each payment is still necessary."
+            )
+
+        # Leads
+
+        if total_leads > converted_leads:
+
+            recommendations.append(
+                f"IMPROVE LEAD FOLLOW-UP: {total_leads - converted_leads} "
+                "leads are not recorded as converted. Review them "
+                "and follow up with promising prospects."
+            )
+
+        # Revenue compared with recorded expenses
+
+        if total_expenses > paid_revenue:
+
+            recommendations.append(
+                "REVIEW REVENUE AND SPENDING: Recorded expenses "
+                "exceed recorded paid invoice revenue. Review your "
+                "financial records and upcoming payment obligations."
+            )
+
+        # No obvious issues
+
+        if not recommendations:
+
+            recommendations.append(
+                "Keep your customer, invoice, lead, and expense "
+                "records up to date. Review performance regularly "
+                "so that changes are detected early."
+            )
+
+        return (
+            "Here are Altair's recommendations based on your "
+            "currently recorded business data:\n\n"
+            + "\n\n".join(
+                f"{index}. {item}"
+                for index, item in enumerate(
+                    recommendations,
+                    start=1
+                )
+            )
+        )
+
+    
+    # UNKNOWN OR UNSUPPORTED INTENT
+    
+
+    return (
+        "I can analyse your recorded business information, "
+        "but I could not confidently identify what you want to know.\n\n"
+        "Try asking:\n"
+        "• How is my business performing?\n"
+        "• How much revenue have I collected?\n"
+        "• How can I improve my cash flow?\n"
+        "• Which invoices are overdue?\n"
+        "• How can I reduce expenses?\n"
+        "• How many leads have converted?\n"
+        "• What should I improve in my business?\n"
+        "• What is my revenue forecast?"
+    )
+
+
+
 # ALTAIR AI CHAT
-
-
 @app.route(
     "/api/ai/chat",
     methods=["POST"]
@@ -3183,23 +3479,27 @@ def add_customer():
 @app.route("/invoice")
 def invoice():
 
-    if "user_id" not in session:
+    
+    # AUTHENTICATION
+    
 
-        return redirect(
-            url_for("login")
-        )
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
-    db = get_db_connection()
-
-    cursor = db.cursor(
-        dictionary=True
-    )
+    db = None
+    cursor = None
 
     try:
 
-        # Company
+        db = get_db_connection()
+
+        cursor = db.cursor(dictionary=True)
+
+        
+        # GET COMPANY DETAILS
+        
 
         cursor.execute(
             """
@@ -3213,7 +3513,9 @@ def invoice():
 
         company = cursor.fetchone()
 
-        # Invoices
+        
+        # GET USER'S INVOICES
+        
 
         cursor.execute(
             """
@@ -3227,7 +3529,9 @@ def invoice():
 
         invoices = cursor.fetchall()
 
-        # Statistics
+        
+        # INVOICE STATISTICS
+        
 
         cursor.execute(
             """
@@ -3307,13 +3611,16 @@ def invoice():
                 ) AS overdue_invoices
 
             FROM invoices
-
             WHERE user_id = %s
             """,
             (user_id,)
         )
 
         stats = cursor.fetchone()
+
+        
+        # RENDER INVOICE PAGE
+        
 
         return render_template(
             "invoice.html",
@@ -3322,51 +3629,45 @@ def invoice():
 
             invoices=invoices,
 
-            total_invoices=stats[
-                "total_invoices"
-            ] or 0,
+            total_invoices=stats["total_invoices"] or 0,
 
-            total_amount=stats[
-                "total_amount"
-            ] or 0,
+            total_amount=stats["total_amount"] or 0,
 
-            paid_amount=stats[
-                "paid_amount"
-            ] or 0,
+            paid_amount=stats["paid_amount"] or 0,
 
-            pending_amount=stats[
-                "pending_amount"
-            ] or 0,
+            pending_amount=stats["pending_amount"] or 0,
 
-            overdue_amount=stats[
-                "overdue_amount"
-            ] or 0,
+            overdue_amount=stats["overdue_amount"] or 0,
 
-            paid_invoices=stats[
-                "paid_invoices"
-            ] or 0,
+            paid_invoices=stats["paid_invoices"] or 0,
 
-            pending_invoices=stats[
-                "pending_invoices"
-            ] or 0,
+            pending_invoices=stats["pending_invoices"] or 0,
 
-            overdue_invoices=stats[
-                "overdue_invoices"
-            ] or 0,
+            overdue_invoices=stats["overdue_invoices"] or 0,
 
-            user_name=session.get(
-                "user_name"
-            ),
+            user_name=session.get("user_name"),
 
-            user_email=session.get(
-                "user_email"
-            )
+            user_email=session.get("user_email")
         )
+
+    except Exception as e:
+
+        print("INVOICE PAGE ERROR:", e)
+
+        flash(
+            "Could not load the invoice page. Please try again.",
+            "error"
+        )
+
+        return redirect(url_for("dashboard"))
 
     finally:
 
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
 
 
 
@@ -3379,13 +3680,18 @@ def invoice():
 )
 def create_invoice():
 
-    if "user_id" not in session:
+    
+    # AUTHENTICATION
+    
 
-        return redirect(
-            url_for("login")
-        )
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
+
+    
+    # GET FORM DATA
+    
 
     customer_name = request.form.get(
         "customer_name",
@@ -3397,17 +3703,13 @@ def create_invoice():
         ""
     ).strip()
 
-    # Your database uses item_name
-    # instead of description.
-
     item_name = request.form.get(
         "item_name",
         ""
     ).strip()
 
-    # Support old invoice form too.
-    # If the form still sends "description",
-    # use it as item_name.
+    # Support forms that use "description"
+    # instead of "item_name".
 
     if not item_name:
 
@@ -3431,6 +3733,10 @@ def create_invoice():
         ""
     ).strip()
 
+    
+    # VALIDATE CUSTOMER NAME
+    
+
     if not customer_name:
 
         flash(
@@ -3438,9 +3744,11 @@ def create_invoice():
             "error"
         )
 
-        return redirect(
-            url_for("invoice")
-        )
+        return redirect(url_for("invoice"))
+
+    
+    # VALIDATE ITEM DESCRIPTION
+    
 
     if not item_name:
 
@@ -3449,41 +3757,54 @@ def create_invoice():
             "error"
         )
 
-        return redirect(
-            url_for("invoice")
-        )
+        return redirect(url_for("invoice"))
 
-    if not amount:
-
-        flash(
-            "Invoice amount is required.",
-            "error"
-        )
-
-        return redirect(
-            url_for("invoice")
-        )
+    
+    # VALIDATE AMOUNT
+    
 
     try:
 
-        amount_value = float(
-            amount
-        )
+        amount_value = float(amount)
 
-        if amount_value < 0:
-
+        if amount_value <= 0:
             raise ValueError
 
-    except ValueError:
+    except (ValueError, TypeError):
 
         flash(
-            "Please enter a valid invoice amount.",
+            "Please enter a valid amount greater than zero.",
             "error"
         )
 
-        return redirect(
-            url_for("invoice")
-        )
+        return redirect(url_for("invoice"))
+
+    
+    # VALIDATE DUE DATE
+    
+
+    if due_date:
+
+        try:
+
+            due_date = date.fromisoformat(due_date)
+
+        except ValueError:
+
+            flash(
+                "Please enter a valid invoice due date.",
+                "error"
+            )
+
+            return redirect(url_for("invoice"))
+
+    else:
+
+        due_date = None
+
+    
+    # DATABASE VARIABLES
+    
 
     db = None
     cursor = None
@@ -3494,16 +3815,14 @@ def create_invoice():
 
         cursor = db.cursor()
 
-        # Get the highest invoice number
-        # belonging to this user.
-
+        
+        # GENERATE NEXT INVOICE NUMBER
+              
         cursor.execute(
             """
             SELECT invoice_number
             FROM invoices
             WHERE user_id = %s
-            AND invoice_number LIKE 'INV-%%'
-            ORDER BY id DESC
             """,
             (user_id,)
         )
@@ -3521,31 +3840,31 @@ def create_invoice():
 
             try:
 
-                current_number = int(
-                    current_invoice.replace(
-                        "INV-",
-                        ""
+                if current_invoice.startswith("INV-"):
+
+                    current_number = int(
+                        current_invoice[4:]
                     )
-                )
 
-                if current_number > highest_number:
+                    if current_number > highest_number:
 
-                    highest_number = current_number
+                        highest_number = current_number
 
-            except ValueError:
+            except (ValueError, TypeError):
 
                 continue
 
-        invoice_number = (
-            f"INV-{highest_number + 1}"
-        )
+        invoice_number = f"INV-{highest_number + 1}"
 
-        # Current date
+        
+        # CURRENT INVOICE DATE
+        
 
         invoice_date = date.today()
 
-        # Insert invoice using the
-        # ACTUAL database column names.
+        
+        # INSERT INVOICE
+        
 
         cursor.execute(
             """
@@ -3562,6 +3881,7 @@ def create_invoice():
                 status,
                 notes
             )
+
             VALUES
             (
                 %s,
@@ -3583,7 +3903,7 @@ def create_invoice():
                 customer_email,
                 item_name,
                 invoice_date,
-                due_date if due_date else None,
+                due_date,
                 amount_value,
                 notes
             )
@@ -3607,7 +3927,7 @@ def create_invoice():
         )
 
         flash(
-            "Invoice number already exists. Please try again.",
+            "An invoice number conflict occurred. Please try again.",
             "error"
         )
 
@@ -3622,7 +3942,7 @@ def create_invoice():
         )
 
         flash(
-            "Could not create invoice.",
+            "Could not create the invoice. Please try again.",
             "error"
         )
 
@@ -3634,9 +3954,112 @@ def create_invoice():
         if db:
             db.close()
 
-    return redirect(
-        url_for("invoice")
-    )
+    return redirect(url_for("invoice"))
+
+
+
+# VIEW INDIVIDUAL INVOICE
+
+@app.route(
+    "/invoice/view/<int:invoice_id>",
+    methods=["GET"]
+)
+def view_invoice(invoice_id):
+
+    
+    # AUTHENTICATION
+    
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(dictionary=True)
+
+        
+        # GET COMPANY DETAILS
+        
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+            """,
+            (user_id,)
+        )
+
+        company = cursor.fetchone()
+
+        
+        # GET THE REQUESTED INVOICE
+              
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM invoices
+            WHERE id = %s
+            AND user_id = %s
+            LIMIT 1
+            """,
+            (
+                invoice_id,
+                user_id
+            )
+        )
+
+        invoice_data = cursor.fetchone()
+
+        
+        # CHECK WHETHER INVOICE EXISTS
+        
+
+        if not invoice_data:
+
+            return "Invoice not found.", 404
+
+        
+        # RENDER INDIVIDUAL INVOICE
+        
+
+        return render_template(
+            "view_invoice.html",
+
+            invoice=invoice_data,
+
+            company=company,
+
+            user_name=session.get("user_name"),
+
+            user_email=session.get("user_email")
+        )
+
+    except Exception as e:
+
+        print(
+            "VIEW INVOICE ERROR:",
+            e
+        )
+
+        return "Could not load the invoice.", 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
 
 
 
@@ -3649,26 +4072,32 @@ def create_invoice():
 )
 def mark_invoice_paid(invoice_id):
 
-    if "user_id" not in session:
+    
+    # AUTHENTICATION
+    
 
-        return redirect(
-            url_for("login")
-        )
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
-    db = get_db_connection()
-
-    cursor = db.cursor()
+    db = None
+    cursor = None
 
     try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor()
+
+        
+        # UPDATE ONLY THE LOGGED-IN USER'S INVOICE
+        
 
         cursor.execute(
             """
             UPDATE invoices
-
             SET status = 'Paid'
-
             WHERE id = %s
             AND user_id = %s
             """,
@@ -3680,63 +4109,79 @@ def mark_invoice_paid(invoice_id):
 
         db.commit()
 
-        flash(
-            "Invoice marked as paid.",
-            "success"
-        )
+        if cursor.rowcount > 0:
+
+            flash(
+                "Invoice marked as paid.",
+                "success"
+            )
+
+        else:
+
+            flash(
+                "Invoice not found or already marked as paid.",
+                "error"
+            )
 
     except Exception as e:
 
-        db.rollback()
+        if db:
+            db.rollback()
 
         print(
-            "MARK PAID ERROR:",
+            "MARK INVOICE PAID ERROR:",
             e
         )
 
         flash(
-            "Could not update invoice.",
+            "Could not update the invoice.",
             "error"
         )
 
     finally:
 
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
 
-    return redirect(
-        url_for("invoice")
-    )
+        if db:
+            db.close()
+
+    return redirect(url_for("invoice"))
 
 
 
 # DELETE INVOICE
-
-
 @app.route(
     "/invoice/<int:invoice_id>/delete",
     methods=["POST"]
 )
 def delete_invoice(invoice_id):
 
-    if "user_id" not in session:
+    
+    # AUTHENTICATION
+    
 
-        return redirect(
-            url_for("login")
-        )
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
-    db = get_db_connection()
-
-    cursor = db.cursor()
+    db = None
+    cursor = None
 
     try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor()
+
+        
+        # DELETE ONLY THE LOGGED-IN USER'S INVOICE
+        
 
         cursor.execute(
             """
             DELETE FROM invoices
-
             WHERE id = %s
             AND user_id = %s
             """,
@@ -3748,14 +4193,24 @@ def delete_invoice(invoice_id):
 
         db.commit()
 
-        flash(
-            "Invoice deleted successfully.",
-            "success"
-        )
+        if cursor.rowcount > 0:
+
+            flash(
+                "Invoice deleted successfully.",
+                "success"
+            )
+
+        else:
+
+            flash(
+                "Invoice not found.",
+                "error"
+            )
 
     except Exception as e:
 
-        db.rollback()
+        if db:
+            db.rollback()
 
         print(
             "DELETE INVOICE ERROR:",
@@ -3763,18 +4218,19 @@ def delete_invoice(invoice_id):
         )
 
         flash(
-            "Could not delete invoice.",
+            "Could not delete the invoice.",
             "error"
         )
 
     finally:
 
-        cursor.close()
-        db.close()
+        if cursor:
+            cursor.close()
 
-    return redirect(
-        url_for("invoice")
-    )
+        if db:
+            db.close()
+
+    return redirect(url_for("invoice"))
 
 
 
