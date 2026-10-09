@@ -513,6 +513,59 @@
             gap: 20px;
         }
 
+        /* Revenue chart first, Otis advisor directly underneath */
+        .revenue-advisor-grid {
+            grid-template-columns: minmax(0, 1fr);
+            align-items: stretch;
+        }
+
+        .revenue-advisor-grid>.card {
+            width: 100%;
+        }
+
+        .revenue-advisor-grid .ai-card {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            border: 1px solid rgba(0, 180, 210, .14);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .revenue-advisor-grid .ai-card .card-header,
+        .revenue-advisor-grid .ai-card .ai-btn {
+            grid-column: 1 / -1;
+        }
+
+        .revenue-advisor-grid .ai-card .card-header {
+            margin-bottom: 0;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message {
+            margin: 0;
+            min-width: 0;
+            padding: 16px;
+            border-radius: 14px;
+            background: #f7f9fc;
+            border: 1px solid #e8edf5;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message p {
+            line-height: 1.65;
+            overflow-wrap: anywhere;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-btn {
+            justify-self: start;
+            min-width: 150px;
+        }
+
+        @media (max-width: 650px) {
+            .revenue-advisor-grid .ai-card {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 16px;
+            }
+        }
+
         .card {
             background: white;
 
@@ -1271,13 +1324,39 @@
                 0 30px 80px rgba(0, 0, 0, 0.55),
                 0 0 50px rgba(0, 240, 255, 0.08);
 
-            overflow: hidden;
-
-            display: flex;
-            flex-direction: column;
-
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: block;
+            position: relative;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, .35) transparent;
             color: #fff;
 
+        }
+
+        .altair-ai-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .altair-ai-window::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, .35);
+            border-radius: 10px;
+        }
+
+        .altair-ai-header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: rgba(18, 18, 31, .97);
+            backdrop-filter: blur(12px);
+        }
+
+        .altair-ai-input-area {
+            position: sticky;
+            bottom: 0;
+            z-index: 5;
+            background: rgba(14, 14, 24, .98);
         }
 
 
@@ -1560,6 +1639,7 @@
             flex: 1;
 
             min-height: 0;
+            height: auto;
 
             display: grid;
 
@@ -1570,7 +1650,7 @@
 
             padding: 14px 18px;
 
-            overflow: hidden;
+            overflow: visible;
 
         }
 
@@ -1579,7 +1659,7 @@
 
             min-width: 0;
 
-            overflow-y: auto;
+            overflow: visible;
 
             padding-right: 4px;
 
@@ -2275,8 +2355,7 @@
             .altair-ai-body {
 
                 grid-template-columns: 1fr;
-
-                overflow-y: auto;
+                overflow: visible;
 
             }
 
@@ -2778,7 +2857,7 @@
      REVENUE + ALTAIR AI BUSINESS INSIGHTS
  -->
 
-            <section class="dashboard-grid">
+            <section class="dashboard-grid revenue-advisor-grid">
 
                 <!-- 
          REVENUE FORECAST
@@ -3665,6 +3744,8 @@
                 altairBusinessData =
                     result.analysis;
 
+                // Keep the Otis pop-up's top summary cards in sync with live data.
+                updateAltairAdvisorStats(result.analysis);
 
                 /* 
                    LIVE REVENUE / EXPENSE / PROFIT + ML FORECAST CHART
@@ -3747,9 +3828,9 @@
                     }
                 }
 
-                /* -----------------------------------------------
+                /* 
                    HEALTH
-                ------------------------------------------------ */
+                 */
 
                 const health =
                     document.getElementById(
@@ -3765,9 +3846,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /* 
                    FORECAST
-                ------------------------------------------------ */
+                 */
 
                 const forecast =
                     document.getElementById(
@@ -3799,9 +3880,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /*  
                    CASH FLOW
-                ------------------------------------------------ */
+                 */
 
                 const cashFlow =
                     document.getElementById(
@@ -3829,9 +3910,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /* 
                    RECOMMENDATION
-                ------------------------------------------------ */
+                 */
 
                 const recommendation =
                     document.getElementById(
@@ -3868,9 +3949,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /* 
                    CUSTOMERS
-                ------------------------------------------------ */
+                 */
 
                 const customers =
                     document.getElementById(
@@ -3886,9 +3967,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /* 
                    CONVERSION
-                ------------------------------------------------ */
+                 */
 
                 const conversion =
                     document.getElementById(
@@ -3903,9 +3984,9 @@
                 }
 
 
-                /* -----------------------------------------------
+                /* 
                    RECURRING
-                ------------------------------------------------ */
+                 */
 
                 const recurring =
                     document.getElementById(
@@ -3963,6 +4044,11 @@
 
                 overlay.style.display =
                     "flex";
+
+                // Refresh the live summary each time Otis is opened.
+                if (typeof loadAltairInsights === "function") {
+                    loadAltairInsights();
+                }
 
             }
 
