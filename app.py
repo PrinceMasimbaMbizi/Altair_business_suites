@@ -5646,19 +5646,19 @@ def process_recurring_payments(
 
     conn.commit()
 
-
-
+    
 # INVENTORY + MONEY MANAGEMENT
 
 
 @app.route("/items")
 def items():
 
-    if "user_id" not in session:
+    
+    # AUTHENTICATION
+    
 
-        return redirect(
-            url_for("login")
-        )
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
@@ -5667,11 +5667,18 @@ def items():
 
     try:
 
+        
+        # DATABASE CONNECTION
+        
+
         db = get_db_connection()
 
-        cursor = db.cursor(
-            dictionary=True
-        )
+        if db is None:
+            raise RuntimeError(
+                "Database connection could not be established."
+            )
+
+        cursor = db.cursor(dictionary=True)
 
         
         # COMPANY
@@ -5693,11 +5700,38 @@ def items():
         # PROCESS RECURRING PAYMENTS
         
 
-        process_recurring_payments(
-            db,
-            cursor,
-            user_id
-        )
+        # Recurring payment processing can fail if its database
+        try:
+
+            process_recurring_payments(
+                db,
+                cursor,
+                user_id
+            )
+
+        except Exception as recurring_error:
+
+            print(
+                "\nRECURRING PAYMENT PROCESSING ERROR:",
+                str(recurring_error)
+            )
+
+            import traceback
+            traceback.print_exc()
+
+            # Roll back any incomplete database transaction.
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+            # Re-create the cursor after a rollback.
+            try:
+                cursor.close()
+            except Exception:
+                pass
+
+            cursor = db.cursor(dictionary=True)
 
         
         # INVENTORY
@@ -5721,87 +5755,71 @@ def items():
 
         cursor.execute(
             """
-            SELECT COUNT(*) AS total
+            SELECT
+                COUNT(*) AS total,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN item_type = 'Product'
+                            THEN 1 ELSE 0
+                        END
+                    ),
+                    0
+                ) AS total_products,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN item_type = 'Service'
+                            THEN 1 ELSE 0
+                        END
+                    ),
+                    0
+                ) AS total_services,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN item_type = 'Product'
+                             AND quantity > 0
+                             AND quantity <= low_stock_level
+                            THEN 1 ELSE 0
+                        END
+                    ),
+                    0
+                ) AS low_stock,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN item_type = 'Product'
+                             AND quantity <= 0
+                            THEN 1 ELSE 0
+                        END
+                    ),
+                    0
+                ) AS out_of_stock,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN item_type = 'Product'
+                            THEN quantity * cost_price
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS inventory_value
             FROM inventory
             WHERE user_id = %s
             """,
             (user_id,)
         )
 
-        total_items = cursor.fetchone()["total"]
+        inventory_stats = cursor.fetchone() or {}
 
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM inventory
-            WHERE user_id = %s
-            AND item_type = 'Product'
-            """,
-            (user_id,)
-        )
-
-        total_products = cursor.fetchone()["total"]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM inventory
-            WHERE user_id = %s
-            AND item_type = 'Service'
-            """,
-            (user_id,)
-        )
-
-        total_services = cursor.fetchone()["total"]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM inventory
-            WHERE user_id = %s
-            AND item_type = 'Product'
-            AND quantity > 0
-            AND quantity <= low_stock_level
-            """,
-            (user_id,)
-        )
-
-        low_stock = cursor.fetchone()["total"]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-            FROM inventory
-            WHERE user_id = %s
-            AND item_type = 'Product'
-            AND quantity <= 0
-            """,
-            (user_id,)
-        )
-
-        out_of_stock = cursor.fetchone()["total"]
-
-        cursor.execute(
-            """
-            SELECT COALESCE(
-                SUM(
-                    quantity * cost_price
-                ),
-                0
-            ) AS total
-
-            FROM inventory
-
-            WHERE user_id = %s
-
-            AND item_type = 'Product'
-            """,
-            (user_id,)
-        )
-
-        inventory_value = cursor.fetchone()[
-            "total"
-        ]
+        total_items = inventory_stats.get("total", 0)
+        total_products = inventory_stats.get("total_products", 0)
+        total_services = inventory_stats.get("total_services", 0)
+        low_stock = inventory_stats.get("low_stock", 0)
+        out_of_stock = inventory_stats.get("out_of_stock", 0)
+        inventory_value = inventory_stats.get("inventory_value", 0)
 
         
         # EXPENSES
@@ -5821,60 +5839,31 @@ def items():
 
         cursor.execute(
             """
-            SELECT COALESCE(
-                SUM(amount),
-                0
-            ) AS total
-
+            SELECT
+                COALESCE(SUM(amount), 0) AS total_expenses,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN MONTH(expense_date) = MONTH(CURRENT_DATE())
+                             AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+                            THEN amount
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS month_expenses,
+                COUNT(*) AS expense_count
             FROM expenses
-
             WHERE user_id = %s
             """,
             (user_id,)
         )
 
-        total_expenses = cursor.fetchone()[
-            "total"
-        ]
+        expense_stats = cursor.fetchone() or {}
 
-        cursor.execute(
-            """
-            SELECT COALESCE(
-                SUM(amount),
-                0
-            ) AS total
-
-            FROM expenses
-
-            WHERE user_id = %s
-
-            AND MONTH(expense_date) =
-                MONTH(CURRENT_DATE())
-
-            AND YEAR(expense_date) =
-                YEAR(CURRENT_DATE())
-            """,
-            (user_id,)
-        )
-
-        month_expenses = cursor.fetchone()[
-            "total"
-        ]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-
-            FROM expenses
-
-            WHERE user_id = %s
-            """,
-            (user_id,)
-        )
-
-        expense_count = cursor.fetchone()[
-            "total"
-        ]
+        total_expenses = expense_stats.get("total_expenses", 0)
+        month_expenses = expense_stats.get("month_expenses", 0)
+        expense_count = expense_stats.get("expense_count", 0)
 
         
         # INVESTMENTS
@@ -5894,54 +5883,29 @@ def items():
 
         cursor.execute(
             """
-            SELECT COALESCE(
-                SUM(amount),
-                0
-            ) AS total
-
+            SELECT
+                COALESCE(SUM(amount), 0) AS total_investments,
+                COALESCE(SUM(expected_return), 0) AS expected_returns,
+                COUNT(*) AS investment_count
             FROM investments
-
             WHERE user_id = %s
             """,
             (user_id,)
         )
 
-        total_investments = cursor.fetchone()[
-            "total"
-        ]
+        investment_stats = cursor.fetchone() or {}
 
-        cursor.execute(
-            """
-            SELECT COALESCE(
-                SUM(expected_return),
-                0
-            ) AS total
-
-            FROM investments
-
-            WHERE user_id = %s
-            """,
-            (user_id,)
+        total_investments = investment_stats.get(
+            "total_investments", 0
         )
 
-        expected_returns = cursor.fetchone()[
-            "total"
-        ]
-
-        cursor.execute(
-            """
-            SELECT COUNT(*) AS total
-
-            FROM investments
-
-            WHERE user_id = %s
-            """,
-            (user_id,)
+        expected_returns = investment_stats.get(
+            "expected_returns", 0
         )
 
-        investment_count = cursor.fetchone()[
-            "total"
-        ]
+        investment_count = investment_stats.get(
+            "investment_count", 0
+        )
 
         
         # RECURRING PAYMENTS
@@ -5961,55 +5925,36 @@ def items():
 
         cursor.execute(
             """
-            SELECT COUNT(*) AS total
-
-            FROM recurring_payments
-
-            WHERE user_id = %s
-
-            AND status = 'Active'
-            """,
-            (user_id,)
-        )
-
-        recurring_count = cursor.fetchone()[
-            "total"
-        ]
-
-        cursor.execute(
-            """
-            SELECT COALESCE(
-                SUM(
+            SELECT
+                COUNT(
                     CASE
-
-                        WHEN frequency = 'Monthly'
-                        THEN amount
-
-                        WHEN frequency = 'Weekly'
-                        THEN amount * 4.3333
-
-                        WHEN frequency = 'Yearly'
-                        THEN amount / 12
-
-                        ELSE 0
-
+                        WHEN status = 'Active' THEN 1
                     END
-                ),
-                0
-            ) AS total
+                ) AS recurring_count,
+
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN status <> 'Active' THEN 0
+                            WHEN frequency = 'Monthly' THEN amount
+                            WHEN frequency = 'Weekly' THEN amount * 4.3333
+                            WHEN frequency = 'Yearly' THEN amount / 12
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS monthly_recurring
 
             FROM recurring_payments
-
             WHERE user_id = %s
-
-            AND status = 'Active'
             """,
             (user_id,)
         )
 
-        monthly_recurring = cursor.fetchone()[
-            "total"
-        ]
+        recurring_stats = cursor.fetchone() or {}
+
+        recurring_count = recurring_stats.get("recurring_count", 0)
+        monthly_recurring = recurring_stats.get("monthly_recurring", 0)
 
         
         # MONEY OUT RECORDS
@@ -6018,57 +5963,34 @@ def items():
         cursor.execute(
             """
             SELECT
-
                 id,
-
                 'Expense' AS record_type,
-
                 expense_name AS record_name,
-
                 category,
-
                 expense_date AS record_date,
-
                 payment_method,
-
                 amount,
-
                 description
-
             FROM expenses
-
             WHERE user_id = %s
 
             UNION ALL
 
             SELECT
-
                 id,
-
                 'Investment' AS record_type,
-
                 investment_name AS record_name,
-
                 category,
-
                 investment_date AS record_date,
-
                 NULL AS payment_method,
-
                 amount,
-
                 description
-
             FROM investments
-
             WHERE user_id = %s
 
             ORDER BY record_date DESC
             """,
-            (
-                user_id,
-                user_id
-            )
+            (user_id, user_id)
         )
 
         money_out_records = cursor.fetchall()
@@ -6077,191 +5999,153 @@ def items():
         # TOTAL MONEY OUT
         
 
-        cursor.execute(
-            """
-            SELECT
-
-                (
-                    SELECT COALESCE(
-                        SUM(amount),
-                        0
-                    )
-
-                    FROM expenses
-
-                    WHERE user_id = %s
-                )
-
-                +
-
-                (
-                    SELECT COALESCE(
-                        SUM(amount),
-                        0
-                    )
-
-                    FROM investments
-
-                    WHERE user_id = %s
-                )
-
-                AS total
+        cursor.execute( """ SELECT(SELECT COALESCE(SUM(amount), 0)FROM expensesWHERE user_id = %s)+(SELECT COALESCE(SUM(amount), 0)FROM investments WHERE user_id = %s) AS total
             """,
-            (
-                user_id,
-                user_id
-            )
+            (user_id, user_id)
         )
 
-        total_money_out = cursor.fetchone()[
-            "total"
-        ]
+        money_out_stats = cursor.fetchone() or {}
+        total_money_out = money_out_stats.get("total", 0)
 
         
-        # RENDER
+        # RENDER PAGE
         
 
         return render_template(
-
             "items.html",
 
             company=company,
 
-            user_name=session.get(
-                "user_name"
-            ),
-
-            user_email=session.get(
-                "user_email"
-            ),
+            user_name=session.get("user_name"),
+            user_email=session.get("user_email"),
 
             # Inventory
-
             inventory=inventory,
-
             total_items=total_items,
-
             total_products=total_products,
-
             total_services=total_services,
-
             low_stock=low_stock,
-
             out_of_stock=out_of_stock,
-
             inventory_value=inventory_value,
 
             # Expenses
-
             expenses=expenses,
-
             total_expenses=total_expenses,
-
             month_expenses=month_expenses,
-
             expense_count=expense_count,
 
             # Investments
-
             investments=investments,
-
             total_investments=total_investments,
-
             expected_returns=expected_returns,
-
             investment_count=investment_count,
 
-            # Recurring
-
+            # Recurring payments
             recurring_payments=recurring_payments,
-
             recurring_count=recurring_count,
-
             monthly_recurring=monthly_recurring,
 
-            # Money Out
-
+            # Money out
             money_out_records=money_out_records,
-
             total_money_out=total_money_out
         )
 
     except Exception as e:
 
-        print(
-            "ITEMS PAGE ERROR:",
-            e
-        )
+        
+        # LOG THE ACTUAL ERROR
+        
 
+        import traceback
+
+        print("\n")
+        print("=" * 70)
+        print("ALTAIR BUSINESS SUITE - ITEMS PAGE ERROR")
+        print("=" * 70)
+
+        print("ERROR MESSAGE:", str(e))
+        traceback.print_exc()
+
+        print("=" * 70)
+        print("\n")
+
+        # Roll back only if a connection exists.
+        if db is not None:
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+        # Do not silently hide a missing database table or column.
         flash(
-            "Could not load inventory and money management.",
+            "Inventory and Money Management could not be loaded. "
+            "Check the VS Code terminal for the exact error.",
             "error"
         )
 
         return render_template(
-
             "items.html",
 
             company=None,
+            user_name=session.get("user_name"),
+            user_email=session.get("user_email"),
 
-            user_name=session.get(
-                "user_name"
-            ),
-
-            user_email=session.get(
-                "user_email"
-            ),
-
+            # Inventory
             inventory=[],
-
             total_items=0,
-
             total_products=0,
-
             total_services=0,
-
             low_stock=0,
-
             out_of_stock=0,
-
             inventory_value=0,
 
+            # Expenses
             expenses=[],
-
             total_expenses=0,
-
             month_expenses=0,
-
             expense_count=0,
 
+            # Investments
             investments=[],
-
             total_investments=0,
-
             expected_returns=0,
-
             investment_count=0,
 
+            # Recurring payments
             recurring_payments=[],
-
             recurring_count=0,
-
             monthly_recurring=0,
 
-            money_out_records=[],
-
+            # Money out
+                money_out_records=[],
             total_money_out=0
         )
 
     finally:
 
-        if cursor:
+        
+        # CLOSE DATABASE RESOURCES SAFELY
+        
 
-            cursor.close()
+        if cursor is not None:
+            try:
+                cursor.close()
+            except Exception as close_error:
+                print(
+                    "ITEMS CURSOR CLOSE ERROR:",
+                    close_error
+                )
 
-        if db:
+        if db is not None:
+            try:
+                db.close()
+            except Exception as close_error:
+                print(
+                    "ITEMS DATABASE CLOSE ERROR:",
+                    close_error
+                )
 
-            db.close()
+
 
 
 
