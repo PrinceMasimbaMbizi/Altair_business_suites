@@ -5999,7 +5999,7 @@ def items():
         # TOTAL MONEY OUT
         
 
-        cursor.execute( """ SELECT(SELECT COALESCE(SUM(amount), 0)FROM expensesWHERE user_id = %s)+(SELECT COALESCE(SUM(amount), 0)FROM investments WHERE user_id = %s) AS total
+        cursor.execute( """ SELECT (SELECT COALESCE(SUM(amount), 0)FROM expenses WHERE user_id = %s)+(SELECT COALESCE(SUM(amount), 0)FROM investments WHERE user_id = %s) AS total
             """,
             (user_id, user_id)
         )
@@ -6077,11 +6077,7 @@ def items():
                 pass
 
         # Do not silently hide a missing database table or column.
-        flash(
-            "Inventory and Money Management could not be loaded. "
-            "Check the VS Code terminal for the exact error.",
-            "error"
-        )
+        flash(f"INVENTORY ERROR: {str(e)}","error")
 
         return render_template(
             "items.html",
