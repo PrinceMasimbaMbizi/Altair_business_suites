@@ -230,9 +230,7 @@ def get_current_company_id():
 
     return company["id"]
 
-
-
-
+# COMPANY LOGO
 
 @app.route("/company-logo")
 def company_logo():
@@ -240,25 +238,79 @@ def company_logo():
     if "user_id" not in session:
         return "", 401
 
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
     try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
 
-        company = get_current_company()
+        cursor.execute("""
+            SELECT logo
+            FROM companies
+            WHERE user_id = %s
+            LIMIT 1
+        """, (user_id,))
 
-        if not company:
+        company = cursor.fetchone()
+
+        if not company or not company.get("logo"):
             return "", 404
 
-        logo_url = company.get("logo")
+        logo = company["logo"].strip()
 
-        if not logo_url:
+        # Cloudinary or another externally hosted image
+        if logo.startswith("https://") or logo.startswith("http://"):
+            return redirect(logo)
+
+        # Local image: accept only a filename, not a path
+        if (
+            "/" in logo
+            or "\\" in logo
+            or logo in (".", "..")
+        ):
             return "", 404
 
-        return redirect(logo_url)
+        upload_folder = os.path.join(
+            app.root_path,
+            "static",
+            "uploads"
+        )
 
-    except Exception as e:
+        logo_path = os.path.join(
+            upload_folder,
+            logo
+        )
 
-        print("COMPANY LOGO ERROR:", e)
+        if not os.path.isfile(logo_path):
+            app.logger.warning(
+                "Company logo file missing: %s",
+                logo
+            )
+            return "", 404
 
-        return "", 404
+        return send_from_directory(
+            upload_folder,
+            logo
+        )
+
+    except Exception:
+
+        app.logger.exception(
+            "COMPANY LOGO ROUTE ERROR"
+        )
+
+        return "", 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
 
 
 
@@ -3952,6 +4004,409 @@ def add_customer():
 
 
 
+# CUSTOMER FINANCIAL HISTORY
+
+
+@app.route("/customer/<int:customer_id>/history")
+def customer_history(customer_id):
+
+    # Ensure the user is logged in
+    if "user_id" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Please log in first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        # ----------------------------------------------------
+        # 1. Get customer belonging to the logged-in user
+        # ----------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                id,
+                name,
+                email,
+                phone,
+                company_name,
+                total_spent
+            FROM customers
+            WHERE id = %s
+              AND user_id = %s
+            LIMIT 1
+        """, (customer_id, user_id))
+
+        customer_record = cursor.fetchone()
+
+        if not customer_record:
+            return jsonify({
+                "success": False,
+                "message": "Customer not found."
+            }), 404
+
+        # ----------------------------------------------------
+        # 2. Get invoices linked to this customer
+        # ----------------------------------------------------
+
+        customer_email = (
+            customer_record.get("email") or ""
+        ).strip()
+
+        customer_name = (
+            customer_record.get("name") or ""
+        ).strip()
+
+        if customer_email:
+
+            cursor.execute("""
+                SELECT
+                    id,
+                    invoice_number,
+                    customer_name,
+                    customer_email,
+                    item_name,
+                    invoice_date,
+                    due_date,
+                    amount,
+                    status
+                FROM invoices
+                WHERE user_id = %s
+                  AND LOWER(TRIM(customer_email)) = LOWER(%s)
+                ORDER BY invoice_date DESC, id DESC
+            """, (
+                user_id,
+                customer_email
+            ))
+
+        else:
+
+            cursor.execute("""
+                SELECT
+                    id,
+                    invoice_number,
+                    customer_name,
+                    customer_email,
+                    item_name,
+                    invoice_date,
+                    due_date,
+                    amount,
+                    status
+                FROM invoices
+                WHERE user_id = %s
+                  AND LOWER(TRIM(customer_name)) = LOWER(%s)
+                ORDER BY invoice_date DESC, id DESC
+            """, (
+                user_id,
+                customer_name
+            ))
+
+        invoices = cursor.fetchall()
+
+        # ----------------------------------------------------
+        # 3. Calculate financial totals
+        # ----------------------------------------------------
+
+        total_invoiced = 0.0
+        total_paid = 0.0
+        outstanding_balance = 0.0
+        overdue_balance = 0.0
+
+        for invoice in invoices:
+
+            amount = float(invoice.get("amount") or 0)
+
+            status = (
+                invoice.get("status") or ""
+            ).strip().lower()
+
+            total_invoiced += amount
+
+            if status == "paid":
+
+                total_paid += amount
+
+            else:
+
+                outstanding_balance += amount
+
+                if status == "overdue":
+                    overdue_balance += amount
+
+            # Convert dates for JSON responses
+            for date_field in ("invoice_date", "due_date"):
+
+                date_value = invoice.get(date_field)
+
+                if date_value is not None:
+                    invoice[date_field] = str(date_value)
+
+            # Ensure Decimal values can be serialized
+            invoice["amount"] = amount
+
+        # ----------------------------------------------------
+        # 4. Return customer and invoice information
+        # ----------------------------------------------------
+
+        return jsonify({
+            "success": True,
+
+            "customer": {
+                "id": customer_record["id"],
+                "name": customer_record["name"],
+                "email": customer_record.get("email"),
+                "phone": customer_record.get("phone"),
+                "company_name": customer_record.get("company_name")
+            },
+
+            "financial_summary": {
+                "total_invoiced": round(total_invoiced, 2),
+                "total_paid": round(total_paid, 2),
+                "outstanding_balance": round(
+                    outstanding_balance, 2
+                ),
+                "overdue_balance": round(overdue_balance, 2),
+                "invoice_count": len(invoices)
+            },
+
+            "invoices": invoices
+        })
+
+    except Exception as e:
+
+        app.logger.exception(
+            "CUSTOMER FINANCIAL HISTORY ERROR"
+        )
+
+        return jsonify({
+            "success": False,
+            "message": "Could not load customer financial history."
+        }), 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+
+
+
+
+
+# EDIT CUSTOMER
+
+
+@app.route(
+    "/customer/<int:customer_id>/edit",
+    methods=["POST"]
+)
+def edit_customer(customer_id):
+
+    if "user_id" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Please log in first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    # Read submitted form data
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+    company_name = request.form.get(
+        "company_name", ""
+    ).strip()
+
+    address = request.form.get("address", "").strip()
+    city = request.form.get("city", "").strip()
+    country = request.form.get("country", "").strip()
+    status = request.form.get("status", "Active").strip()
+    notes = request.form.get("notes", "").strip()
+
+    # Basic validation
+    if not name:
+        return jsonify({
+            "success": False,
+            "message": "Customer name is required."
+        }), 400
+
+    if status not in ("Active", "Inactive"):
+        return jsonify({
+            "success": False,
+            "message": "Invalid customer status."
+        }), 400
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            UPDATE customers
+            SET
+                name = %s,
+                email = %s,
+                phone = %s,
+                company_name = %s,
+                address = %s,
+                city = %s,
+                country = %s,
+                status = %s,
+                notes = %s
+            WHERE id = %s
+              AND user_id = %s
+        """, (
+            name,
+            email,
+            phone,
+            company_name,
+            address,
+            city,
+            country,
+            status,
+            notes,
+            customer_id,
+            user_id
+        ))
+
+        if cursor.rowcount == 0:
+
+            # Check whether the customer exists and belongs
+            # to this user, even if submitted values were unchanged.
+            cursor.execute("""
+                SELECT id
+                FROM customers
+                WHERE id = %s
+                  AND user_id = %s
+                LIMIT 1
+            """, (customer_id, user_id))
+
+            if not cursor.fetchone():
+                db.rollback()
+
+                return jsonify({
+                    "success": False,
+                    "message": "Customer not found."
+                }), 404
+
+        db.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Customer updated successfully."
+        })
+
+    except Exception:
+
+        if db:
+            db.rollback()
+
+        app.logger.exception("CUSTOMER UPDATE ERROR")
+
+        return jsonify({
+            "success": False,
+            "message": "Could not update customer."
+        }), 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()
+
+
+
+
+# DELETE CUSTOMER
+
+
+@app.route(
+    "/customer/<int:customer_id>/delete",
+    methods=["POST"]
+)
+def delete_customer(customer_id):
+
+    if "user_id" not in session:
+        return jsonify({
+            "success": False,
+            "message": "Please log in first."
+        }), 401
+
+    user_id = session["user_id"]
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            DELETE FROM customers
+            WHERE id = %s
+              AND user_id = %s
+        """, (
+            customer_id,
+            user_id
+        ))
+
+        if cursor.rowcount == 0:
+
+            db.rollback()
+
+            return jsonify({
+                "success": False,
+                "message": "Customer not found."
+            }), 404
+
+        db.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Customer deleted successfully."
+        })
+
+    except Exception:
+
+        if db:
+            db.rollback()
+
+        app.logger.exception("CUSTOMER DELETE ERROR")
+
+        return jsonify({
+            "success": False,
+            "message": (
+                "Could not delete customer. "
+                "Check whether another table requires this customer record."
+            )
+        }), 500
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if db:
+            db.close()                        
+
+
 # INVOICE PAGE
 
 
@@ -5852,6 +6307,29 @@ def process_recurring_payments(
 
         # Propagate the error so the calling route can handle it.
         raise
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
