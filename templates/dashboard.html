@@ -158,15 +158,6 @@
             min-width: 0;
         }
 
-
-        .company-logo {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-            border-radius: 10px;
-            display: block;
-        }
-
         .company-logo-image,
         .company-logo-placeholder {
             width: 44px;
@@ -2470,8 +2461,8 @@
 
                 {% if company and company.logo %}
 
-                <img src="{{ url_for('company_logo') }}" alt="Company Logo" class="company-logo"
-                    onerror="this.style.display='none';">
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
 
                 <div class="company-logo-placeholder" style="display:none;">
                     {{ company.company_name[0]|upper if company and company.company_name else 'A' }}

@@ -69,97 +69,100 @@
         }
 
         /* ============================
-           SIDEBAR
+           SIDEBAR — MATCHES DASHBOARD
         ============================ */
 
         .sidebar {
-            width: 255px;
+            width: 250px;
             height: 100vh;
-
             position: fixed;
             top: 0;
             left: 0;
-
-            background: var(--sidebar);
+            background: #11111c;
             color: white;
-
             display: flex;
             flex-direction: column;
-
-            padding: 24px 15px;
-
+            padding: 25px 18px;
             z-index: 1000;
-
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: transform 0.3s ease;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-
-            padding: 0 9px 30px;
-
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
         }
 
-        .brand-logo {
-            width: 43px;
-            height: 43px;
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
+        }
 
-            border-radius: 13px;
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #35354b;
+            border-radius: 10px;
+        }
 
+        .company-brand {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 11px;
+            margin-bottom: 35px;
+            padding: 5px 8px;
+            min-width: 0;
+        }
 
-            background: linear-gradient(135deg,
-                    var(--cyan),
-                    var(--primary),
-                    var(--magenta));
-
-            color: white;
-            font-size: 19px;
-            font-weight: 800;
-
-            overflow: hidden;
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 12px;
+            object-fit: contain;
             flex-shrink: 0;
         }
 
-        .brand-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: white;
+        .company-logo-image {
+            display: block;
+            background: #242435;
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
         }
 
-        .brand-text h2 {
-            font-size: 15px;
+        .company-logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
+            color: white;
+            font-size: 18px;
             font-weight: 800;
-            letter-spacing: -0.5px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, .15);
         }
 
-        .brand-text p {
-            font-size: 10px;
-            color: #9292a9;
-            margin-top: 5px;
+        .company-brand-name {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 145px;
         }
 
         .nav-heading {
-            color: #707087;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 1.4px;
+            color: #77778a;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
-
-            margin: 27px 12px 12px;
+            margin: 25px 10px 10px;
+            letter-spacing: 1px;
         }
 
         .nav-menu {
             display: flex;
             flex-direction: column;
             gap: 5px;
-
             overflow-y: auto;
             flex: 1;
         }
@@ -168,47 +171,42 @@
             display: flex;
             align-items: center;
             gap: 13px;
-
-            padding: 13px 14px;
-
+            padding: 12px;
             border-radius: 10px;
-
-            color: #a6a6bc;
-
-            font-size: 12px;
+            color: #aaaabb;
+            font-size: 13px;
             font-weight: 600;
-
-            transition: 0.2s;
+            white-space: nowrap;
+            transition: .2s;
+            border: 1px solid transparent;
         }
 
         .nav-link i {
             width: 18px;
+            min-width: 18px;
             text-align: center;
-            font-size: 14px;
+            font-size: 15px;
         }
 
-        .nav-link:hover {
+        .nav-link:hover,
+        .nav-link.active {
+            background: #242435;
             color: white;
-            background: var(--sidebar-hover);
         }
 
         .nav-link.active {
-            color: white;
-
-            background: linear-gradient(100deg,
-                    rgba(99, 102, 241, 0.28),
-                    rgba(99, 102, 241, 0.08));
-
-            border: 1px solid rgba(129, 140, 248, 0.18);
+            border-left: 3px solid #8b5cf6;
+            border-radius: 8px;
         }
 
         .nav-link.active i {
-            color: var(--primary-light);
+            color: #a78bfa;
         }
 
         .sidebar-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, .08);
             padding-top: 15px;
+            margin-top: 15px;
         }
 
         .user-mini {
@@ -216,27 +214,21 @@
             align-items: center;
             gap: 10px;
             padding: 10px;
+            min-width: 0;
         }
 
         .user-avatar {
             width: 37px;
             height: 37px;
-
+            min-width: 37px;
             border-radius: 11px;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             color: white;
             font-size: 13px;
             font-weight: 800;
-
-            background: linear-gradient(135deg,
-                    var(--primary),
-                    var(--magenta));
-
-            flex-shrink: 0;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
         }
 
         .user-details {
@@ -246,7 +238,6 @@
         .user-details strong {
             display: block;
             font-size: 11px;
-
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -257,7 +248,6 @@
             color: #9292a9;
             font-size: 10px;
             margin-top: 4px;
-
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -268,7 +258,7 @@
         ============================ */
 
         .main {
-            margin-left: 255px;
+            margin-left: 250px;
             min-height: 100vh;
             padding: 30px 34px;
         }
@@ -1224,6 +1214,14 @@
         }
 
         @media (max-width: 950px) {
+            .company-brand {
+                justify-content: flex-start;
+            }
+
+            .company-brand-name {
+                display: block;
+            }
+
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -1389,99 +1387,80 @@
 
     <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
-
-            <div class="brand-logo">
-                {% if company and company.get('logo') %}
-                <img src="{{ company.get('logo') }}" alt="Company logo"
-                    onerror="this.style.display='none'; this.parentElement.textContent='A';">
-                {% else %}
-                A
-                {% endif %}
+        <div class="company-brand">
+            {% if company and company.get('logo') %}
+            <img src="{{ url_for('company_logo') }}" alt="{{ company.get('company_name', 'Company') }}"
+                class="company-logo-image"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="company-logo-placeholder" style="display:none;">
+                {{ (company.get('company_name', 'A') or 'A')[0]|upper }}
             </div>
-
-            <div class="brand-text">
-                <h2>ALTAIR</h2>
-                <p>BUSINESS SUITE</p>
+            {% else %}
+            <div class="company-logo-placeholder">
+                {{ (company.get('company_name', 'A') if company else 'A')[0]|upper }}
             </div>
+            {% endif %}
 
+            <div class="company-brand-name">
+                {{ company.get('company_name', 'Altair Business Suite') if company else 'Altair Business Suite' }}
+            </div>
         </div>
 
-        <div class="nav-heading">Workspace</div>
-
+        <div class="nav-heading">Main</div>
         <nav class="nav-menu">
-
             <a href="{{ url_for('dashboard') }}" class="nav-link">
-                <i class="fa-solid fa-house"></i>
-                <span>Dashboard</span>
+                <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
             </a>
-
             <a href="{{ url_for('customer') }}" class="nav-link active">
-                <i class="fa-solid fa-users"></i>
-                <span>Customers</span>
+                <i class="fa-solid fa-users"></i><span>Customers</span>
             </a>
-
             <a href="{{ url_for('invoice') }}" class="nav-link">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <span>Invoices</span>
+                <i class="fa-solid fa-file-invoice-dollar"></i><span>Invoices</span>
             </a>
-
             <a href="{{ url_for('items') }}" class="nav-link">
-                <i class="fa-solid fa-boxes-stacked"></i>
-                <span>Inventory</span>
+                <i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span>
             </a>
-
-            <a href="{{ url_for('transactions') }}" class="nav-link">
-                <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                <span>Transactions</span>
+            <a href="#" class="nav-link" aria-label="Transactions">
+                <i class="fa-solid fa-credit-card"></i><span>Transactions</span>
             </a>
 
             <div class="nav-heading">Intelligence</div>
-
-            <a href="{{ url_for('lead_finder') }}" class="nav-link">
-                <i class="fa-solid fa-magnifying-glass-chart"></i>
-                <span>AI Lead Finder</span>
+            <a href="{{ url_for('ai_leads') }}" class="nav-link">
+                <i class="fa-solid fa-robot"></i><span>AI Lead Finder</span>
             </a>
-
-            <a href="{{ url_for('business_analytics') }}" class="nav-link">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Business Analytics</span>
+            <a href="#" class="nav-link">
+                <i class="fa-brands fa-facebook"></i><span>Facebook Analytics</span>
             </a>
-
-            <a href="{{ url_for('forecasting') }}" class="nav-link">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Forecasting</span>
+            <a href="#" class="nav-link">
+                <i class="fa-brands fa-whatsapp"></i><span>WhatsApp Analytics</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-solid fa-building"></i><span>Company Profile</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-solid fa-chart-line"></i><span>Business Analytics</span>
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fa-solid fa-chart-column"></i><span>Forecasting</span>
             </a>
 
             <div class="nav-heading">Account</div>
-
             <a href="{{ url_for('settings') }}" class="nav-link">
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
+                <i class="fa-solid fa-gear"></i><span>Settings</span>
             </a>
-
             <a href="{{ url_for('logout') }}" class="nav-link">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
+                <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
             </a>
-
         </nav>
 
         <div class="sidebar-bottom">
-
             <div class="user-mini">
-
-                <div class="user-avatar">
-                    {{ (user_name or 'U')[0]|upper }}
-                </div>
-
+                <div class="user-avatar">{{ (user_name or 'U')[0]|upper }}</div>
                 <div class="user-details">
                     <strong>{{ user_name or 'Business User' }}</strong>
                     <span>{{ user_email or 'Account' }}</span>
                 </div>
-
             </div>
-
         </div>
 
     </aside>
@@ -1535,7 +1514,7 @@
 
                     {% if company and company.get('logo') %}
 
-                    <img src="{{ company.get('logo') }}" alt="Company logo" onerror="this.style.display='none';">
+                    <img src="{{ url_for('company_logo') }}" alt="Company logo" onerror="this.style.display='none';">
 
                     {% else %}
 
