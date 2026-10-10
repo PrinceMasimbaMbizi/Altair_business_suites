@@ -1424,6 +1424,103 @@
         }
 
 
+
+        /* SAVED LEADS: compact table and corner actions */
+        .leads-database-card .saved-leads-compact {
+            min-width: 1050px !important;
+            table-layout: auto !important;
+        }
+
+        .leads-database-card .saved-leads-compact th,
+        .leads-database-card .saved-leads-compact td {
+            white-space: nowrap;
+            max-width: none;
+        }
+
+        .leads-database-card .saved-leads-compact .lead-actions-heading,
+        .leads-database-card .saved-leads-compact .lead-actions-cell {
+            position: sticky;
+            right: 0;
+            z-index: 6;
+            background: #fff;
+            box-shadow: -5px 0 12px rgba(0, 0, 0, .04);
+        }
+
+        .leads-database-card .saved-leads-compact .lead-actions-heading {
+            z-index: 8;
+            background: #f8f8fc;
+        }
+
+        .saved-lead-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .lead-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-height: 32px;
+            padding: 7px 10px;
+            border: 1px solid #e8e8f0;
+            border-radius: 8px;
+            background: #f8f8fc;
+            color: #454556;
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .lead-action-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .email-action {
+            background: #eef2ff;
+            color: #4338ca;
+            border-color: #e0e7ff;
+        }
+
+        .whatsapp-action {
+            background: #dcfce7;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .view-action {
+            background: #f3e8ff;
+            color: #7e22ce;
+            border-color: #e9d5ff;
+            font-size: 14px;
+            min-width: 34px;
+        }
+
+        .delete-action {
+            background: #fff1f2;
+            color: #be123c;
+            border-color: #ffe4e6;
+            font-size: 13px;
+        }
+
+        .lead-action-btn:hover:not(:disabled) {
+            filter: brightness(.97);
+            transform: translateY(-1px);
+        }
+
+        .edit-lead-modal .modal-box {
+            max-width: 850px;
+        }
+
+        .edit-lead-modal textarea {
+            min-height: 100px;
+        }
+
         /* 
            MOBILE / TABLET
          */
@@ -3242,141 +3339,76 @@
 
                 <div class="leads-database-wrap">
 
-                    <table id="leadsTable" class="leads-database-table">
-
+                    <table id="leadsTable" class="leads-database-table saved-leads-compact">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>User ID</th>
                                 <th>Company Name</th>
                                 <th>Industry</th>
                                 <th>Location</th>
                                 <th>Website</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Contact Person</th>
-                                <th>Source</th>
-                                <th>Lead Status</th>
                                 <th>Lead Score</th>
-                                <th>AI Analysis</th>
-                                <th>AI Reason</th>
-                                <th>AI Message</th>
-                                <th>Notes</th>
-                                <th>Created At</th>
-                                <th>Updated At</th>
-                                <th>Google Place ID</th>
-                                <th>Actions</th>
+                                <th class="lead-actions-heading">Action</th>
                             </tr>
                         </thead>
-
                         <tbody>
-
                             {% for lead in leads %}
-
-                            <tr class="lead-row" data-id="{{ lead.id or '' }}" data-user-id="{{ lead.user_id or '' }}"
-                                data-industry="{{ lead.industry or '' }}" data-location="{{ lead.location or '' }}"
-                                data-company="{{ lead.company_name or '' }}" data-status="{{ lead.lead_status or '' }}">
-
-                                <td><span class="db-id">{{ lead.id or '—' }}</span></td>
-                                <td><span class="db-user-id">{{ lead.user_id or '—' }}</span></td>
-
+                            <tr class="lead-row" data-id="{{ lead.id or '' }}"
+                                data-company="{{ (lead.company_name or '')|e }}"
+                                data-industry="{{ (lead.industry or '')|e }}"
+                                data-location="{{ (lead.location or '')|e }}"
+                                data-website="{{ (lead.website or '')|e }}" data-email="{{ (lead.email or '')|e }}"
+                                data-phone="{{ (lead.phone or '')|e }}"
+                                data-contact-person="{{ (lead.contact_person or '')|e }}"
+                                data-source="{{ (lead.source or 'Manual')|e }}"
+                                data-status="{{ (lead.lead_status or 'New')|e }}"
+                                data-score="{{ lead.lead_score if lead.lead_score is not none else 0 }}"
+                                data-ai-analysis="{{ (lead.ai_analysis or '')|e }}"
+                                data-ai-reason="{{ (lead.ai_reason or '')|e }}"
+                                data-ai-message="{{ (lead.ai_message or '')|e }}"
+                                data-notes="{{ (lead.notes or '')|e }}"
+                                data-google-place-id="{{ (lead.google_place_id or '')|e }}">
                                 <td>
                                     <div class="company-name">{{ lead.company_name or '—' }}</div>
                                 </td>
-
                                 <td>{{ lead.industry or '—' }}</td>
                                 <td>{{ lead.location or '—' }}</td>
-
                                 <td>
                                     {% if lead.website %}
                                     <a href="{{ lead.website }}" target="_blank" rel="noopener noreferrer"
-                                        class="db-url">{{ lead.website }}</a>
+                                        class="db-url">Visit website ↗</a>
                                     {% else %}<span class="db-empty">—</span>{% endif %}
                                 </td>
-
-                                <td>
-                                    {% if lead.email %}
-                                    <a href="mailto:{{ lead.email }}" class="db-url">{{ lead.email }}</a>
-                                    {% else %}<span class="db-empty">—</span>{% endif %}
-                                </td>
-
-                                <td>
-                                    {% if lead.phone %}
-                                    <a href="tel:{{ lead.phone }}" class="db-url">{{ lead.phone }}</a>
-                                    {% else %}<span class="db-empty">—</span>{% endif %}
-                                </td>
-
-                                <td>{{ lead.contact_person or '—' }}</td>
-
-                                <td>
-                                    <span class="source-pill">{{ lead.source or '—' }}</span>
-                                </td>
-
-                                <td>
-                                    <span class="badge
-                                        {% if lead.lead_status == 'New' %}new
-                                        {% elif lead.lead_status == 'Contacted' %}contacted
-                                        {% elif lead.lead_status == 'Interested' %}interested
-                                        {% elif lead.lead_status == 'Converted' %}converted
-                                        {% else %}not-interested{% endif %}">
-                                        {{ lead.lead_status or 'New' }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <span class="score-pill">{{ lead.lead_score if lead.lead_score is not none else 0
-                                        }}</span>
-                                </td>
-
-                                <td class="ai-cell">{{ lead.ai_analysis or '—' }}</td>
-                                <td class="ai-cell">{{ lead.ai_reason or '—' }}</td>
-                                <td class="ai-cell">{{ lead.ai_message or '—' }}</td>
-                                <td class="ai-cell">{{ lead.notes or '—' }}</td>
-
-                                <td class="date-cell">{{ lead.created_at or '—' }}</td>
-                                <td class="date-cell">{{ lead.updated_at or '—' }}</td>
-
-                                <td>
-                                    {% if lead.google_place_id %}
-                                    <span class="google-id">{{ lead.google_place_id }}</span>
-                                    {% else %}<span class="db-empty">—</span>{% endif %}
-                                </td>
-
+                                <td><span class="score-pill">{{ lead.lead_score if lead.lead_score is not none else 0
+                                        }}</span></td>
                                 <td class="lead-actions-cell">
-                                    <div class="actions">
-
-                                        <form method="POST"
-                                            action="{{ url_for('update_lead_status', lead_id=lead.id) }}"
-                                            class="status-form">
-                                            <select name="status" onchange="this.form.submit()" class="status-select">
-                                                <option value="New" {% if lead.lead_status=='New' %}selected{% endif %}>
-                                                    New</option>
-                                                <option value="Contacted" {% if lead.lead_status=='Contacted'
-                                                    %}selected{% endif %}>Contacted</option>
-                                                <option value="Interested" {% if lead.lead_status=='Interested'
-                                                    %}selected{% endif %}>Interested</option>
-                                                <option value="Converted" {% if lead.lead_status=='Converted'
-                                                    %}selected{% endif %}>Converted</option>
-                                                <option value="Not Interested" {% if lead.lead_status=='Not Interested'
-                                                    %}selected{% endif %}>Not Interested</option>
-                                            </select>
-                                        </form>
-
+                                    <div class="saved-lead-actions">
+                                        {% if lead.email %}
+                                        <a class="lead-action-btn email-action" href="mailto:{{ lead.email }}"
+                                            title="Email {{ lead.company_name }}">✉ Email</a>
+                                        {% else %}
+                                        <button type="button" class="lead-action-btn email-action" disabled
+                                            title="No email saved">✉ Email</button>
+                                        {% endif %}
+                                        <button type="button" class="lead-action-btn whatsapp-action"
+                                            data-phone="{{ (lead.phone or '')|e }}"
+                                            data-company="{{ (lead.company_name or '')|e }}"
+                                            data-contact-person="{{ (lead.contact_person or '')|e }}"
+                                            data-notes="{{ (lead.notes or '')|e }}" onclick="contactLeadWhatsApp(this)"
+                                            title="Contact via WhatsApp">◉ WhatsApp</button>
+                                        <button type="button" class="lead-action-btn view-action"
+                                            onclick="openEditLead(this)" title="View and edit all lead details"
+                                            aria-label="View and edit lead">👁</button>
                                         <form method="POST" action="{{ url_for('delete_ai_lead', lead_id=lead.id) }}"
                                             onsubmit="return confirm('Delete this lead?');">
-                                            <button type="submit" class="action-button delete-button"
-                                                title="Delete lead">🗑</button>
+                                            <button type="submit" class="lead-action-btn delete-action"
+                                                title="Delete lead" aria-label="Delete lead">🗑</button>
                                         </form>
-
                                     </div>
                                 </td>
-
                             </tr>
-
                             {% else %}
-
                             <tr>
-                                <td colspan="20">
+                                <td colspan="6">
                                     <div class="empty">
                                         <div class="empty-icon">🤖</div>
                                         <h3>No leads yet</h3>
@@ -3384,9 +3416,7 @@
                                     </div>
                                 </td>
                             </tr>
-
                             {% endfor %}
-
                         </tbody>
                     </table>
 
@@ -3620,6 +3650,73 @@
             </div>
 
 
+            <!-- VIEW / EDIT SAVED LEAD MODAL -->
+            <div class="modal edit-lead-modal" id="editLeadModal" aria-hidden="true">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <div>
+                            <h2>View / Edit Lead</h2>
+                            <p>Update contact details, lead status, AI information and notes.</p>
+                        </div>
+                        <button class="close" type="button" onclick="closeEditLead()" aria-label="Close">×</button>
+                    </div>
+                    <form id="editLeadForm" method="POST">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Company Name *</label><input id="edit_company_name"
+                                    name="company_name" required></div>
+                            <div class="form-group"><label>Industry</label><input id="edit_industry" name="industry">
+                            </div>
+                            <div class="form-group"><label>Location</label><input id="edit_location" name="location">
+                            </div>
+                            <div class="form-group"><label>Contact Person</label><input id="edit_contact_person"
+                                    name="contact_person"></div>
+                            <div class="form-group"><label>Email</label><input id="edit_email" name="email"
+                                    type="email"></div>
+                            <div class="form-group"><label>Phone / WhatsApp Number</label><input id="edit_phone"
+                                    name="phone" type="text"></div>
+                            <div class="form-group"><label>Website</label><input id="edit_website" name="website"
+                                    type="url" placeholder="https://example.com"></div>
+                            <div class="form-group"><label>Source</label>
+                                <select id="edit_source" name="source">
+                                    <option>Manual</option>
+                                    <option>Google</option>
+                                    <option>Website</option>
+                                    <option>Referral</option>
+                                    <option>Social Media</option>
+                                    <option>AI Search</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Lead Status</label>
+                                <select id="edit_lead_status" name="lead_status">
+                                    <option>New</option>
+                                    <option>Contacted</option>
+                                    <option>Interested</option>
+                                    <option>Converted</option>
+                                    <option>Not Interested</option>
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Lead Score</label><input id="edit_lead_score"
+                                    name="lead_score" type="number" min="0" max="100" step="1"></div>
+                            <div class="form-group full"><label>AI Analysis</label><textarea id="edit_ai_analysis"
+                                    name="ai_analysis"></textarea></div>
+                            <div class="form-group full"><label>AI Reason</label><textarea id="edit_ai_reason"
+                                    name="ai_reason"></textarea></div>
+                            <div class="form-group full"><label>AI Message / Suggested Outreach</label><textarea
+                                    id="edit_ai_message" name="ai_message"></textarea></div>
+                            <div class="form-group full"><label>Notes</label><textarea id="edit_notes" name="notes"
+                                    placeholder="Contact history, requirements, next steps, or WhatsApp context..."></textarea>
+                            </div>
+                            <div class="form-group full"><label>Google Place ID</label><input id="edit_google_place_id"
+                                    name="google_place_id"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="cancel-button" onclick="closeEditLead()">Cancel</button>
+                            <button type="submit" class="save-button">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <script>
 
                 /* 
@@ -3635,6 +3732,73 @@
                     if (modal) modal.classList.remove("active");
                 }
 
+
+                /* VIEW / EDIT ALL SAVED LEAD DETAILS */
+                function openEditLead(button) {
+                    const row = button.closest("tr");
+                    if (!row) return;
+                    const d = row.dataset;
+                    const fields = {
+                        company_name: d.company || "",
+                        industry: d.industry || "",
+                        location: d.location || "",
+                        contact_person: d.contactPerson || "",
+                        email: d.email || "",
+                        phone: d.phone || "",
+                        website: d.website || "",
+                        source: d.source || "Manual",
+                        lead_status: d.status || "New",
+                        lead_score: d.score || "0",
+                        ai_analysis: d.aiAnalysis || "",
+                        ai_reason: d.aiReason || "",
+                        ai_message: d.aiMessage || "",
+                        notes: d.notes || "",
+                        google_place_id: d.googlePlaceId || ""
+                    };
+                    Object.entries(fields).forEach(([name, value]) => {
+                        const input = document.getElementById("edit_" + name);
+                        if (input) input.value = value;
+                    });
+                    const form = document.getElementById("editLeadForm");
+                    form.action = `/ai-leads/${encodeURIComponent(d.id)}/edit`;
+                    const modal = document.getElementById("editLeadModal");
+                    modal.classList.add("active");
+                    modal.setAttribute("aria-hidden", "false");
+                }
+
+                function closeEditLead() {
+                    const modal = document.getElementById("editLeadModal");
+                    if (modal) {
+                        modal.classList.remove("active");
+                        modal.setAttribute("aria-hidden", "true");
+                    }
+                }
+
+                const deleteLeadUrlTemplate = "{{ url_for('delete_ai_lead', lead_id=0) }}";
+
+                function contactLeadWhatsApp(button) {
+                    const phoneRaw = button.dataset.phone || "";
+                    const phone = phoneRaw.replace(/[^0-9]/g, "");
+                    if (!phone) {
+                        alert("This lead does not have a phone number saved. Click the eye button to add one.");
+                        return;
+                    }
+                    const company = button.dataset.company || "there";
+                    const person = button.dataset.contactPerson || "";
+                    const notes = (button.dataset.notes || "").trim();
+                    let message = `Hello${person ? " " + person : ""}, I’m reaching out regarding ${company}.`;
+                    if (notes) message += `\n\nNotes for this conversation: ${notes}`;
+                    message += "\n\nPlease let me know a convenient time to discuss this further. Thank you.";
+                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+                }
+
+                const editLeadModal = document.getElementById("editLeadModal");
+                if (editLeadModal) {
+                    editLeadModal.addEventListener("click", function (event) {
+                        if (event.target === this) closeEditLead();
+                    });
+                }
+
                 const leadModal = document.getElementById("leadModal");
                 if (leadModal) {
                     leadModal.addEventListener("click", function (event) {
@@ -3643,7 +3807,7 @@
                 }
 
                 document.addEventListener("keydown", function (event) {
-                    if (event.key === "Escape") closeModal();
+                    if (event.key === "Escape") { closeModal(); closeEditLead(); }
                 });
 
                 /* 
@@ -3749,7 +3913,7 @@
                     if (!tbody) return;
 
                     /* Remove the empty-state row if it exists. */
-                    const emptyRow = tbody.querySelector("td[colspan='20']");
+                    const emptyRow = tbody.querySelector("td[colspan='6']");
                     if (emptyRow) emptyRow.closest("tr").remove();
 
                     const status = lead.lead_status || "New";
@@ -3758,34 +3922,36 @@
                     const row = document.createElement("tr");
                     row.className = "lead-row";
                     row.dataset.id = lead.id || "";
-                    row.dataset.userId = lead.user_id || "";
                     row.dataset.industry = lead.industry || "";
                     row.dataset.location = lead.location || "";
                     row.dataset.company = lead.company_name || "";
+                    row.dataset.website = lead.website || "";
+                    row.dataset.email = lead.email || "";
+                    row.dataset.phone = lead.phone || "";
+                    row.dataset.contactPerson = lead.contact_person || "";
+                    row.dataset.source = lead.source || "Google";
                     row.dataset.status = status;
+                    row.dataset.score = score;
+                    row.dataset.aiAnalysis = lead.ai_analysis || "";
+                    row.dataset.aiReason = lead.ai_reason || "";
+                    row.dataset.aiMessage = lead.ai_message || "";
+                    row.dataset.notes = lead.notes || "";
+                    row.dataset.googlePlaceId = lead.google_place_id || "";
 
+                    const attr = value => escapeHtml(value || "").replace(/`/g, "&#96;");
                     row.innerHTML = `
-                <td><span class="db-id">${displayValue(lead.id)}</span></td>
-                <td><span class="db-user-id">${displayValue(lead.user_id)}</span></td>
-                <td><div class="company-name">${displayValue(lead.company_name)}</div></td>
-                <td>${displayValue(lead.industry)}</td>
-                <td>${displayValue(lead.location)}</td>
-                <td>${displayUrl(lead.website)}</td>
-                <td>${displayEmail(lead.email)}</td>
-                <td>${displayPhone(lead.phone)}</td>
-                <td>${displayValue(lead.contact_person)}</td>
-                <td><span class="source-pill">${displayValue(lead.source || "Google")}</span></td>
-                <td><span class="badge ${statusClass(status)}">${escapeHtml(status)}</span></td>
-                <td><span class="score-pill">${escapeHtml(score)}</span></td>
-                <td class="ai-cell">${displayValue(lead.ai_analysis)}</td>
-                <td class="ai-cell">${displayValue(lead.ai_reason)}</td>
-                <td class="ai-cell">${displayValue(lead.ai_message)}</td>
-                <td class="ai-cell">${displayValue(lead.notes)}</td>
-                <td class="date-cell">${displayValue(lead.created_at)}</td>
-                <td class="date-cell">${displayValue(lead.updated_at)}</td>
-                <td><span class="google-id">${displayValue(lead.google_place_id)}</span></td>
-                <td class="lead-actions-cell"><span class="muted">Saved — refresh for full actions</span></td>
-            `;
+                        <td><div class="company-name">${displayValue(lead.company_name)}</div></td>
+                        <td>${displayValue(lead.industry)}</td>
+                        <td>${displayValue(lead.location)}</td>
+                        <td>${lead.website ? `<a href="${attr(lead.website)}" target="_blank" rel="noopener noreferrer" class="db-url">Visit website ↗</a>` : '<span class="db-empty">—</span>'}</td>
+                        <td><span class="score-pill">${escapeHtml(score)}</span></td>
+                        <td class="lead-actions-cell"><div class="saved-lead-actions">
+                            ${lead.email ? `<a class="lead-action-btn email-action" href="mailto:${attr(lead.email)}">✉ Email</a>` : '<button type="button" class="lead-action-btn email-action" disabled>✉ Email</button>'}
+                            <button type="button" class="lead-action-btn whatsapp-action" data-phone="${attr(lead.phone)}" data-company="${attr(lead.company_name)}" data-contact-person="${attr(lead.contact_person)}" data-notes="${attr(lead.notes)}" onclick="contactLeadWhatsApp(this)">◉ WhatsApp</button>
+                            <button type="button" class="lead-action-btn view-action" onclick="openEditLead(this)" title="View and edit all lead details">👁</button>
+                            <form method="POST" action="${deleteLeadUrlTemplate.replace(/0(?=\/?$)/, encodeURIComponent(lead.id))}" onsubmit="return confirm('Delete this lead?');"><button type="submit" class="lead-action-btn delete-action" title="Delete lead">🗑</button></form>
+                        </div></td>
+                    `;
 
                     tbody.prepend(row);
                 }

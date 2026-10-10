@@ -8313,6 +8313,135 @@ def update_lead_status(lead_id):
             db.close()
 
 
+@app.route("/ai-leads/<int:lead_id>/edit", methods=["POST"])
+def edit_ai_lead(lead_id):
+
+    # Require login
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    # Collect the edited information
+    company_name = request.form.get("company_name", "").strip()
+    industry = request.form.get("industry", "").strip()
+    location = request.form.get("location", "").strip()
+    contact_person = request.form.get("contact_person", "").strip()
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+    website = request.form.get("website", "").strip()
+    source = request.form.get("source", "Manual").strip()
+    lead_status = request.form.get("lead_status", "New").strip()
+    ai_analysis = request.form.get("ai_analysis", "").strip()
+    ai_reason = request.form.get("ai_reason", "").strip()
+    ai_message = request.form.get("ai_message", "").strip()
+    notes = request.form.get("notes", "").strip()
+    google_place_id = request.form.get("google_place_id", "").strip()
+
+    # Validate the company name
+    if not company_name:
+        flash("Company name is required.", "error")
+        return redirect(url_for("ai_leads"))
+
+    # Validate lead score
+    try:
+        score_text = request.form.get("lead_score", "0").strip()
+        lead_score = int(score_text or 0)
+
+        if not 0 <= lead_score <= 100:
+            raise ValueError
+
+    except ValueError:
+        flash("Lead score must be between 0 and 100.", "error")
+        return redirect(url_for("ai_leads"))
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # SECURITY:
+        # Only allow editing leads owned by the logged-in user.
+        cursor.execute(
+            """
+            SELECT id
+            FROM leads
+            WHERE id = %s AND user_id = %s
+            """,
+            (lead_id, user_id)
+        )
+
+        if not cursor.fetchone():
+            flash("Lead not found or you do not have permission to edit it.", "error")
+            return redirect(url_for("ai_leads"))
+
+        # Save the changes
+        cursor.execute(
+            """
+            UPDATE leads
+            SET
+                company_name = %s,
+                industry = %s,
+                location = %s,
+                contact_person = %s,
+                email = %s,
+                phone = %s,
+                website = %s,
+                source = %s,
+                lead_status = %s,
+                lead_score = %s,
+                ai_analysis = %s,
+                ai_reason = %s,
+                ai_message = %s,
+                notes = %s,
+                google_place_id = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s AND user_id = %s
+            """,
+            (
+                company_name,
+                industry,
+                location,
+                contact_person,
+                email,
+                phone,
+                website,
+                source,
+                lead_status,
+                lead_score,
+                ai_analysis,
+                ai_reason,
+                ai_message,
+                notes,
+                google_place_id,
+                lead_id,
+                user_id
+            )
+        )
+
+        conn.commit()
+
+        flash("Lead updated successfully!", "success")
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+
+        print("EDIT AI LEAD ERROR:", e)
+
+        flash("Could not update the lead. Check the server logs.", "error")
+
+    finally:
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+    return redirect(url_for("ai_leads"))
+
 
     #to delete the lead
 @app.route(
