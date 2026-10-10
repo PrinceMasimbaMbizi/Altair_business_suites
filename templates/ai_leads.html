@@ -1439,7 +1439,7 @@
 
         .google-results-table {
             width: 100% !important;
-            min-width: 760px !important;
+            min-width: 1040px !important;
             table-layout: fixed !important;
             border-collapse: collapse;
         }
@@ -1453,31 +1453,39 @@
         }
 
         .google-results-table th:nth-child(1) {
-            width: 20%;
+            width: 16%;
         }
 
         .google-results-table th:nth-child(2) {
-            width: 13%;
+            width: 10%;
         }
 
         .google-results-table th:nth-child(3) {
-            width: 25%;
+            width: 18%;
         }
 
         .google-results-table th:nth-child(4) {
-            width: 15%;
+            width: 11%;
         }
 
         .google-results-table th:nth-child(5) {
-            width: 12%;
+            width: 15%;
         }
 
         .google-results-table th:nth-child(6) {
-            width: 9%;
+            width: 8%;
         }
 
         .google-results-table th:nth-child(7) {
-            width: 6%;
+            width: 7%;
+        }
+
+        \n .google-results-table th:nth-child(8) {
+            width: 8%;
+        }
+
+        \n .google-results-table th:nth-child(9) {
+            width: 7%;
         }
 
         .google-results-table .company-name {
@@ -3294,7 +3302,15 @@
                                 </th>
 
                                 <th>
+                                    Email
+                                </th>
+
+                                <th>
                                     Website
+                                </th>
+
+                                <th>
+                                    Lead Score
                                 </th>
 
                                 <th>
@@ -3363,15 +3379,21 @@
                                 <!-- PHONE -->
 
                                 <td>
-
-                                    {{
-                                    lead.phone
-                                    or
-                                    "—"
-                                    }}
-
+                                    {{ lead.phone or "—" }}
                                 </td>
 
+                                <!-- EMAIL -->
+
+                                <td>
+                                    {% if lead.email %}
+                                    <a class="website-link" href="mailto:{{ lead.email|urlencode }}"
+                                        title="Email {{ lead.email }}">
+                                        {{ lead.email }}
+                                    </a>
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
 
                                 <!-- WEBSITE -->
 
@@ -3389,6 +3411,14 @@
 
                                     {% endif %}
 
+                                </td>
+
+                                <!-- LEAD SCORE -->
+
+                                <td>
+                                    <strong title="{{ lead.ai_reason|default('Evidence-based score') }}">
+                                        {{ lead.lead_score|default(0) }}%
+                                    </strong>
                                 </td>
 
 
@@ -3417,7 +3447,11 @@
                                         title="Save lead" aria-label="Save lead"
                                         data-company="{{ lead.company_name|e }}" data-industry="{{ lead.industry|e }}"
                                         data-location="{{ lead.address|e }}" data-phone="{{ lead.phone|e }}"
-                                        data-website="{{ lead.website|e }}"
+                                        data-email="{{ lead.email|e }}" data-website="{{ lead.website|e }}"
+                                        data-score="{{ lead.lead_score|default(0) }}"
+                                        data-ai-analysis="{{ lead.ai_analysis|default('')|e }}"
+                                        data-ai-reason="{{ lead.ai_reason|default('')|e }}"
+                                        data-ai-message="{{ lead.ai_message|default('')|e }}"
                                         data-google-place-id="{{ lead.google_place_id|e }}"
                                         onclick="saveGoogleLead(this)">
                                         <i class="fa-solid fa-bookmark"></i>
@@ -3704,7 +3738,7 @@
                                     {% else %}<span class="db-empty">—</span>{% endif %}
                                 </td>
                                 <td><span class="score-pill">{{ lead.lead_score if lead.lead_score is not none else 0
-                                        }}</span></td>
+                                        }}%</span></td>
                                 <td class="lead-actions-cell">
                                     <div class="saved-lead-actions">
                                         {% if lead.email %}
@@ -4158,7 +4192,12 @@
                     formData.append("industry", button.dataset.industry || "");
                     formData.append("location", button.dataset.location || "");
                     formData.append("phone", button.dataset.phone || "");
+                    formData.append("email", button.dataset.email || "");
                     formData.append("website", button.dataset.website || "");
+                    formData.append("lead_score", button.dataset.score || "0");
+                    formData.append("ai_analysis", button.dataset.aiAnalysis || "");
+                    formData.append("ai_reason", button.dataset.aiReason || "");
+                    formData.append("ai_message", button.dataset.aiMessage || "");
                     formData.append("google_place_id", button.dataset.googlePlaceId || "");
 
                     try {
