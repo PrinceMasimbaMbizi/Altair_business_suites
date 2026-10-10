@@ -231,6 +231,9 @@ def get_current_company_id():
     return company["id"]
 
 
+
+
+
 @app.route("/company-logo")
 def company_logo():
 
@@ -257,36 +260,125 @@ def company_logo():
 
         return "", 404
 
+
+
+
+
+
+
+
+
 # REGISTER
-
-
 @app.route(
     "/register",
     methods=["GET", "POST"]
 )
 def register():
 
-    if request.method == "POST":
+    # Allow visitors to register even if they are not logged in.
+    if request.method == "GET":
 
-        name = request.form.get(
-            "name",
-            ""
-        ).strip()
-
-        email = request.form.get(
-            "email",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "password",
-            ""
+        return render_template(
+            "register.html"
         )
 
-        if not name or not email or not password:
+    name = request.form.get(
+        "name",
+        ""
+    ).strip()
+
+    email = request.form.get(
+        "email",
+        ""
+    ).strip().lower()
+
+    password = request.form.get(
+        "password",
+        ""
+    )
+
+    
+    # VALIDATE INPUT
+
+    if not name or not email or not password:
+
+        flash(
+            "Please fill in all fields.",
+            "error"
+        )
+
+        return redirect(
+            url_for("register")
+        )
+
+    if len(name) > 255:
+
+        flash(
+            "Your name is too long.",
+            "error"
+        )
+
+        return redirect(
+            url_for("register")
+        )
+
+    if len(email) > 254 or "@" not in email:
+
+        flash(
+            "Please enter a valid email address.",
+            "error"
+        )
+
+        return redirect(
+            url_for("register")
+        )
+
+    if len(password) < 8:
+
+        flash(
+            "Your password must contain at least 8 characters.",
+            "error"
+        )
+
+        return redirect(
+            url_for("register")
+        )
+
+    
+    # DATABASE CONNECTION
+    
+
+    db = None
+    cursor = None
+
+    try:
+
+        db = get_db_connection()
+
+        cursor = db.cursor(
+            dictionary=True
+        )
+
+        
+        # CHECK WHETHER THE EMAIL ALREADY EXISTS
+    
+        cursor.execute(
+            """
+            SELECT id
+            FROM users
+            WHERE email = %s
+            LIMIT 1
+            """,
+            (email,)
+        )
+
+        existing_user = cursor.fetchone()
+
+        if existing_user:
 
             flash(
-                "Please fill in all fields.",
+                "An account with this email already exists. "
+                "Please log in instead.",
                 "error"
             )
 
@@ -294,112 +386,99 @@ def register():
                 url_for("register")
             )
 
-        db = None
-        cursor = None
+        
+        # HASH PASSWORD
+        
 
-        try:
+        password_hash = generate_password_hash(
+            password
+        )
 
-            db = get_db_connection()
+        
+        # CREATE USER
+        
 
-            cursor = db.cursor(
-                dictionary=True
+        cursor.execute(
+            """
+            INSERT INTO users
+            (
+                name,
+                email,
+                password_hash
             )
-
-            # Check existing account
-
-            cursor.execute(
-                """
-                SELECT id
-                FROM users
-                WHERE email = %s
-                """,
-                (email,)
+            VALUES
+            (
+                %s,
+                %s,
+                %s
             )
-
-            existing_user = cursor.fetchone()
-
-            if existing_user:
-
-                flash(
-                    "An account with this email already exists.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("register")
-                )
-
-            # Hash password
-
-            password_hash = generate_password_hash(
-                password
+            """,
+            (
+                name,
+                email,
+                password_hash
             )
+        )
 
-            # Create user
+        db.commit()
 
-            cursor.execute(
-                """
-                INSERT INTO users
-                (
-                    name,
-                    email,
-                    password_hash
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s
-                )
-                """,
-                (
-                    name,
-                    email,
-                    password_hash
-                )
-            )
+        app.logger.info(
+            "New user account created successfully."
+        )
 
-            db.commit()
+        flash(
+            "Account created successfully. Please log in.",
+            "success"
+        )
 
-            flash(
-                "Account created successfully. Please login.",
-                "success"
-            )
+        return redirect(
+            url_for("login")
+        )
 
-            return redirect(
-                url_for("login")
-            )
+    except Exception as e:
 
-        except Exception as e:
+        if db:
 
-            if db:
+            try:
                 db.rollback()
 
-            print(
-                "REGISTER ERROR:",
-                e
-            )
+            except Exception:
+                pass
 
-            flash(
-                "Could not create your account.",
-                "error"
-            )
+        app.logger.exception(
+            "REGISTER ERROR: %s",
+            e
+        )
 
-            return redirect(
-                url_for("register")
-            )
+        flash(
+            "Could not create your account. "
+            "Please try again.",
+            "error"
+        )
 
-        finally:
+        return redirect(
+            url_for("register")
+        )
 
-            if cursor:
+    finally:
+
+        if cursor:
+
+            try:
                 cursor.close()
 
-            if db:
+            except Exception:
+                pass
+
+        if db:
+
+            try:
                 db.close()
 
-    return render_template(
-        "register.html"
-    )
+            except Exception:
+                pass
+
+
 
 
 
@@ -514,6 +593,39 @@ def login():
     return render_template(
         "login.html"
     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5322,9 +5434,8 @@ def add_recurring_payment():
 
 
 
+
 # DELETE RECURRING PAYMENT
-
-
 @app.route(
     "/recurring/delete/<int:payment_id>",
     methods=["POST"]
@@ -5332,10 +5443,7 @@ def add_recurring_payment():
 def delete_recurring_payment(payment_id):
 
     if "user_id" not in session:
-
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
@@ -5345,13 +5453,11 @@ def delete_recurring_payment(payment_id):
     try:
 
         db = get_db_connection()
-
         cursor = db.cursor()
 
         cursor.execute(
             """
             DELETE FROM recurring_payments
-
             WHERE id = %s
             AND user_id = %s
             """,
@@ -5363,10 +5469,19 @@ def delete_recurring_payment(payment_id):
 
         db.commit()
 
-        flash(
-            "Recurring payment stopped successfully.",
-            "success"
-        )
+        if cursor.rowcount > 0:
+
+            flash(
+                "Recurring payment stopped successfully.",
+                "success"
+            )
+
+        else:
+
+            flash(
+                "Recurring payment was not found.",
+                "error"
+            )
 
     except Exception as e:
 
@@ -5391,9 +5506,71 @@ def delete_recurring_payment(payment_id):
         if db:
             db.close()
 
-    return redirect(
-        url_for("items")
+    return redirect(url_for("items"))
+
+
+
+# RECURRING PAYMENT DATE CONVERTER
+
+
+def convert_to_date(value):
+
+    """
+    Convert MySQL date values into Python date objects.
+
+    Supports:
+    - datetime.date
+    - datetime.datetime
+    - YYYY-MM-DD strings
+    - YYYY-MM-DD HH:MM:SS strings
+    """
+
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+
+        return value.date()
+
+    if isinstance(value, date):
+
+        return value
+
+    if isinstance(value, str):
+
+        value = value.strip()
+
+        if not value:
+            return None
+
+        try:
+
+            # Handles YYYY-MM-DD and ISO datetime strings.
+            return datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            ).date()
+
+        except ValueError:
+
+            try:
+
+                return date.fromisoformat(
+                    value[:10]
+                )
+
+            except ValueError:
+
+                raise ValueError(
+                    f"Invalid recurring payment date: {value}"
+                )
+
+    raise TypeError(
+        f"Unsupported date type: {type(value).__name__}"
     )
+
+
+
+# PROCESS RECURRING PAYMENTS
 
 
 def process_recurring_payments(
@@ -5404,252 +5581,303 @@ def process_recurring_payments(
 
     today = date.today()
 
-    cursor.execute(
-        """
-        SELECT *
+    try:
 
-        FROM recurring_payments
-
-        WHERE user_id = %s
-
-        AND status = 'Active'
-
-        AND next_payment_date <= %s
-
-        ORDER BY next_payment_date ASC
-        """,
-        (
-            user_id,
-            today
-        )
-    )
-
-    recurring_payments = cursor.fetchall()
-
-    for payment in recurring_payments:
-
-        payment_id = payment["id"]
-
-        payment_date = payment[
-            "next_payment_date"
-        ]
-
-        frequency = payment[
-            "frequency"
-        ]
-
-        end_date = payment[
-            "end_date"
-        ]
-
-        # Protect against bad database values.
-
-        if not payment_date:
-
-            continue
-
-        while payment_date <= today:
-
-            # If the recurring payment has
-            # passed its end date, complete it.
-
-            if end_date and payment_date > end_date:
-
-                cursor.execute(
-                    """
-                    UPDATE recurring_payments
-
-                    SET
-                        status = 'Completed'
-
-                    WHERE id = %s
-                    AND user_id = %s
-                    """,
-                    (
-                        payment_id,
-                        user_id
-                    )
-                )
-
-                break
-
-            # Check if this occurrence already exists.
-
-            cursor.execute(
-                """
-                SELECT id
-
-                FROM recurring_payment_records
-
-                WHERE recurring_payment_id = %s
-
-                AND payment_date = %s
-
-                LIMIT 1
-                """,
-                (
-                    payment_id,
-                    payment_date
-                )
-            )
-
-            existing_record = cursor.fetchone()
-
-            # Create occurrence if it does not exist.
-
-            if not existing_record:
-
-                cursor.execute(
-                    """
-                    INSERT INTO recurring_payment_records
-                    (
-                        recurring_payment_id,
-                        user_id,
-                        payment_date,
-                        amount,
-                        status,
-                        notes
-                    )
-                    VALUES
-                    (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        'Recorded',
-                        %s
-                    )
-                    """,
-                    (
-                        payment_id,
-                        user_id,
-                        payment_date,
-                        payment["amount"],
-                        "Automatically recorded recurring payment"
-                    )
-                )
-
-                # Also create a money-out expense.
-
-                cursor.execute(
-                    """
-                    INSERT INTO expenses
-                    (
-                        user_id,
-                        expense_name,
-                        category,
-                        amount,
-                        expense_date,
-                        payment_method,
-                        description,
-                        recurring_payment_id
-                    )
-                    VALUES
-                    (
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s,
-                        %s
-                    )
-                    """,
-                    (
-                        user_id,
-                        payment["payment_name"],
-                        payment["category"],
-                        payment["amount"],
-                        payment_date,
-                        payment["payment_method"],
-                        "Automatically recorded from recurring payment",
-                        payment_id
-                    )
-                )
-
-            # Move to next occurrence.
-
-            if frequency == "Monthly":
-
-                cursor.execute(
-                    """
-                    SELECT DATE_ADD(
-                        %s,
-                        INTERVAL 1 MONTH
-                    ) AS next_date
-                    """,
-                    (payment_date,)
-                )
-
-                payment_date = cursor.fetchone()[
-                    "next_date"
-                ]
-
-            elif frequency == "Weekly":
-
-                cursor.execute(
-                    """
-                    SELECT DATE_ADD(
-                        %s,
-                        INTERVAL 1 WEEK
-                    ) AS next_date
-                    """,
-                    (payment_date,)
-                )
-
-                payment_date = cursor.fetchone()[
-                    "next_date"
-                ]
-
-            elif frequency == "Yearly":
-
-                cursor.execute(
-                    """
-                    SELECT DATE_ADD(
-                        %s,
-                        INTERVAL 1 YEAR
-                    ) AS next_date
-                    """,
-                    (payment_date,)
-                )
-
-                payment_date = cursor.fetchone()[
-                    "next_date"
-                ]
-
-            else:
-
-                # Unknown frequency.
-                # Do not keep looping.
-
-                break
-
-        # Update next payment date.
+        
+        # GET ACTIVE RECURRING PAYMENTS THAT ARE DUE
+        
 
         cursor.execute(
             """
-            UPDATE recurring_payments
-
-            SET
-                next_payment_date = %s
-
-            WHERE id = %s
-            AND user_id = %s
+            SELECT *
+            FROM recurring_payments
+            WHERE user_id = %s
+            AND status = 'Active'
+            AND next_payment_date <= %s
+            ORDER BY next_payment_date ASC
             """,
             (
-                payment_date,
-                payment_id,
-                user_id
+                user_id,
+                today
             )
         )
 
-    conn.commit()
+        recurring_payments = cursor.fetchall()
 
-    
+        
+        # PROCESS EACH RECURRING PAYMENT
+        
+
+        for payment in recurring_payments:
+
+            payment_id = payment["id"]
+
+            payment_date = convert_to_date(
+                payment["next_payment_date"]
+            )
+
+            end_date = convert_to_date(
+                payment.get("end_date")
+            )
+
+            frequency = payment["frequency"]
+
+            # Skip records without a valid next payment date.
+            if payment_date is None:
+                continue
+
+            # ------------------------------------------------
+            # PROCESS EVERY MISSED PAYMENT OCCURRENCE
+            # ------------------------------------------------
+
+            while payment_date <= today:
+
+                # --------------------------------------------
+                # CHECK END DATE
+                # --------------------------------------------
+
+                if (
+                    end_date is not None
+                    and payment_date > end_date
+                ):
+
+                    cursor.execute(
+                        """
+                        UPDATE recurring_payments
+                        SET status = 'Completed'
+                        WHERE id = %s
+                        AND user_id = %s
+                        """,
+                        (
+                            payment_id,
+                            user_id
+                        )
+                    )
+
+                    break
+
+                # --------------------------------------------
+                # CHECK FOR AN EXISTING PAYMENT RECORD
+                # --------------------------------------------
+
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM recurring_payment_records
+                    WHERE recurring_payment_id = %s
+                    AND user_id = %s
+                    AND payment_date = %s
+                    LIMIT 1
+                    """,
+                    (
+                        payment_id,
+                        user_id,
+                        payment_date
+                    )
+                )
+
+                existing_record = cursor.fetchone()
+
+                # --------------------------------------------
+                # RECORD THE PAYMENT IF IT DOES NOT EXIST
+                # --------------------------------------------
+
+                if not existing_record:
+
+                    cursor.execute(
+                        """
+                        INSERT INTO recurring_payment_records
+                        (
+                            recurring_payment_id,
+                            user_id,
+                            payment_date,
+                            amount,
+                            status,
+                            notes
+                        )
+                        VALUES
+                        (
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            'Recorded',
+                            %s
+                        )
+                        """,
+                        (
+                            payment_id,
+                            user_id,
+                            payment_date,
+                            payment["amount"],
+                            "Automatically recorded recurring payment"
+                        )
+                    )
+
+                    # ----------------------------------------
+                    # CREATE THE ASSOCIATED EXPENSE
+                    # ----------------------------------------
+
+                    cursor.execute(
+                        """
+                        INSERT INTO expenses
+                        (
+                            user_id,
+                            expense_name,
+                            category,
+                            amount,
+                            expense_date,
+                            payment_method,
+                            description,
+                            recurring_payment_id
+                        )
+                        VALUES
+                        (
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            %s
+                        )
+                        """,
+                        (
+                            user_id,
+                            payment["payment_name"],
+                            payment["category"],
+                            payment["amount"],
+                            payment_date,
+                            payment["payment_method"],
+                            "Automatically recorded from recurring payment",
+                            payment_id
+                        )
+                    )
+
+                # --------------------------------------------
+                # CALCULATE THE NEXT PAYMENT DATE
+                # --------------------------------------------
+
+                if frequency == "Monthly":
+
+                    cursor.execute(
+                        """
+                        SELECT DATE_ADD(
+                            %s,
+                            INTERVAL 1 MONTH
+                        ) AS next_date
+                        """,
+                        (payment_date,)
+                    )
+
+                elif frequency == "Weekly":
+
+                    cursor.execute(
+                        """
+                        SELECT DATE_ADD(
+                            %s,
+                            INTERVAL 1 WEEK
+                        ) AS next_date
+                        """,
+                        (payment_date,)
+                    )
+
+                elif frequency == "Yearly":
+
+                    cursor.execute(
+                        """
+                        SELECT DATE_ADD(
+                            %s,
+                            INTERVAL 1 YEAR
+                        ) AS next_date
+                        """,
+                        (payment_date,)
+                    )
+
+                else:
+
+                    # Stop processing unsupported frequencies.
+                    print(
+                        f"Unsupported recurring payment frequency "
+                        f"'{frequency}' for payment ID {payment_id}."
+                    )
+
+                    break
+
+                next_date_result = cursor.fetchone()
+
+                if not next_date_result:
+
+                    raise RuntimeError(
+                        f"Could not calculate the next payment date "
+                        f"for recurring payment ID {payment_id}."
+                    )
+
+                next_payment_date = convert_to_date(
+                    next_date_result["next_date"]
+                )
+
+                if next_payment_date is None:
+
+                    raise RuntimeError(
+                        f"Next payment date is missing for "
+                        f"recurring payment ID {payment_id}."
+                    )
+
+                # Protect against an infinite loop.
+                if next_payment_date <= payment_date:
+
+                    raise RuntimeError(
+                        f"Next payment date did not advance for "
+                        f"recurring payment ID {payment_id}."
+                    )
+
+                payment_date = next_payment_date
+
+            # ------------------------------------------------
+            # SAVE THE NEXT PAYMENT DATE
+            # ------------------------------------------------
+
+            cursor.execute(
+                """
+                UPDATE recurring_payments
+                SET next_payment_date = %s
+                WHERE id = %s
+                AND user_id = %s
+                """,
+                (
+                    payment_date,
+                    payment_id,
+                    user_id
+                )
+            )
+
+        
+        # COMMIT SUCCESSFUL PROCESSING
+        
+
+        conn.commit()
+
+    except Exception:
+
+        conn.rollback()
+
+        # Log the complete traceback in your application logs.
+        import traceback
+
+        print(
+            "PROCESS RECURRING PAYMENTS ERROR:"
+        )
+
+        traceback.print_exc()
+
+        # Propagate the error so the calling route can handle it.
+        raise
+
+
+
 # INVENTORY + MONEY MANAGEMENT
-
-
 @app.route("/items")
 def items():
 
