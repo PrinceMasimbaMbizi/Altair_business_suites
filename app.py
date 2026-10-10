@@ -9022,6 +9022,10 @@ def search_ai_leads():
             ""
         )
 
+        # Google Places has no email field; look for a publicly listed
+        # email on the business's own website when a website is available.
+        business_email = find_public_business_email(website)
+
 
         
         # BUSINESS STATUS
@@ -9064,6 +9068,9 @@ def search_ai_leads():
             "website":
                 website,
 
+            "email":
+                business_email,
+
             "phone":
                 phone,
 
@@ -9077,6 +9084,9 @@ def search_ai_leads():
                 business_status,
 
             "google_maps_url":
+                google_maps_url,
+
+            "source_url":
                 google_maps_url
         }
 
@@ -9116,7 +9126,9 @@ def search_ai_leads():
 
             business_size=business_size,
 
-            keywords=keywords
+            keywords=keywords,
+
+            user_id=user_id
         )
 
 
@@ -9154,6 +9166,12 @@ def search_ai_leads():
                 qualification.get(
                     "lead_quality",
                     "Potential Lead"
+                ),
+
+            "score_breakdown":
+                qualification.get(
+                    "score_breakdown",
+                    {}
                 )
         })
 
@@ -9506,361 +9524,262 @@ def is_likely_competitor(
 
 
 
-def qualify_lead_with_ai(
 
-    lead,
-
-    service,
-
-    target_industry,
-
-    target_location,
-
-    business_size,
-
-    keywords
-
-):
-
-    score = 0
-
-    reasons = []
-
-    analysis_points = []
-
-
-    
-    # LEAD INFORMATION
-    
-
-    company_name = lead.get(
-        "company_name",
-        ""
-    )
-
-    website = lead.get(
-        "website",
-        ""
-    )
-
-    industry = lead.get(
-        "industry",
-        ""
-    )
-
-    location = lead.get(
-        "address",
-        ""
-    )
-
-    business_status = lead.get(
-        "business_status",
-        ""
-    )
+def find_public_business_email(website_url):
+    'Find a publicly listed email on the business website; this does not verify ownership.'
+    if not website_url:
+        return ""
+    from urllib.parse import urljoin, urlparse
+    try:
+        parsed = urlparse(website_url)
+        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+            return ""
+        base_host = parsed.netloc.lower()
+        headers = {"User-Agent": "AltairBusinessSuiteLeadResearch/1.0"}
+        pages = [website_url]
+        checked = set()
+        for page_url in pages:
+            if page_url in checked or len(checked) >= 2:
+                continue
+            checked.add(page_url)
+            try:
+                response = requests.get(page_url, headers=headers, timeout=2, allow_redirects=True)
+                if response.status_code >= 400:
+                    continue
+                final = urlparse(response.url)
+                final_host = final.netloc.lower()
+                if final_host != base_host and not final_host.endswith("." + base_host):
+                    continue
+                html = response.text[:500000]
+                for address in re.findall(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", html, flags=re.IGNORECASE):
+                    address = address.strip(".,;:()[]{}<>").lower()
+                    if not address.endswith((".png", ".jpg", ".jpeg", ".webp", ".svg", ".css", ".js")):
+                        return address
+                if len(pages) < 2:
+                    for href in re.findall(r"""(?is)href\s*=\s*["']([^"']+)["']""", html):
+                        if any(word in href.lower() for word in ("contact", "about", "impressum")):
+                            candidate = urljoin(response.url, href)
+                            cp = urlparse(candidate)
+                            if cp.scheme in ("http", "https") and cp.netloc.lower() == base_host and candidate not in pages:
+                                pages.append(candidate)
+                                break
+            except requests.RequestException:
+                continue
+        return ""
+    except Exception as exc:
+        print("PUBLIC EMAIL LOOKUP ERROR:", exc)
+        return ""
 
 
-    
-    # BUSINESS STATUS
-    
-
-    if business_status == "OPERATIONAL":
-
-        score += 10
-
-        analysis_points.append(
-            "The business is currently listed as operational."
-        )
-
-
-    
-    # INDUSTRY MATCH
-    
-
-    if target_industry:
-
-        industry_lower = industry.lower()
-
-        target_lower = target_industry.lower()
-
-
-        if (
-
-            target_lower in industry_lower
-
-            or
-
-            industry_lower in target_lower
-        ):
-
-            score += 25
-
-            reasons.append(
-                "The business matches the target industry."
+def _lead_text_requests_service(text, service):
+    'Classify actual source text; optionally use a configured Qwen-compatible endpoint.'
+    raw_text = (text or "").strip()
+    service = (service or "").strip()
+    if not raw_text or not service:
+        return 0, ""
+    qwen_url = os.environ.get("QWEN_API_URL", "").strip()
+    qwen_key = os.environ.get("QWEN_API_KEY", "").strip()
+    qwen_model = os.environ.get("QWEN_MODEL", "qwen-plus").strip()
+    if qwen_url and qwen_key:
+        try:
+            llm_response = requests.post(
+                qwen_url,
+                headers={"Authorization": f"Bearer {qwen_key}", "Content-Type": "application/json"},
+                json={
+                    "model": qwen_model,
+                    "temperature": 0,
+                    "messages": [
+                        {"role": "system", "content": "Classify only the supplied text. Do not infer facts. Return JSON only with intent equal to explicit_request, vague_interest, or none, and a short evidence quote copied from the text."},
+                        {"role": "user", "content": f"Service offered: {service}\nSource text: {raw_text[:4000]}\nDoes the text clearly show that the author wants to buy or hire for this service?"}
+                    ]
+                },
+                timeout=8
             )
+            llm_response.raise_for_status()
+            content = llm_response.json()["choices"][0]["message"]["content"]
+            parsed = json.loads(content[content.find("{"):content.rfind("}") + 1])
+            intent = str(parsed.get("intent", "none")).lower()
+            quote = str(parsed.get("evidence", "")).strip()
+            if quote and quote.lower() in raw_text.lower():
+                if intent == "explicit_request":
+                    return 25, "Configured Qwen classifier found an explicit request in source text: " + quote
+                if intent == "vague_interest":
+                    return 10, "Configured Qwen classifier found vague interest in source text: " + quote
+            return 0, ""
+        except Exception as exc:
+            print("QWEN LEAD INTENT CLASSIFICATION ERROR:", exc)
+            # Continue with the conservative local text classifier.
 
-            analysis_points.append(
+    text = raw_text.lower()
+    service = service.lower()
+    website_service = any(term in service for term in (
+        "website", "web development", "web design", "e-commerce", "ecommerce", "online store"
+    ))
+    if website_service:
+        explicit_patterns = [
+            r"\bi need (a |an )?(website|web site|online store|e-?commerce site)\b",
+            r"\blooking for (a |an )?(website developer|web developer|someone to build|web designer)\b",
+            r"\bcan anyone recommend (a |an )?(website|web|web developer|website developer)\b",
+            r"\bwho can help me (build|create|develop)\b.{0,50}\b(website|web site|online store)\b",
+            r"\bneed someone to (build|create|design|develop)\b.{0,50}\b(website|web site|online store)\b",
+            r"\bseeking (a |an )?(web developer|website developer|web designer)\b"
+        ]
+        vague_patterns = [
+            r"\bthinking about (getting|building|creating) (a )?(website|online store)\b",
+            r"\binterested in (a )?(website|online store|web design)\b",
+            r"\bwebsite (ideas|recommendations|suggestions)\b"
+        ]
+    else:
+        words = [w for w in re.findall(r"[a-z0-9]+", service) if len(w) > 2]
+        if not words or not any(word in text for word in words):
+            return 0, ""
+        first = re.escape(words[0])
+        explicit_patterns = [
+            r"\bi need\b.{0,80}\b" + first + r"\b",
+            r"\blooking to hire\b.{0,80}\b" + first + r"\b",
+            r"\brecommend\b.{0,80}\b" + first + r"\b"
+        ]
+        vague_patterns = [r"\binterested in\b.{0,80}\b" + first + r"\b"]
+    if any(re.search(p, text, re.I) for p in explicit_patterns):
+        return 25, "Available source text contains an explicit request matching the selected service."
+    if any(re.search(p, text, re.I) for p in vague_patterns):
+        return 10, "Available source text shows vague interest in the selected service."
+    return 0, ""
 
-                "The business appears to match "
-                "the requested target industry: "
-                + target_industry
-                + "."
-            )
 
-        else:
+def qualify_lead_with_ai(lead, service, target_industry, target_location, business_size, keywords, user_id=None):
+    'Evidence-based score: main 80 points plus supplementary evidence capped at 20.'
+    from datetime import datetime
+    company_name = (lead.get("company_name") or "").strip()
+    website = (lead.get("website") or "").strip()
+    email = (lead.get("email") or "").strip()
+    phone = (lead.get("phone") or "").strip()
+    industry = (lead.get("industry") or "").strip()
+    address = (lead.get("address") or lead.get("location") or "").strip()
+    business_status = (lead.get("business_status") or "").upper()
+    maps_url = (lead.get("google_maps_url") or lead.get("source_url") or "").strip()
+    source_text = lead.get("evidence_text") or lead.get("post_text") or lead.get("source_text") or ""
+    published_at = lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")
+    reasons, analysis_points = [], []
 
-            analysis_points.append(
-
-                "The business may not exactly match "
-                "the requested target industry."
-            )
-
-
-    
-    # WEBSITE CHECK
-    
-
+    # A. Missing website: potential signal, not definitive proof.
+    missing_website_points = 40 if not website else 0
     if not website:
-
-        score += 35
-
-        reasons.append(
-            "No website was found in the Google business listing."
-        )
-
-        analysis_points.append(
-
-            "No website was found for this business. "
-            "This may represent a strong opportunity "
-            "for "
-            + service
-            + "."
-        )
-
+        reasons.append("Google Places does not list a website; this is a potential missing-website signal, not proof.")
+        analysis_points.append("No website is listed in Google Places; this does not prove the business has no website.")
     else:
+        analysis_points.append("A website is listed, so no missing-website points were awarded; website quality was not independently assessed.")
 
-        score += 5
+    # B. Buying intent: only actual source text can earn points.
+    intent_points, intent_reason = _lead_text_requests_service(source_text, service)
+    if intent_reason:
+        reasons.append(intent_reason)
+    else:
+        analysis_points.append("No source text demonstrating a request to buy this service was provided; buying-intent points are zero.")
 
-        analysis_points.append(
+    # C. Recency from the original timestamp only.
+    recency_points = 0
+    if published_at:
+        try:
+            published_dt = published_at if isinstance(published_at, datetime) else datetime.fromisoformat(str(published_at).replace("Z", "+00:00"))
+            now = datetime.now(published_dt.tzinfo) if published_dt.tzinfo else datetime.now()
+            age_hours = max(0, (now - published_dt).total_seconds() / 3600)
+            if age_hours < 2: recency_points = 10
+            elif age_hours < 6: recency_points = 7
+            elif age_hours < 24: recency_points = 4
+            elif age_hours <= 72: recency_points = 2
+        except (ValueError, TypeError, OverflowError):
+            analysis_points.append("Timestamp could not be parsed; no recency points were awarded.")
+    else:
+        analysis_points.append("No original publication/listing timestamp was available; no recency points were awarded.")
 
-            "The business already has a website listed."
-        )
+    # D. Relevance dynamically follows the selected service/industry.
+    relevance_points = 0
+    service_l = (service or "").lower()
+    industry_l = industry.lower()
+    target_industry_l = (target_industry or "").lower()
+    service_tokens = [word for word in re.findall(r"[a-z0-9]+", service_l) if len(word) > 3]
+    is_website_service = any(term in service_l for term in ("website", "web development", "web design", "ecommerce", "e-commerce", "online store"))
+    if is_website_service and not website:
+        relevance_points = 5
+    elif service_tokens and industry_l and any(word in industry_l for word in service_tokens):
+        relevance_points = 5
+    elif keywords and industry_l and any(word in industry_l for word in re.findall(r"[a-z0-9]+", keywords.lower()) if len(word) > 3):
+        relevance_points = 5
+    main_score = min(80, missing_website_points + intent_points + recency_points + relevance_points)
 
+    # Supplementary criteria: each supported criterion is exactly one point.
+    supplementary = 0
+    supplementary_reasons = []
+    def award(condition, label):
+        nonlocal supplementary
+        if condition and supplementary < 20:
+            supplementary += 1
+            supplementary_reasons.append(label)
 
-    
-    # LOCATION MATCH
-    
+    award(bool(phone), "Public business phone is listed.")
+    award(bool(email and lead.get("email_verified") is True), "Business email is verified by a reliable process.")
+    award(bool(address), "Business location is available.")
+    target_location_l = (target_location or "").lower()
+    award(bool(target_location_l and address and target_location_l in address.lower()), "Address matches target location text.")
+    award(bool(company_name and company_name.lower() not in ("unknown business", "unknown")), "Credible business name is available.")
+    award(bool(industry and target_industry_l and (industry_l in target_industry_l or target_industry_l in industry_l)), "Business category matches target industry.")
+    award(business_status == "OPERATIONAL", "Google Places lists the business as operational.")
+    award(bool(maps_url), "Public Google business profile URL is available.")
+    award(bool(lead.get("social_url")), "Public social media URL is available.")
+    award(bool(phone or email or website), "A public contact channel is listed.")
+    award(bool(lead.get("source_url") or maps_url), "Lead source URL is available.")
+    award(bool(published_at), "Original listing/post date is recorded.")
+    award(bool(website or maps_url), "Documented online presence is available.")
+    award(bool(website and lead.get("visibility_issue_evidence")), "Observable evidence indicates an online-visibility issue.")
+    award(bool(lead.get("mobile_friendly_evidence")), "Mobile-friendliness evidence is available.")
+    award(bool(lead.get("booking_feature_evidence")), "Evidence supports an online-booking opportunity.")
+    award(bool(lead.get("ecommerce_feature_evidence")), "Evidence supports an e-commerce opportunity.")
+    award(bool(lead.get("contact_form_evidence")), "Evidence supports an enquiry/contact-form opportunity.")
+    award(bool(company_name and industry and address and (phone or website or email)), "Evidence is sufficiently complete to assess the business.")
 
-    if target_location:
+    not_contacted_or_converted = False
+    if user_id and lead.get("google_place_id"):
+        db = cursor = None
+        try:
+            db = get_db_connection()
+            cursor = db.cursor(dictionary=True)
+            cursor.execute("SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1",
+                           (user_id, lead.get("google_place_id")))
+            existing = cursor.fetchone()
+            not_contacted_or_converted = bool(not existing or (existing.get("lead_status") or "").lower() not in ("contacted", "converted"))
+        except Exception as exc:
+            print("LEAD STATUS SCORE CHECK ERROR:", exc)
+        finally:
+            if cursor: cursor.close()
+            if db: db.close()
+    award(not_contacted_or_converted, "Lead is not recorded as contacted or converted in this user's database.")
 
-        if target_location.lower() in location.lower():
-
-            score += 15
-
-            analysis_points.append(
-
-                "The business appears to be located "
-                "in the requested target area."
-            )
-
-
-    
-    # SERVICE BEING SOLD
-    
-
-    if service:
-
-        analysis_points.append(
-
-            "The requested service or product being "
-            "sold is: "
-            + service
-            + "."
-        )
-
-
-    
-    # BUSINESS SIZE
-    
-
-    if (
-
-        business_size
-
-        and
-
-        business_size.lower() != "any"
-    ):
-
-        analysis_points.append(
-
-            "The requested business size is: "
-            + business_size
-            + "."
-        )
-
-
-    
-    # KEYWORDS
-    
-
-    if keywords:
-
-        analysis_points.append(
-
-            "Additional search requirements: "
-            + keywords
-            + "."
-        )
-
-
-    
-    # LIMIT SCORE
-    
-
-    score = max(
-        0,
-        min(
-            score,
-            100
-        )
+    supplementary = min(20, supplementary)
+    score = max(0, min(100, main_score + supplementary))
+    quality = ("Excellent potential lead" if score >= 80 else
+               "Strong potential lead" if score >= 60 else
+               "Potential lead" if score >= 40 else
+               "Weak potential lead" if score >= 20 else "Low potential lead")
+    analysis_points.append(
+        f"Score breakdown: missing-website signal {missing_website_points}%, buying intent {intent_points}%, "
+        f"recency {recency_points}%, service relevance {relevance_points}%, supplementary evidence {supplementary}%. "
+        f"Final lead score: {score}%."
     )
-
-
-    
-    # LEAD QUALITY
-    
-
-    if score >= 80:
-
-        quality = (
-            "Excellent potential lead"
-        )
-
-    elif score >= 60:
-
-        quality = (
-            "Strong potential lead"
-        )
-
-    elif score >= 40:
-
-        quality = (
-            "Potential lead"
-        )
-
-    elif score >= 20:
-
-        quality = (
-            "Weak potential lead"
-        )
-
-    else:
-
-        quality = (
-            "Low potential lead"
-        )
-
-
-    
-    # AI ANALYSIS
-    
-
-    ai_analysis = (
-
-        company_name
-
-        + " was identified as a potential customer "
-          "for "
-
-        + service
-
-        + ". "
-
-        + " ".join(
-            analysis_points
-        )
-    )
-
-
-    
-    # AI REASON
-    
-
-    if reasons:
-
-        ai_reason = " ".join(
-            reasons
-        )
-
-    else:
-
-        ai_reason = (
-
-            quality
-
-            + ". Additional research is recommended "
-              "before contacting the business."
-        )
-
-
-    
-    # OUTREACH MESSAGE
-    
-
+    ai_analysis = f"{company_name or 'This business'} was evaluated for {service or 'the selected service'}. " + " ".join(analysis_points)
+    ai_reason = " ".join(reasons) if reasons else "Score is based only on available listing evidence. Verify details before outreach."
     ai_message = (
-
-        "Hi "
-
-        + company_name
-
-        + ",\n\n"
-
-        + "I came across your business while researching "
-          "companies in "
-
-        + target_location
-
-        + ".\n\n"
-
-        + "We provide "
-
-        + service
-
-        + " and help businesses improve their "
-          "operations, online presence and customer "
-          "experience.\n\n"
-
-        + "I would be happy to discuss how we could "
-          "potentially help your business.\n\n"
-
-        + "Kind regards,\n"
-
-        + "Skies Altair Technologies"
+        f"Hi {company_name or 'there'},\n\n"
+        f"I came across your business while researching companies in {target_location or 'your area'}.\n\n"
+        f"We provide {service or 'business services'} and may be able to help with your business goals. "
+        "Would you be open to a brief conversation?\n\nKind regards,\nSkies Altair Technologies"
     )
-
-
-    
-    # RETURN QUALIFICATION
-    
-
-    return {
-
-        "lead_score":
-            score,
-
-        "ai_analysis":
-            ai_analysis,
-
-        "ai_reason":
-            ai_reason,
-
-        "ai_message":
-            ai_message,
-
-        "lead_quality":
-            quality
-    }
-
+    return {"lead_score": score, "ai_analysis": ai_analysis, "ai_reason": ai_reason,
+            "ai_message": ai_message, "lead_quality": quality,
+            "score_breakdown": {"missing_website": missing_website_points, "buying_intent": intent_points,
+                                "recency": recency_points, "service_relevance": relevance_points,
+                                "main_score": main_score, "supplementary_score": supplementary,
+                                "final_score": score, "supplementary_reasons": supplementary_reasons}}
 
 
 #saving the google leads
@@ -9879,8 +9798,16 @@ def save_google_lead():
     industry = request.form.get("industry", "").strip()
     location = request.form.get("location", "").strip()
     website = request.form.get("website", "").strip()
+    email = request.form.get("email", "").strip()
     phone = request.form.get("phone", "").strip()
     google_place_id = request.form.get("google_place_id", "").strip()
+    try:
+        lead_score = max(0, min(100, int(request.form.get("lead_score", "0") or 0)))
+    except (TypeError, ValueError):
+        lead_score = 0
+    ai_analysis = request.form.get("ai_analysis", "").strip()
+    ai_reason = request.form.get("ai_reason", "").strip()
+    ai_message = request.form.get("ai_message", "").strip()
 
     if not company_name:
         return jsonify({
@@ -9898,7 +9825,7 @@ def save_google_lead():
         
 
         cursor.execute("""
-            SELECT id
+            SELECT id, email
             FROM leads
             WHERE user_id = %s
             AND google_place_id = %s
@@ -9911,15 +9838,24 @@ def save_google_lead():
         existing = cursor.fetchone()
 
         if existing:
-
+            # Enrich older saved records if the search has now found an email or website.
+            cursor.execute("""
+                UPDATE leads
+                SET
+                    email = CASE WHEN (email IS NULL OR email = '') AND %s <> '' THEN %s ELSE email END,
+                    website = CASE WHEN (website IS NULL OR website = '') AND %s <> '' THEN %s ELSE website END,
+                    phone = CASE WHEN (phone IS NULL OR phone = '') AND %s <> '' THEN %s ELSE phone END,
+                    lead_score = GREATEST(COALESCE(lead_score, 0), %s)
+                WHERE id = %s AND user_id = %s
+            """, (email, email, website, website, phone, phone, lead_score, existing["id"], user_id))
+            db.commit()
             cursor.close()
             db.close()
-
             return jsonify({
                 "success": True,
                 "already_saved": True,
                 "lead_id": existing["id"],
-                "message": "Lead already saved."
+                "message": "Lead was already saved; missing contact details were updated where available."
             })
 
 
@@ -9935,10 +9871,14 @@ def save_google_lead():
                 industry,
                 location,
                 website,
+                email,
                 phone,
                 source,
                 lead_status,
                 lead_score,
+                ai_analysis,
+                ai_reason,
+                ai_message,
                 google_place_id
             )
             VALUES
@@ -9949,9 +9889,13 @@ def save_google_lead():
                 %s,
                 %s,
                 %s,
+                %s,
                 'Google',
                 'New',
-                0,
+                %s,
+                %s,
+                %s,
+                %s,
                 %s
             )
         """, (
@@ -9960,7 +9904,12 @@ def save_google_lead():
             industry,
             location,
             website,
+            email,
             phone,
+            lead_score,
+            ai_analysis,
+            ai_reason,
+            ai_message,
             google_place_id
         ))
 
@@ -9986,10 +9935,11 @@ def save_google_lead():
                 "company_name": company_name,
                 "industry": industry,
                 "location": location,
+                "email": email,
                 "phone": phone,
                 "website": website,
                 "lead_status": "New",
-                "lead_score": 0
+                "lead_score": lead_score
             }
         })
 
