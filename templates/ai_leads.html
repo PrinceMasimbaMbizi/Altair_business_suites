@@ -1609,6 +1609,21 @@
             max-width: none;
         }
 
+        /* Reduce the Company Name column by about 25% and keep long names tidy. */
+        .leads-database-card .saved-leads-compact th:first-child,
+        .leads-database-card .saved-leads-compact td:first-child {
+            width: 190px !important;
+            max-width: 190px !important;
+        }
+
+        .leads-database-card .saved-leads-compact td:first-child .company-name {
+            display: block;
+            max-width: 190px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .leads-database-card .saved-leads-compact .lead-actions-heading,
         .leads-database-card .saved-leads-compact .lead-actions-cell {
             position: sticky;
@@ -2482,6 +2497,123 @@
             }
 
         }
+
+
+        /* SEARCH COMPLETE POPUP + AUTO-SCROLL */
+        .search-complete-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(17, 17, 28, 0.48);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .25s ease, visibility .25s ease;
+        }
+
+        .search-complete-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .search-complete-popup {
+            width: min(420px, 100%);
+            padding: 30px 28px 25px;
+            border-radius: 20px;
+            background: #fff;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .25);
+            transform: translateY(12px) scale(.97);
+            transition: transform .25s ease;
+            border: 1px solid rgba(124, 58, 237, .12);
+        }
+
+        .search-complete-overlay.show .search-complete-popup {
+            transform: translateY(0) scale(1);
+        }
+
+        .search-complete-icon {
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: 28px;
+            box-shadow: 0 0 0 8px #f0fdf4;
+        }
+
+        .search-complete-popup h2 {
+            color: #171722;
+            font-size: 21px;
+            font-weight: 800;
+            margin-bottom: 9px;
+        }
+
+        .search-complete-popup p {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
+
+        .search-complete-popup .search-complete-count {
+            color: #6d28d9;
+            font-weight: 800;
+        }
+
+        .search-complete-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .search-complete-view-btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 18px;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 7px 18px rgba(109, 40, 217, .2);
+        }
+
+        .search-complete-view-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .search-complete-dismiss-btn {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 11px 16px;
+            background: #f9fafb;
+            color: #4b5563;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 480px) {
+            .search-complete-popup {
+                padding: 25px 19px 21px;
+            }
+
+            .search-complete-popup h2 {
+                font-size: 19px;
+            }
+        }
     </style>
 
 </head>
@@ -3086,8 +3218,30 @@
 
             {% if search_performed %}
 
+            <div class="search-complete-overlay" id="searchCompleteOverlay" role="dialog" aria-modal="true"
+                aria-labelledby="searchCompleteTitle" aria-hidden="true">
+                <div class="search-complete-popup">
+                    <div class="search-complete-icon"><i class="fa-solid fa-check"></i></div>
+                    {% if google_results %}
+                    <h2 id="searchCompleteTitle">Search Completed!</h2>
+                    <p>Altair has finished searching Google and found <span class="search-complete-count">{{
+                            google_results|length }} result{% if google_results|length != 1 %}s{% endif %}</span> for
+                        your search. Taking you to your results now.</p>
+                    {% else %}
+                    <h2 id="searchCompleteTitle">Search Finished</h2>
+                    <p>The search has completed, but no businesses were found for this search. You can adjust your
+                        keywords or target location and try again.</p>
+                    {% endif %}
+                    <div class="search-complete-actions">
+                        <button type="button" class="search-complete-view-btn" id="viewSearchResultsBtn"><i
+                                class="fa-solid fa-arrow-down"></i> View Results</button>
+                        <button type="button" class="search-complete-dismiss-btn"
+                            id="dismissSearchPopupBtn">Close</button>
+                    </div>
+                </div>
+            </div>
 
-            <section class="section-card google-results-card">
+            <section class="section-card google-results-card" id="googleResultsSection">
 
 
                 <div class="section-header">
@@ -4144,6 +4298,41 @@
                         row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
                     });
                 }
+
+                /* Show a centered completion popup, then scroll to Google results. */
+                (function setupSearchCompletePopup() {
+                    const overlay = document.getElementById("searchCompleteOverlay");
+                    const resultsSection = document.getElementById("googleResultsSection");
+                    if (!overlay || !resultsSection) return;
+
+                    let dismissed = false;
+                    let autoCloseTimer;
+
+                    function goToSearchResults() {
+                        if (dismissed) return;
+                        dismissed = true;
+                        overlay.classList.remove("show");
+                        overlay.setAttribute("aria-hidden", "true");
+                        if (autoCloseTimer) clearTimeout(autoCloseTimer);
+                        window.setTimeout(function () {
+                            resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 120);
+                    }
+
+                    const viewButton = document.getElementById("viewSearchResultsBtn");
+                    const closeButton = document.getElementById("dismissSearchPopupBtn");
+                    if (viewButton) viewButton.addEventListener("click", goToSearchResults);
+                    if (closeButton) closeButton.addEventListener("click", goToSearchResults);
+
+                    window.addEventListener("load", function () {
+                        window.setTimeout(function () {
+                            overlay.classList.add("show");
+                            overlay.setAttribute("aria-hidden", "false");
+                            /* Let the user notice the popup, then move to the results automatically. */
+                            autoCloseTimer = window.setTimeout(goToSearchResults, 1900);
+                        }, 250);
+                    });
+                })();
 
             </script>
 
