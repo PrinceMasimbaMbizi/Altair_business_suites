@@ -18,6 +18,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 
     <style>
         /* `
@@ -1425,6 +1427,176 @@
 
 
 
+
+        /* Compact Google results + Customer-page icon action buttons */
+        .google-results-card .section-header {
+            padding: 15px 18px;
+        }
+
+        .google-results-container {
+            overflow-x: auto;
+        }
+
+        .google-results-table {
+            width: 100% !important;
+            min-width: 760px !important;
+            table-layout: fixed !important;
+            border-collapse: collapse;
+        }
+
+        .google-results-table th,
+        .google-results-table td {
+            padding: 11px 12px !important;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            vertical-align: middle;
+        }
+
+        .google-results-table th:nth-child(1) {
+            width: 20%;
+        }
+
+        .google-results-table th:nth-child(2) {
+            width: 13%;
+        }
+
+        .google-results-table th:nth-child(3) {
+            width: 25%;
+        }
+
+        .google-results-table th:nth-child(4) {
+            width: 15%;
+        }
+
+        .google-results-table th:nth-child(5) {
+            width: 12%;
+        }
+
+        .google-results-table th:nth-child(6) {
+            width: 9%;
+        }
+
+        .google-results-table th:nth-child(7) {
+            width: 6%;
+        }
+
+        .google-results-table .company-name {
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+        }
+
+        .google-results-table .website-link {
+            display: inline-block;
+        }
+
+        .google-results-table .google-status {
+            display: inline-block;
+            padding: 4px 7px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            color: #047857;
+            font-size: 9px;
+        }
+
+        .action-buttons,
+        .saved-lead-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .icon-button {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            padding: 0;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e9eaf2;
+            background: #fff;
+            color: #686c82;
+            font-size: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+        }
+
+        .icon-button:hover:not(:disabled) {
+            background: #eef0ff;
+            color: #6366f1;
+            border-color: #d8d9ff;
+        }
+
+        .icon-button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .icon-button.whatsapp-button,
+        .icon-button.whatsapp-action {
+            color: #059669;
+        }
+
+        .icon-button.whatsapp-button:hover,
+        .icon-button.whatsapp-action:hover {
+            background: #d1fae5;
+            border-color: #a7f3d0;
+            color: #047857;
+        }
+
+        .icon-button.email-action:hover {
+            background: #eef2ff;
+            color: #4338ca;
+            border-color: #e0e7ff;
+        }
+
+        .icon-button.view-action:hover {
+            background: #f3e8ff;
+            color: #7e22ce;
+            border-color: #e9d5ff;
+        }
+
+        .icon-button.delete-action:hover {
+            background: #fff1f2;
+            color: #be123c;
+            border-color: #ffe4e6;
+        }
+
+        .icon-button.google-save-icon {
+            color: #6366f1;
+        }
+
+        .icon-button.google-save-icon:hover {
+            background: #eef0ff;
+            color: #4338ca;
+            border-color: #c7d2fe;
+        }
+
+        .saved-lead-actions form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .leads-database-card .saved-leads-compact .lead-actions-cell {
+            width: 165px;
+        }
+
+        .leads-database-card .saved-leads-compact .lead-actions-heading {
+            width: 165px;
+        }
+
+        @media (max-width: 700px) {
+            .google-results-card .section-header {
+                padding: 13px 14px;
+            }
+
+            .google-results-table {
+                min-width: 700px !important;
+            }
+        }
+
         /* SAVED LEADS: compact table and corner actions */
         .leads-database-card .saved-leads-compact {
             min-width: 1050px !important;
@@ -1901,9 +2073,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    AI LEAD SEARCH - IMPROVED
-========================================================= */
+ */
 
         .search-card {
             background: white;
@@ -1918,9 +2090,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    SEARCH HEADER
-========================================================= */
+ */
 
         .search-card .card-header {
             display: flex;
@@ -1966,9 +2138,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    SEARCH GRID
-========================================================= */
+ */
 
         .search-grid {
 
@@ -1982,9 +2154,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    FIELD
-========================================================= */
+ */
 
         .field {
 
@@ -2045,9 +2217,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    INPUTS
-========================================================= */
+ */
 
         .field input,
         .field select {
@@ -2112,9 +2284,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    SEARCH HELP
-========================================================= */
+ */
 
         .search-help {
 
@@ -2188,9 +2360,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    SEARCH ACTION
-========================================================= */
+ */
 
         .search-actions {
 
@@ -2254,9 +2426,9 @@
         }
 
 
-        /* =========================================================
+        /* 
    RESPONSIVE
-========================================================= */
+ */
 
         @media (max-width: 900px) {
 
@@ -2915,7 +3087,7 @@
             {% if search_performed %}
 
 
-            <section class="section-card">
+            <section class="section-card google-results-card">
 
 
                 <div class="section-header">
@@ -2941,10 +3113,10 @@
                 {% if google_results %}
 
 
-                <div class="table-container">
+                <div class="table-container google-results-container">
 
 
-                    <table>
+                    <table class="google-results-table">
 
 
                         <thead>
@@ -3087,15 +3259,14 @@
 
                                 <td>
 
-                                    <button type="button" class="action-button save-google-lead"
-                                        data-company="{{ lead.company_name }}" data-industry="{{ lead.industry }}"
-                                        data-location="{{ lead.address }}" data-phone="{{ lead.phone }}"
-                                        data-website="{{ lead.website }}"
-                                        data-google-place-id="{{ lead.google_place_id }}"
+                                    <button type="button" class="icon-button google-save-icon save-google-lead"
+                                        title="Save lead" aria-label="Save lead"
+                                        data-company="{{ lead.company_name|e }}" data-industry="{{ lead.industry|e }}"
+                                        data-location="{{ lead.address|e }}" data-phone="{{ lead.phone|e }}"
+                                        data-website="{{ lead.website|e }}"
+                                        data-google-place-id="{{ lead.google_place_id|e }}"
                                         onclick="saveGoogleLead(this)">
-
-                                        + Save
-
+                                        <i class="fa-solid fa-bookmark"></i>
                                     </button>
 
                                 </td>
@@ -3383,25 +3554,28 @@
                                 <td class="lead-actions-cell">
                                     <div class="saved-lead-actions">
                                         {% if lead.email %}
-                                        <a class="lead-action-btn email-action" href="mailto:{{ lead.email }}"
-                                            title="Email {{ lead.company_name }}">✉ Email</a>
+                                        <a class="icon-button email-action" href="mailto:{{ lead.email|urlencode }}"
+                                            title="Email {{ lead.company_name }}" aria-label="Email lead"><i
+                                                class="fa-solid fa-envelope"></i></a>
                                         {% else %}
-                                        <button type="button" class="lead-action-btn email-action" disabled
-                                            title="No email saved">✉ Email</button>
+                                        <button type="button" class="icon-button email-action" disabled
+                                            title="No email saved" aria-label="No email saved"><i
+                                                class="fa-solid fa-envelope"></i></button>
                                         {% endif %}
-                                        <button type="button" class="lead-action-btn whatsapp-action"
+                                        <button type="button" class="icon-button whatsapp-button whatsapp-action"
                                             data-phone="{{ (lead.phone or '')|e }}"
                                             data-company="{{ (lead.company_name or '')|e }}"
                                             data-contact-person="{{ (lead.contact_person or '')|e }}"
                                             data-notes="{{ (lead.notes or '')|e }}" onclick="contactLeadWhatsApp(this)"
-                                            title="Contact via WhatsApp">◉ WhatsApp</button>
-                                        <button type="button" class="lead-action-btn view-action"
+                                            title="Contact via WhatsApp" aria-label="Contact via WhatsApp"><i
+                                                class="fa-brands fa-whatsapp"></i></button>
+                                        <button type="button" class="icon-button view-action"
                                             onclick="openEditLead(this)" title="View and edit all lead details"
-                                            aria-label="View and edit lead">👁</button>
+                                            aria-label="View and edit lead"><i class="fa-solid fa-eye"></i></button>
                                         <form method="POST" action="{{ url_for('delete_ai_lead', lead_id=lead.id) }}"
                                             onsubmit="return confirm('Delete this lead?');">
-                                            <button type="submit" class="lead-action-btn delete-action"
-                                                title="Delete lead" aria-label="Delete lead">🗑</button>
+                                            <button type="submit" class="icon-button delete-action" title="Delete lead"
+                                                aria-label="Delete lead"><i class="fa-solid fa-trash"></i></button>
                                         </form>
                                     </div>
                                 </td>
@@ -3820,7 +3994,8 @@
 
                     button.dataset.saving = "true";
                     const originalText = button.innerHTML;
-                    button.innerHTML = "Saving...";
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                    button.title = "Saving lead";
                     button.disabled = true;
 
                     const formData = new FormData();
@@ -3842,9 +4017,12 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            button.innerHTML = "✓ Saved";
-                            button.style.background = "#dcfce7";
-                            button.style.color = "#16a34a";
+                            button.innerHTML = '<i class="fa-solid fa-check"></i>';
+                            button.title = "Lead saved";
+                            button.setAttribute("aria-label", "Lead saved");
+                            button.style.background = "#d1fae5";
+                            button.style.color = "#047857";
+                            button.style.borderColor = "#a7f3d0";
                             button.disabled = true;
 
                             if (!data.already_saved && data.lead) {
@@ -3946,10 +4124,10 @@
                         <td>${lead.website ? `<a href="${attr(lead.website)}" target="_blank" rel="noopener noreferrer" class="db-url">Visit website ↗</a>` : '<span class="db-empty">—</span>'}</td>
                         <td><span class="score-pill">${escapeHtml(score)}</span></td>
                         <td class="lead-actions-cell"><div class="saved-lead-actions">
-                            ${lead.email ? `<a class="lead-action-btn email-action" href="mailto:${attr(lead.email)}">✉ Email</a>` : '<button type="button" class="lead-action-btn email-action" disabled>✉ Email</button>'}
-                            <button type="button" class="lead-action-btn whatsapp-action" data-phone="${attr(lead.phone)}" data-company="${attr(lead.company_name)}" data-contact-person="${attr(lead.contact_person)}" data-notes="${attr(lead.notes)}" onclick="contactLeadWhatsApp(this)">◉ WhatsApp</button>
-                            <button type="button" class="lead-action-btn view-action" onclick="openEditLead(this)" title="View and edit all lead details">👁</button>
-                            <form method="POST" action="${deleteLeadUrlTemplate.replace(/0(?=\/?$)/, encodeURIComponent(lead.id))}" onsubmit="return confirm('Delete this lead?');"><button type="submit" class="lead-action-btn delete-action" title="Delete lead">🗑</button></form>
+                            ${lead.email ? `<a class="icon-button email-action" href="mailto:${encodeURIComponent(lead.email)}" title="Email lead" aria-label="Email lead"><i class="fa-solid fa-envelope"></i></a>` : '<button type="button" class="icon-button email-action" disabled title="No email saved" aria-label="No email saved"><i class="fa-solid fa-envelope"></i></button>'}
+                            <button type="button" class="icon-button whatsapp-button whatsapp-action" data-phone="${attr(lead.phone)}" data-company="${attr(lead.company_name)}" data-contact-person="${attr(lead.contact_person)}" data-notes="${attr(lead.notes)}" onclick="contactLeadWhatsApp(this)" title="Contact via WhatsApp" aria-label="Contact via WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                            <button type="button" class="icon-button view-action" onclick="openEditLead(this)" title="View and edit all lead details" aria-label="View and edit lead"><i class="fa-solid fa-eye"></i></button>
+                            <form method="POST" action="${deleteLeadUrlTemplate.replace(/0(?=\/?$)/, encodeURIComponent(lead.id))}" onsubmit="return confirm('Delete this lead?');"><button type="submit" class="icon-button delete-action" title="Delete lead" aria-label="Delete lead"><i class="fa-solid fa-trash"></i></button></form>
                         </div></td>
                     `;
 
