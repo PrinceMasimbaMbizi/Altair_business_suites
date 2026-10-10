@@ -647,41 +647,47 @@ def logout():
     )
 
 
-
-# COMPANY SETUP
-@app.route(
-    "/company-setup",
-    methods=["GET", "POST"]
-)
+#company setup code
+@app.route("/company-setup", methods=["GET", "POST"])
 def company_setup():
 
-    
-    # SECURITY: USER MUST BE LOGGED IN
-    
-
     if "user_id" not in session:
-
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
-    
-    # GET REQUEST
-    
-
     if request.method == "GET":
+        return render_template("company_setup.html")
 
-        return render_template(
-            "company_setup.html"
-        )
+    print("========== COMPANY SETUP POST STARTED ==========")
+    print("USER ID:", user_id)
+    print("FORM FIELDS:", dict(request.form))
+    print("UPLOADED FILES:", list(request.files.keys()))
+    print("================================================")
+    print("\n========== COMPANY SETUP DEBUG ==========")
+    print("REQUEST METHOD:", request.method)
+    print("USER ID:", session.get("user_id"))
+    print("FORM DATA:", dict(request.form))
+    print("FILES RECEIVED:", list(request.files.keys()))
 
+    company_name = request.form.get("company_name", "").strip()
+    industry = request.form.get("industry", "").strip()
+    specialization = request.form.get("specialization", "").strip()
+    description = request.form.get("description", "").strip()
+    services = request.form.get("services", "").strip()
+
+    print("\n========== COMPANY SETUP DEBUG ==========")
+    print("USER ID:", session.get("user_id"))
+    print("FORM DATA:", dict(request.form))
+    print("FILES RECEIVED:", list(request.files.keys()))
+    print("COMPANY NAME:", repr(company_name))
+    print("INDUSTRY:", repr(industry))
+    print("SPECIALIZATION:", repr(specialization))
+    print("DESCRIPTION PROVIDED:", bool(description))
+    print("SERVICES PROVIDED:", bool(services))
+    print("========================================\n")
     
     # POST REQUEST
-    
-
-    
     # GET FORM DATA
 
     company_name = request.form.get(
@@ -744,59 +750,31 @@ def company_setup():
     
 
     if not company_name:
-
-        flash(
-            "Company name is required.",
-            "error"
-        )
-
-        return redirect(
-            url_for("company_setup")
-        )
+        print("COMPANY SETUP VALIDATION FAILED: company_name is empty")
+        flash("Company name is required.", "error")
+        return redirect(url_for("company_setup"))
 
     if not industry:
-
-        flash(
-            "Please select your industry.",
-            "error"
-        )
-
-        return redirect(
-            url_for("company_setup")
-        )
+        print("COMPANY SETUP VALIDATION FAILED: industry is empty")
+        flash("Please select your industry.", "error")
+        return redirect(url_for("company_setup"))
 
     if not specialization:
-
-        flash(
-            "Please enter your company specialization.",
-            "error"
-        )
-
-        return redirect(
-            url_for("company_setup")
-        )
+        print("COMPANY SETUP VALIDATION FAILED: specialization is empty")
+        flash("Please enter your company specialization.", "error")
+        return redirect(url_for("company_setup"))
 
     if not description:
 
-        flash(
-            "Please provide a company description.",
-            "error"
-        )
-
-        return redirect(
-            url_for("company_setup")
-        )
+        print("COMPANY SETUP VALIDATION FAILED: description is empty")
+        flash("Please enter your company description.", "error")
+        return redirect(url_for("company_setup"))
 
     if not services:
 
-        flash(
-            "Please enter your services or products.",
-            "error"
-        )
-
-        return redirect(
-            url_for("company_setup")
-        )
+        print("COMPANY SETUP VALIDATION FAILED: services is empty")
+        flash("Please enter your company services or products.", "error")
+        return redirect(url_for("company_setup"))
 
     
     # LOGO

@@ -522,12 +522,53 @@
             }
 
         }
+
+        .flash-messages {
+            width: 100%;
+            max-width: 700px;
+            margin: 15px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        .flash-message {
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .flash-message.error {
+            background: #ffe5e5;
+            color: #a40000;
+            border: 1px solid #ffaaaa;
+        }
+
+        .flash-message.success {
+            background: #e2ffe9;
+            color: #006b27;
+            border: 1px solid #8ee6a5;
+        }
     </style>
 
 
 </head>
 
 <body>
+
+    <!-- FLASH MESSAGES -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
 
     <div class="page">
 
@@ -557,7 +598,7 @@
 
         <div class="form-container">
 
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" action="{{ url_for('company_setup') }}" enctype="multipart/form-data">
 
 
                 <!-- COMPANY BRANDING -->
