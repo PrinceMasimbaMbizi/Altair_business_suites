@@ -8587,7 +8587,7 @@ def search_ai_leads():
         1,
         min(
             max_results,
-            20
+            10
         )
     )
 
@@ -8848,10 +8848,9 @@ def search_ai_leads():
         )
 
 
-        print(
-            "GOOGLE RESPONSE:",
-            response.text
-        )
+        # Avoid logging the entire Places payload: it can be large and may
+        # consume unnecessary memory/log bandwidth on small Render instances.
+        print("GOOGLE RESPONSE BYTES:", len(response.content))
 
 
         if response.status_code != 200:
@@ -9526,48 +9525,63 @@ def is_likely_competitor(
 
 
 def find_public_business_email(website_url):
-    'Find a publicly listed email on the business website; this does not verify ownership.'
+    """Find an email explicitly published on a business homepage.
+
+    This deliberately checks only one page with a short timeout so a Google
+    Places search cannot block for several seconds per lead. It does not verify
+    ownership or guarantee delivery.
+    """
     if not website_url:
         return ""
-    from urllib.parse import urljoin, urlparse
+    from urllib.parse import urlparse
     try:
         parsed = urlparse(website_url)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             return ""
-        base_host = parsed.netloc.lower()
         headers = {"User-Agent": "AltairBusinessSuiteLeadResearch/1.0"}
-        pages = [website_url]
-        checked = set()
-        for page_url in pages:
-            if page_url in checked or len(checked) >= 2:
-                continue
-            checked.add(page_url)
+        try:
+            response = requests.get(
+                website_url,
+                headers=headers,
+                timeout=(0.8, 1.2),
+                allow_redirects=True,
+                stream=True
+            )
             try:
-                response = requests.get(page_url, headers=headers, timeout=2, allow_redirects=True)
                 if response.status_code >= 400:
-                    continue
-                final = urlparse(response.url)
-                final_host = final.netloc.lower()
-                if final_host != base_host and not final_host.endswith("." + base_host):
-                    continue
-                html = response.text[:500000]
-                for address in re.findall(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", html, flags=re.IGNORECASE):
+                    return ""
+                # Read a small, bounded amount of homepage HTML only.
+                chunks = []
+                total = 0
+                for chunk in response.iter_content(chunk_size=16384, decode_unicode=True):
+                    if not chunk:
+                        continue
+                    if isinstance(chunk, bytes):
+                        chunk = chunk.decode("utf-8", errors="ignore")
+                    remaining = 150000 - total
+                    if remaining <= 0:
+                        break
+                    chunk = chunk[:remaining]
+                    chunks.append(chunk)
+                    total += len(chunk)
+                    if total >= 150000:
+                        break
+                html = "".join(chunks)
+                for address in re.findall(
+                    r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}",
+                    html,
+                    flags=re.IGNORECASE
+                ):
                     address = address.strip(".,;:()[]{}<>").lower()
                     if not address.endswith((".png", ".jpg", ".jpeg", ".webp", ".svg", ".css", ".js")):
                         return address
-                if len(pages) < 2:
-                    for href in re.findall(r"""(?is)href\s*=\s*["']([^"']+)["']""", html):
-                        if any(word in href.lower() for word in ("contact", "about", "impressum")):
-                            candidate = urljoin(response.url, href)
-                            cp = urlparse(candidate)
-                            if cp.scheme in ("http", "https") and cp.netloc.lower() == base_host and candidate not in pages:
-                                pages.append(candidate)
-                                break
-            except requests.RequestException:
-                continue
+            finally:
+                response.close()
+        except requests.RequestException:
+            return ""
         return ""
     except Exception as exc:
-        print("PUBLIC EMAIL LOOKUP ERROR:", exc)
+        print("PUBLIC EMAIL LOOKUP ERROR:", type(exc).__name__)
         return ""
 
 
