@@ -3951,6 +3951,69 @@ def dashboard():
 
 
 
+# COMING SOON: ACCOUNT, BILLING, AND BUSINESS MANAGEMENT MODULES
+@app.route("/coming-soon/<feature>")
+def coming_soon(feature):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    features = {
+        "subscription-plans": {"title": "Subscription Plans", "icon": "👑", "category": "ACCOUNT & BILLING", "description": "Explore subscription tiers and choose the features that fit your business.", "status": "Coming Soon"},
+        "billing-payments": {"title": "Billing & Payments", "icon": "💰", "category": "ACCOUNT & BILLING", "description": "Manage your Altair subscription payments and billing details in one place.", "status": "Coming Soon"},
+        "billing-history": {"title": "Billing History", "icon": "🧾", "category": "ACCOUNT & BILLING", "description": "Review previous subscription invoices, receipts, and payment records.", "status": "Coming Soon"},
+        "usage-limits": {"title": "Usage & Limits", "icon": "📊", "category": "ACCOUNT & BILLING", "description": "Track plan usage, limits, and available allowances for your account.", "status": "Coming Soon"},
+        "employees-team": {"title": "Employees & Team", "icon": "🧑‍💼", "category": "BUSINESS MANAGEMENT", "description": "Invite teammates, organise roles, and manage access to your company workspace.", "status": "Coming Soon"},
+        "documents-reports": {"title": "Documents & Reports", "icon": "📄", "category": "BUSINESS MANAGEMENT", "description": "Keep important business documents and downloadable reports organised.", "status": "Coming Soon"},
+        "notifications": {"title": "Notifications", "icon": "🔔", "category": "BUSINESS MANAGEMENT", "description": "Control business alerts, reminders, and important account notifications.", "status": "Coming Soon"},
+        "integrations": {"title": "Integrations", "icon": "🔗", "category": "BUSINESS MANAGEMENT", "description": "Connect Altair with the tools and services your business already uses.", "status": "Coming Soon"},
+    }
+
+    feature_data = features.get(feature)
+    if not feature_data:
+        abort(404)
+
+    db = None
+    cursor = None
+    company = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM companies WHERE user_id = %s LIMIT 1",
+            (session["user_id"],)
+        )
+        company = cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    if company is None:
+        return redirect(url_for("company_setup"))
+
+    template_by_feature = {
+        "subscription-plans": "subscription_plans.html",
+        "billing-payments": "billing_payments.html",
+        "billing-history": "billing_history.html",
+        "usage-limits": "usage_limits.html",
+        "employees-team": "employees_team.html",
+        "documents-reports": "documents_reports.html",
+        "notifications": "notifications.html",
+        "integrations": "integrations.html",
+    }
+
+    return render_template(
+        template_by_feature[feature],
+        company=company,
+        feature=feature_data,
+        feature_slug=feature,
+        user_name=session.get("user_name"),
+        user_email=session.get("user_email"),
+    )
+
+
+
 # CUSTOMERS
 
 
