@@ -8902,15 +8902,39 @@ def search_ai_leads():
 
     
     # PROCESS GOOGLE RESULTS
-    
+    # Fetch existing lead statuses in ONE database query rather than opening
+    # a separate MySQL connection for every Google result. This reduces the
+    # chance of a slow search hitting Gunicorn's worker timeout.
+    google_places = data.get("places", [])
+    place_ids = [place.get("id") for place in google_places if place.get("id")]
+    existing_lead_statuses = {}
+
+    if place_ids:
+        status_db = status_cursor = None
+        try:
+            status_db = get_db_connection()
+            status_cursor = status_db.cursor(dictionary=True)
+            placeholders = ",".join(["%s"] * len(place_ids))
+            status_cursor.execute(
+                f"SELECT google_place_id, lead_status FROM leads "
+                f"WHERE user_id = %s AND google_place_id IN ({placeholders})",
+                tuple([user_id] + place_ids)
+            )
+            for row in status_cursor.fetchall():
+                existing_lead_statuses[row.get("google_place_id")] = (row.get("lead_status") or "").lower()
+        except Exception as exc:
+            # Search should still work if status enrichment fails.
+            print("BATCH LEAD STATUS LOOKUP ERROR:", type(exc).__name__, str(exc))
+        finally:
+            if status_cursor:
+                status_cursor.close()
+            if status_db:
+                status_db.close()
 
     google_results = []
 
 
-    for place in data.get(
-        "places",
-        []
-    ):
+    for place in google_places:
 
 
         
@@ -9098,7 +9122,13 @@ def search_ai_leads():
                 google_maps_url,
 
             "source_url":
-                google_maps_url
+                google_maps_url,
+
+            # Cached from the single batch query above.
+            "_not_contacted_or_converted": (
+                existing_lead_statuses.get(place.get("id"))
+                not in ("contacted", "converted")
+            )
         }
 
 
@@ -9764,21 +9794,31 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
     award(bool(lead.get("contact_form_evidence")), "Evidence supports an enquiry/contact-form opportunity.")
     award(bool(company_name and industry and address and (phone or website or email)), "Evidence is sufficiently complete to assess the business.")
 
-    not_contacted_or_converted = False
-    if user_id and lead.get("google_place_id"):
-        db = cursor = None
-        try:
-            db = get_db_connection()
-            cursor = db.cursor(dictionary=True)
-            cursor.execute("SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1",
-                           (user_id, lead.get("google_place_id")))
-            existing = cursor.fetchone()
-            not_contacted_or_converted = bool(not existing or (existing.get("lead_status") or "").lower() not in ("contacted", "converted"))
-        except Exception as exc:
-            print("LEAD STATUS SCORE CHECK ERROR:", exc)
-        finally:
-            if cursor: cursor.close()
-            if db: db.close()
+    # Prefer the status cached by the search route. The fallback preserves
+    # compatibility with other callers that do not provide the cached value.
+    if "_not_contacted_or_converted" in lead:
+        not_contacted_or_converted = bool(lead.get("_not_contacted_or_converted"))
+    else:
+        not_contacted_or_converted = False
+        if user_id and lead.get("google_place_id"):
+            db = cursor = None
+            try:
+                db = get_db_connection()
+                cursor = db.cursor(dictionary=True)
+                cursor.execute(
+                    "SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1",
+                    (user_id, lead.get("google_place_id"))
+                )
+                existing = cursor.fetchone()
+                not_contacted_or_converted = bool(
+                    not existing or
+                    (existing.get("lead_status") or "").lower() not in ("contacted", "converted")
+                )
+            except Exception as exc:
+                print("LEAD STATUS SCORE CHECK ERROR:", type(exc).__name__, str(exc))
+            finally:
+                if cursor: cursor.close()
+                if db: db.close()
     award(not_contacted_or_converted, "Lead is not recorded as contacted or converted in this user's database.")
 
     supplementary = min(20, supplementary)
