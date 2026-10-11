@@ -3000,205 +3000,460 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-# ALTAIR AI CHAT
-@app.route(
-    "/api/ai/chat",
-    methods=["POST"]
-)
+# ============================================================
+# ALTAIR AI ASSISTANT 2.0
+# Conversation handling, stronger intent recognition, and
+# transparent business-health / lead-conversion analysis.
+# Keep this section after the original engines so these improved
+# functions are the active versions used by the existing routes.
+# ============================================================
+
+# Preserve the existing tested response engine for its established
+# revenue, expense, cash-flow, invoice, customer, and forecast answers.
+altair_response_engine_legacy = altair_response_engine
+
+
+def _altair_normalise_text(value):
+    value = str(value or "").lower().strip()
+    value = re.sub(r"[^a-z0-9\s]", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def understand_altair_question(question):
+    """Rule-first intent recognition with the existing ML model as backup."""
+    if not isinstance(question, str) or not question.strip():
+        return {"intent": "unknown", "confidence": 0.0}
+
+    q = _altair_normalise_text(question)
+    words = set(q.split())
+
+    # Exact conversational turns must be checked before the classifier.
+    greetings = {
+        "hi", "hello", "hey", "hey altair", "hi altair", "hello altair",
+        "good morning", "good afternoon", "good evening", "good day",
+        "howdy", "yo", "hey there", "hello there"
+    }
+    if q in greetings:
+        return {"intent": "greeting", "confidence": 100.0}
+
+    thanks = {"thanks", "thank you", "thanks altair", "thank you altair", "much appreciated", "cheers"}
+    if q in thanks or q.startswith("thank you for"):
+        return {"intent": "thanks", "confidence": 100.0}
+
+    if q in {"help", "what can you do", "what can you help me with", "how do i use you", "show me what you can do"}:
+        return {"intent": "help", "confidence": 100.0}
+
+    # A user reporting an error needs guided troubleshooting, not a made-up diagnosis.
+    if any(phrase in q for phrase in (
+        "i got an error", "i am getting an error", "im getting an error",
+        "error message", "something is not working", "something isn't working",
+        "not working", "it is broken", "its broken", "i have a problem",
+        "i have an issue", "why did this fail", "why is this failing",
+        "why is this not working", "why does this keep failing"
+    )) or ("error" in words and any(w in words for w in ("app", "page", "system", "invoice", "login", "database", "server"))):
+        return {"intent": "troubleshooting", "confidence": 98.0}
+
+    # Lead-conversion questions get a dedicated explanation of the sales funnel.
+    if any(phrase in q for phrase in (
+        "why are my leads not converting", "why my leads are not converting",
+        "why arent my leads converting", "why are leads not converting",
+        "why do leads not convert", "why are few leads converting",
+        "why do few leads become customers", "why are leads not becoming customers",
+        "why are leads not becoming paying customers", "leads become paying customers",
+        "lead conversion", "conversion rate", "sales funnel", "lead follow up",
+        "lead follow-up", "how do i convert leads", "how can i convert leads",
+        "how can i get more customers from leads", "leads not converting"
+    )):
+        return {"intent": "lead_conversion_analysis", "confidence": 99.0}
+
+    if any(phrase in q for phrase in (
+        "how is my business performing", "how is my business doing",
+        "business performance", "business health", "how healthy is my business",
+        "is my business doing well", "business overview", "overall performance",
+        "analyse my business", "analyze my business", "how well is my business doing",
+        "score my business", "business score", "health score"
+    )):
+        return {"intent": "business_health", "confidence": 99.0}
+
+    if any(phrase in q for phrase in (
+        "what should i focus on", "what should i do", "what should i improve",
+        "what do you recommend", "give me business advice", "areas need attention",
+        "areas of my business need attention", "which areas need attention",
+        "areas to improve", "business priorities", "how can i improve",
+        "how do i improve", "how can i increase sales", "how do i increase sales",
+        "main business problem", "main problems", "what is wrong with my business",
+        "what's wrong with my business", "business weaknesses", "business problems",
+        "how can i grow", "grow my business", "improve my business",
+        "improve my cash flow", "increase my profits", "reduce my expenses",
+        "reduce costs", "improve profitability", "improve sales"
+    )):
+        return {"intent": "recommendations", "confidence": 99.0}
+
+    if any(phrase in q for phrase in ("cash flow", "cashflow", "outstanding invoices", "money outstanding", "unpaid invoices", "money owed to me", "pending payments", "overdue payments", "receivables", "how much money is overdue")):
+        return {"intent": "cash_flow", "confidence": 98.0}
+    if any(phrase in q for phrase in ("revenue", "sales revenue", "how much have i earned", "how much did i earn", "income generated", "money made", "total sales", "sales performance", "how much money did my business make")):
+        return {"intent": "revenue", "confidence": 98.0}
+    if any(phrase in q for phrase in ("expenses", "business spending", "how much am i spending", "how much have i spent", "how much did i spend", "total spending", "operating costs", "business costs", "money going out")):
+        return {"intent": "expenses", "confidence": 98.0}
+    if any(phrase in q for phrase in ("forecast", "forecasting", "predict my revenue", "predict my sales", "next month revenue", "future revenue", "future sales", "revenue prediction", "sales prediction")):
+        return {"intent": "forecast", "confidence": 98.0}
+    if any(phrase in q for phrase in ("invoice", "invoices", "invoice status", "paid invoices", "pending invoices", "overdue invoices")):
+        return {"intent": "invoices", "confidence": 98.0}
+    if any(phrase in q for phrase in ("customers", "customer", "client list", "how many clients", "my clients", "customer retention")):
+        return {"intent": "customers", "confidence": 98.0}
+    if any(phrase in q for phrase in ("leads", "potential customers", "prospects", "lead performance", "how many leads")):
+        return {"intent": "leads", "confidence": 98.0}
+
+    # The original small ML model is a backup only. Avoid pretending that a
+    # low-confidence guess is a reliable understanding of the question.
+    try:
+        probabilities = altair_nlp_model.predict_proba([q])[0]
+        classes = altair_nlp_model.classes_
+        best_index = int(probabilities.argmax())
+        confidence = float(probabilities[best_index] * 100)
+        intent = str(classes[best_index])
+        if confidence >= 48 and intent in {
+            "revenue", "forecast", "expenses", "invoices", "customers",
+            "leads", "business_health", "recommendations", "cash_flow"
+        }:
+            return {"intent": intent, "confidence": round(confidence, 2)}
+    except Exception as exc:
+        print("ALTAIR QUESTION UNDERSTANDING ERROR:", exc)
+
+    return {"intent": "unknown", "confidence": 0.0}
+
+
+def generate_business_advice(business_data):
+    """Calculate an explainable 0-100 indicator from the available records."""
+    data = business_data or {}
+    invoices = data.get("invoices") or {}
+    leads = data.get("leads") or {}
+    expenses = data.get("expenses") or {}
+    recurring = data.get("recurring") or {}
+    forecast = data.get("forecast") or {}
+
+    def num(source, key):
+        try:
+            return max(0.0, float((source or {}).get(key, 0) or 0))
+        except (TypeError, ValueError, AttributeError):
+            return 0.0
+
+    paid = num(invoices, "paid_amount")
+    pending = num(invoices, "pending_amount")
+    overdue = num(invoices, "overdue_amount")
+    invoice_count = int(num(invoices, "total"))
+    expense_total = num(expenses, "total")
+    monthly_cost = num(recurring, "monthly_cost")
+    total_leads = int(num(leads, "total"))
+    converted = int(num(leads, "converted"))
+    converted = min(converted, total_leads) if total_leads else 0
+    conversion = (converted / total_leads * 100) if total_leads else 0.0
+
+    # 30 points: payment collection. Missing invoice data is treated as unknown,
+    # not as perfect performance.
+    if invoice_count > 0:
+        total_invoice_value = paid + pending + overdue
+        overdue_share = overdue / total_invoice_value if total_invoice_value else 0
+        pending_share = pending / total_invoice_value if total_invoice_value else 0
+        collection_score = max(0.0, 30.0 - min(30.0, overdue_share * 60 + pending_share * 15))
+    else:
+        collection_score = 18.0
+
+    # 25 points: recorded expenses relative to recorded paid invoice revenue.
+    if paid > 0:
+        expense_ratio = expense_total / paid
+        if expense_ratio <= 0.50: expense_score = 25.0
+        elif expense_ratio <= 0.75: expense_score = 21.0
+        elif expense_ratio <= 1.00: expense_score = 16.0
+        elif expense_ratio <= 1.50: expense_score = 9.0
+        else: expense_score = 3.0
+    else:
+        expense_score = 15.0 if expense_total == 0 else 5.0
+
+    # 25 points: recorded lead conversion. No leads means there is not enough
+    # evidence to grade conversion, so use a neutral partial score.
+    if total_leads > 0:
+        if conversion >= 25: lead_score = 25.0
+        elif conversion >= 15: lead_score = 20.0
+        elif conversion >= 5: lead_score = 14.0
+        else: lead_score = 7.0
+    else:
+        lead_score = 15.0
+
+    # 20 points: recurring costs relative to recent monthly paid revenue.
+    monthly_rows = data.get("monthly_revenue") or []
+    monthly_values = []
+    for row in monthly_rows[-3:]:
+        try:
+            monthly_values.append(max(0.0, float((row or {}).get("revenue", 0) or 0)))
+        except (TypeError, ValueError, AttributeError):
+            continue
+    if monthly_values:
+        avg_monthly_revenue = sum(monthly_values) / len(monthly_values)
+        if monthly_cost <= 0:
+            recurring_score = 20.0
+        elif avg_monthly_revenue <= 0:
+            recurring_score = 3.0
+        else:
+            recurring_ratio = monthly_cost / avg_monthly_revenue
+            if recurring_ratio <= 0.30: recurring_score = 20.0
+            elif recurring_ratio <= 0.50: recurring_score = 15.0
+            elif recurring_ratio <= 0.80: recurring_score = 10.0
+            elif recurring_ratio <= 1.00: recurring_score = 5.0
+            else: recurring_score = 2.0
+    else:
+        avg_monthly_revenue = 0.0
+        recurring_score = 15.0 if monthly_cost <= 0 else 10.0
+
+    components = {
+        "payment_collection": round(collection_score),
+        "expense_control": round(expense_score),
+        "lead_conversion": round(lead_score),
+        "recurring_costs": round(recurring_score),
+    }
+    health_score = int(round(sum(components.values())))
+
+    issues = []
+    if overdue > 0:
+        issues.append({"priority": "high", "area": "Cash collection", "finding": f"{overdue:,.2f} is recorded as overdue.", "action": "Contact overdue customers, confirm disputes, and agree on payment dates."})
+    if pending > 0:
+        issues.append({"priority": "medium", "area": "Pending payments", "finding": f"{pending:,.2f} is still recorded as pending.", "action": "Send reminders before due dates and track each promised payment."})
+    if paid > 0 and expense_total > paid:
+        issues.append({"priority": "high", "area": "Expense pressure", "finding": "Recorded expenses exceed recorded paid invoice revenue.", "action": "Review expenses and upcoming obligations; this comparison is not a full profit calculation."})
+    if total_leads > 0 and conversion < 10:
+        issues.append({"priority": "high", "area": "Lead conversion", "finding": f"Recorded lead conversion is {conversion:.1f}%.", "action": "Follow up quickly, qualify prospects, record outcomes, and review lost-lead reasons."})
+    if total_leads > converted and total_leads > 0 and int(num(leads, "new_leads")) > 0:
+        issues.append({"priority": "medium", "area": "Lead follow-up", "finding": f"{int(num(leads, 'new_leads'))} leads are still marked New.", "action": "Prioritise contacting new leads and update their status after every interaction."})
+    if monthly_cost > 0 and monthly_values and avg_monthly_revenue > 0 and monthly_cost > avg_monthly_revenue * 0.5:
+        issues.append({"priority": "high", "area": "Recurring costs", "finding": "Active recurring costs are more than half of the recent average monthly paid revenue.", "action": "Review subscriptions, rent, and other recurring commitments before adding new fixed costs."})
+    if not issues:
+        issues.append({"priority": "info", "area": "Record quality", "finding": "No major issue was detected from the available summary figures.", "action": "Keep invoices, expenses, leads, and customer outcomes updated so trends remain reliable."})
+
+    return {
+        "health_score": health_score,
+        "health_components": components,
+        "priority_issues": issues,
+        "paid_revenue": round(paid, 2),
+        "overdue_amount": round(overdue, 2),
+        "pending_amount": round(pending, 2),
+        "expenses": round(expense_total, 2),
+        "monthly_recurring": round(monthly_cost, 2),
+        "lead_conversion": round(conversion, 1),
+        "revenue_prediction": forecast.get("prediction", 0),
+        "prediction_confidence": forecast.get("confidence", 0),
+    }
+
+
+def altair_response_engine(intent, business_data, analysis):
+    data = business_data or {}
+    analysis = analysis or {}
+    invoices = data.get("invoices") or {}
+    leads = data.get("leads") or {}
+
+    def val(source, key):
+        try:
+            return float((source or {}).get(key, 0) or 0)
+        except (TypeError, ValueError, AttributeError):
+            return 0.0
+
+    def count(source, key):
+        return int(val(source, key))
+
+    def money(amount):
+        return f"{amount:,.2f}"
+
+    if intent == "help":
+        return (
+            "I'm Altair, your business assistant. I can analyse the records saved in your account, "
+            "explain trends, highlight risks, and suggest practical next steps.\n\n"
+            "Try asking:\n"
+            "• How is my business performing?\n"
+            "• What are my biggest business problems?\n"
+            "• Why are my leads not converting?\n"
+            "• How much revenue is paid, pending, or overdue?\n"
+            "• Are my expenses too high?\n"
+            "• What is my revenue forecast?\n"
+            "• How can I improve cash flow?\n\n"
+            "I only know what is recorded in your Altair account; I won't pretend to know an unrecorded reason or event."
+        )
+
+    if intent == "troubleshooting":
+        return (
+            "I can help you work through the issue, but I can't see your screen or server logs from this message alone.\n\n"
+            "Please send me:\n"
+            "1. The exact error message (copy it from the page or terminal).\n"
+            "2. Which page or action caused it (for example, Login, Invoice, Inventory, or AI Lead Finder).\n"
+            "3. What you clicked or changed immediately before it happened.\n\n"
+            "Remove passwords, API keys, database credentials, and other secrets before sharing logs. I'll use the actual error text to narrow down the cause instead of guessing."
+        )
+
+    if intent == "lead_conversion_analysis":
+        total = count(leads, "total")
+        converted = min(count(leads, "converted"), total)
+        new_count = count(leads, "new_leads")
+        contacted = count(leads, "contacted")
+        interested = count(leads, "interested")
+        rate = converted / total * 100 if total else 0.0
+        if total == 0:
+            return (
+                "I can't yet determine why leads are not converting because there are no leads recorded in the data I received.\n\n"
+                "Add/import leads and update each lead's status as you contact them. Once there are records, I can compare New, Contacted, Interested, and Converted counts."
+            )
+        result = (
+            "LEAD CONVERSION ANALYSIS\n\n"
+            f"Total recorded leads: {total}\n"
+            f"New: {new_count}\n"
+            f"Contacted: {contacted}\n"
+            f"Interested: {interested}\n"
+            f"Converted: {converted}\n"
+            f"Recorded conversion rate: {rate:.1f}%\n\n"
+        )
+        observations = []
+        if new_count:
+            observations.append(f"{new_count} lead(s) are still marked New, which points to a follow-up queue to work through.")
+        if contacted + interested > converted:
+            observations.append("There are leads recorded as Contacted/Interested that have not been marked Converted. The status totals alone do not reveal why they did not buy.")
+        if rate < 10:
+            observations.append("The recorded conversion rate is low enough to justify reviewing lead quality, response time, offer fit, pricing, trust signals, and follow-up consistency.")
+        if not observations:
+            observations.append("The saved status counts do not show an obvious follow-up bottleneck. Review recent lost deals and compare conversion by lead source to find more specific patterns.")
+        result += "What the records suggest:\n" + "\n".join(f"• {item}" for item in observations)
+        result += (
+            "\n\nRecommended next steps:\n"
+            "1. Contact New leads promptly and log the outcome.\n"
+            "2. Give interested prospects a clear next step, quote, or meeting.\n"
+            "3. Record a reason when a lead is lost (price, timing, no response, poor fit, or competitor).\n"
+            "4. Compare conversion by source and service after enough outcomes have been recorded.\n\n"
+            "Important: these are diagnostic possibilities, not confirmed causes. Altair cannot infer a buyer's reason unless it is recorded."
+        )
+        return result
+
+    if intent == "business_health":
+        score = int(val(analysis, "health_score"))
+        components = analysis.get("health_components") or {}
+        issues = analysis.get("priority_issues") or []
+        description = (
+            "strong recorded indicators" if score >= 80 else
+            "a mixed picture with areas to monitor" if score >= 60 else
+            "several areas that may need attention"
+        )
+        component_lines = [
+            f"• Payment collection: {components.get('payment_collection', 'N/A')}/30",
+            f"• Expense control: {components.get('expense_control', 'N/A')}/25",
+            f"• Lead conversion: {components.get('lead_conversion', 'N/A')}/25",
+            f"• Recurring costs: {components.get('recurring_costs', 'N/A')}/20",
+        ]
+        issue_lines = [f"• {item.get('area', 'Business')}: {item.get('finding', '')} Next step: {item.get('action', '')}" for item in issues[:4]]
+        return (
+            "BUSINESS HEALTH CHECK\n\n"
+            f"Altair business-health indicator: {score}/100\n"
+            f"Overall reading: Your recorded figures show {description}.\n\n"
+            "Score breakdown (each component is weighted):\n" + "\n".join(component_lines) +
+            "\n\nRecorded figures:\n"
+            f"• Paid invoice revenue: {money(val(invoices, 'paid_amount'))}\n"
+            f"• Pending invoices: {money(val(invoices, 'pending_amount'))}\n"
+            f"• Overdue invoices: {money(val(invoices, 'overdue_amount'))}\n"
+            f"• Recorded expenses: {money(val(data.get('expenses'), 'total'))}\n"
+            f"• Leads converted: {count(leads, 'converted')} of {count(leads, 'total')}\n\n"
+            "Main areas to review:\n" + "\n".join(issue_lines) +
+            "\n\nThis is an internal operational indicator based on the records available to Altair, not a formal accounting, credit, or investment assessment. Missing or incomplete records can change the score."
+        )
+
+    if intent == "recommendations":
+        issues = analysis.get("priority_issues") or []
+        lines = []
+        for item in issues[:5]:
+            lines.append(f"{len(lines)+1}. {item.get('area', 'Priority')} — {item.get('finding', '')} Action: {item.get('action', '')}")
+        if not lines:
+            lines = ["Keep your invoices, expenses, lead statuses, and customer records up to date; revisit these indicators regularly."]
+        return "ALTAIR BUSINESS PRIORITIES\n\n" + "\n\n".join(lines) + "\n\nThese priorities are based on the data currently recorded in your account."
+
+    # Existing established intents keep their previous answer logic.
+    return altair_response_engine_legacy(intent, business_data, analysis)
+
+
+# ALTAIR AI CHAT API
+@app.route("/api/ai/chat", methods=["POST"])
 def altair_ai_chat():
-
-    
-    # AUTHENTICATION
-    
-
     if "user_id" not in session:
-
-        return jsonify({
-
-            "success": False,
-
-            "message":
-                "Please login first."
-
-        }), 401
-
+        return jsonify({"success": False, "message": "Please login first."}), 401
 
     user_id = session["user_id"]
-
-
     try:
-
-        
-        # GET USER MESSAGE
-        
-
-        body = (
-            request
-            .get_json(
-                silent=True
-            )
-            or {}
-        )
-
-
-        message = (
-            body
-            .get(
-                "message",
-                ""
-            )
-            .strip()
-        )
-
-
+        body = request.get_json(silent=True) or {}
+        message = str(body.get("message", "")).strip()
         if not message:
+            return jsonify({"success": False, "message": "Please enter a question."}), 400
+        if len(message) > 3000:
+            return jsonify({"success": False, "message": "Please keep your message under 3,000 characters."}), 400
 
+        # Handle simple conversation without requiring a database query.
+        understanding = understand_altair_question(message)
+        intent = understanding.get("intent", "unknown")
+        confidence = float(understanding.get("confidence", 0) or 0)
+
+        if intent == "greeting":
+            hour = datetime.now().hour
+            if 5 <= hour < 12:
+                time_greeting = "Good morning"
+            elif 12 <= hour < 17:
+                time_greeting = "Good afternoon"
+            else:
+                time_greeting = "Good evening"
             return jsonify({
-
-                "success": False,
-
-                "message":
-                    "Please enter a question."
-
-            }), 400
-
-
-        
-        # GET AUTHENTICATED BUSINESS DATA
-        
-
-        business_data = (
-            get_business_ai_data(
-                user_id
-            )
-        )
-
-
-        
-        # CALCULATE BUSINESS ANALYTICS
-        
-
-        analysis = (
-            generate_business_advice(
-                business_data
-            )
-        )
-
-
-        
-        # OUR OWN NLP MODEL
-        
-
-        understanding = (
-            understand_altair_question(
-                message
-            )
-        )
-
-
-        intent = understanding.get(
-            "intent",
-            "unknown"
-        )
-
-
-        confidence = float(
-            understanding.get(
-                "confidence",
-                0
-            )
-        )
-
-
-        
-        # LOW CONFIDENCE
-        
-
-        if confidence < 35:
-
-            return jsonify({
-
                 "success": True,
-
-                "reply":
-                    "I am still learning how to "
-                    "understand that type of question. "
-                    "Try asking about revenue, "
-                    "expenses, invoices, customers, "
-                    "leads, cash flow, forecasting "
-                    "or business health.",
-
-                "intent": "unknown",
-
-                "confidence": round(
-                    confidence,
-                    2
-                )
-
+                "reply": f"{time_greeting}! 👋 I'm Altair, your business assistant. I can help you understand business health, revenue, cash flow, expenses, invoices, customers, lead conversion, and practical next steps. What would you like to look at?",
+                "intent": intent,
+                "confidence": confidence,
             })
 
+        if intent == "thanks":
+            return jsonify({
+                "success": True,
+                "reply": "You're welcome! I'm here whenever you want to review your numbers or work through a business question.",
+                "intent": intent,
+                "confidence": confidence,
+            })
 
-        
-        # GENERATE ANSWER
-        
+        # General help and troubleshooting do not require private business records.
+        if intent in {"help", "troubleshooting"}:
+            reply = altair_response_engine(intent, {}, {})
+            return jsonify({"success": True, "reply": reply, "intent": intent, "confidence": round(confidence, 2)})
 
-        reply = (
-            altair_response_engine(
-                intent,
-                business_data,
-                analysis
+        if intent == "unknown":
+            reply = (
+                "I want to make sure I understand what you mean rather than give you a made-up answer. "
+                "Could you rephrase the question or tell me which part of the business you mean?\n\n"
+                "I can help with:\n"
+                "• Business health and the biggest risks\n"
+                "• Revenue, expenses, and cash flow\n"
+                "• Paid, pending, and overdue invoices\n"
+                "• Customer and lead performance\n"
+                "• Why leads may not be converting\n"
+                "• Revenue forecasting and practical recommendations\n\n"
+                "If you mean an application error, paste the exact error message and tell me which page produced it."
             )
-        )
+            return jsonify({"success": True, "reply": reply, "intent": "unknown", "confidence": round(confidence, 2)})
 
+        # Only fetch private business records after the authenticated session is verified.
+        # get_business_ai_data independently checks the current company ownership.
+        business_data = get_business_ai_data(user_id)
+        analysis = generate_business_advice(business_data)
 
-        
-        # RETURN RESPONSE
-        
-
+        reply = altair_response_engine(intent, business_data, analysis)
         return jsonify({
-
             "success": True,
-
             "reply": reply,
-
             "intent": intent,
-
-            "confidence": round(
-                confidence,
-                2
-            )
-
+            "confidence": round(confidence, 2),
         })
 
-
-    except Exception as e:
-
-        print(
-            "ALTAIR AI CHAT ERROR:",
-            e
-        )
-
-
-        return jsonify({
-
-            "success": False,
-
-            "message":
-                "Altair AI could not process "
-                "your question."
-
-        }), 500
-
-
-
-
-
-
-
-
-
-
-
+    except PermissionError as exc:
+        print("ALTAIR AI ACCESS CHECK:", exc)
+        return jsonify({"success": False, "message": "Your account does not have an accessible company profile. Please check your company setup."}), 403
+    except Exception as exc:
+        print("ALTAIR AI CHAT ERROR:", exc)
+        return jsonify({"success": False, "message": "Altair AI could not process your question right now. Please try again; if it continues, share the server error log without passwords or API keys."}), 500
 
 
 
