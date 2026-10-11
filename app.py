@@ -10389,6 +10389,208 @@ def save_google_lead():
         }), 500
     
 
+
+# ============================================================
+# ALTAIR BUSINESS FORECASTING
+# Uses the logged-in user's own invoices and expenses.
+# ============================================================
+
+def _forecast_month_label(month_date):
+    return month_date.strftime("%b %Y")
+
+
+def _linear_forecast(values, periods):
+    """Simple transparent trend forecast. Returns non-negative estimates.
+
+    This is a lightweight baseline, not a guarantee. It deliberately avoids
+    claiming statistical confidence when there is little historical data.
+    """
+    cleaned = [max(0.0, float(v or 0)) for v in values]
+    n = len(cleaned)
+    if n == 0:
+        return [0.0] * periods, "No historical data"
+    if n < 3:
+        avg = sum(cleaned) / n
+        return [avg] * periods, "Limited data: historical average"
+    # Least-squares line computed with the existing NumPy dependency.
+    x = np.arange(n, dtype=float)
+    y = np.array(cleaned, dtype=float)
+    slope, intercept = np.polyfit(x, y, 1)
+    predictions = []
+    for step in range(periods):
+        predictions.append(max(0.0, float(intercept + slope * (n + step))))
+    return predictions, "Linear trend based on available monthly history"
+
+
+@app.route("/forecasting", methods=["GET", "POST"])
+def forecasting():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    forecast_period = request.values.get("period", "6")
+    if forecast_period not in {"3", "6", "12"}:
+        forecast_period = "6"
+    periods = int(forecast_period)
+
+    revenue_change = 0.0
+    expense_change = 0.0
+    if request.method == "POST":
+        try:
+            revenue_change = float(request.form.get("revenue_change", 0))
+            expense_change = float(request.form.get("expense_change", 0))
+        except (TypeError, ValueError):
+            revenue_change, expense_change = 0.0, 0.0
+        revenue_change = max(-90.0, min(200.0, revenue_change))
+        expense_change = max(-90.0, min(200.0, expense_change))
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
+        company = cursor.fetchone()
+        if not company:
+            return redirect(url_for("company_setup"))
+
+        # Paid invoices are used as a revenue proxy. Pending invoices are
+        # shown separately and are not incorrectly counted as collected revenue.
+        cursor.execute("""
+            SELECT DATE_FORMAT(invoice_date, '%Y-%m') AS month_key,
+                   COALESCE(SUM(CASE WHEN LOWER(status) = 'paid' THEN amount ELSE 0 END), 0) AS revenue,
+                   COALESCE(SUM(CASE WHEN LOWER(status) IN ('pending', 'overdue') THEN amount ELSE 0 END), 0) AS outstanding,
+                   COUNT(*) AS invoice_count
+            FROM invoices
+            WHERE user_id = %s
+              AND invoice_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(invoice_date, '%Y-%m')
+            ORDER BY month_key ASC
+        """, (user_id,))
+        revenue_rows = cursor.fetchall() or []
+
+        cursor.execute("""
+            SELECT DATE_FORMAT(expense_date, '%Y-%m') AS month_key,
+                   COALESCE(SUM(amount), 0) AS expenses,
+                   COUNT(*) AS expense_count
+            FROM expenses
+            WHERE user_id = %s
+              AND expense_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(expense_date, '%Y-%m')
+            ORDER BY month_key ASC
+        """, (user_id,))
+        expense_rows = cursor.fetchall() or []
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(CASE WHEN LOWER(status) = 'paid' THEN amount ELSE 0 END), 0) AS total_paid,
+                   COALESCE(SUM(CASE WHEN LOWER(status) IN ('pending', 'overdue') THEN amount ELSE 0 END), 0) AS outstanding,
+                   COALESCE(SUM(CASE WHEN LOWER(status) = 'overdue' THEN amount ELSE 0 END), 0) AS overdue,
+                   COUNT(*) AS invoice_count
+            FROM invoices WHERE user_id = %s
+        """, (user_id,))
+        invoice_stats = cursor.fetchone() or {}
+
+        cursor.execute("SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE user_id = %s", (user_id,))
+        expense_stats = cursor.fetchone() or {}
+
+    except Exception:
+        app.logger.exception("Forecasting data could not be loaded")
+        flash("Forecasting could not load your business data. Check that your invoices and expenses tables are available.", "error")
+        company = get_current_company()
+        revenue_rows, expense_rows = [], []
+        invoice_stats, expense_stats = {}, {}
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    # Build a continuous monthly timeline for the previous 12 months.
+    today = date.today().replace(day=1)
+    months = []
+    for back in range(11, -1, -1):
+        year = today.year
+        month = today.month - back
+        while month <= 0:
+            month += 12
+            year -= 1
+        months.append(date(year, month, 1))
+
+    revenue_map = {str(row.get("month_key")): float(row.get("revenue") or 0) for row in revenue_rows}
+    expense_map = {str(row.get("month_key")): float(row.get("expenses") or 0) for row in expense_rows}
+    actual_revenue = [revenue_map.get(m.strftime("%Y-%m"), 0.0) for m in months]
+    actual_expenses = [expense_map.get(m.strftime("%Y-%m"), 0.0) for m in months]
+
+    revenue_predictions, revenue_method = _linear_forecast(actual_revenue, periods)
+    expense_predictions, expense_method = _linear_forecast(actual_expenses, periods)
+    future_months = []
+    year, month = today.year, today.month
+    for _ in range(periods):
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+        future_months.append(date(year, month, 1))
+
+    # Scenario adjustments are applied to forecast estimates only.
+    scenario_revenue = [v * (1 + revenue_change / 100.0) for v in revenue_predictions]
+    scenario_expenses = [v * (1 + expense_change / 100.0) for v in expense_predictions]
+    scenario_net = [r - e for r, e in zip(scenario_revenue, scenario_expenses)]
+    forecast_revenue_total = sum(scenario_revenue)
+    forecast_expense_total = sum(scenario_expenses)
+    forecast_net_total = sum(scenario_net)
+    data_months = sum(1 for m in months if m.strftime("%Y-%m") in revenue_map or m.strftime("%Y-%m") in expense_map)
+
+    if data_months < 3:
+        data_quality = "Limited data"
+        data_note = "Fewer than three months contain recorded invoice or expense activity. Treat these estimates as rough planning guides."
+    else:
+        data_quality = "Early estimate"
+        data_note = "Forecasts use a simple linear trend from the latest 12 months. They do not account for seasonality, unrecorded transactions, or guaranteed invoice payment dates."
+
+    labels = [_forecast_month_label(m) for m in months] + [_forecast_month_label(m) for m in future_months]
+    revenue_chart = [round(v, 2) for v in actual_revenue] + [None] * periods
+    expense_chart = [round(v, 2) for v in actual_expenses] + [None] * periods
+    forecast_revenue_chart = [None] * (len(months) - 1) + [round(actual_revenue[-1], 2)] + [round(v, 2) for v in scenario_revenue]
+    forecast_expense_chart = [None] * (len(months) - 1) + [round(actual_expenses[-1], 2)] + [round(v, 2) for v in scenario_expenses]
+
+    insights = []
+    if forecast_net_total < 0:
+        insights.append("Projected expenses exceed projected paid-invoice revenue in this scenario. Review spending and expected collections.")
+    elif forecast_net_total > 0:
+        insights.append("The forecast shows revenue above recorded expenses, but this is not a full profit calculation and does not guarantee cash availability.")
+    else:
+        insights.append("The forecast is approximately break-even. Check whether all income and expenses have been recorded.")
+    if float(invoice_stats.get("overdue") or 0) > 0:
+        insights.append("You have overdue invoices. Follow up on those payments; overdue invoice values are not treated as collected revenue.")
+    if data_months < 3:
+        insights.append("Add more historical invoices and expenses to improve the usefulness of future forecasts.")
+
+    return render_template(
+        "forecasting.html", company=company,
+        user_name=session.get("user_name", "User"),
+        user_email=session.get("user_email", ""),
+        period=periods, revenue_change=revenue_change, expense_change=expense_change,
+        history_labels=[_forecast_month_label(m) for m in months],
+        future_labels=[_forecast_month_label(m) for m in future_months],
+        chart_labels=labels, revenue_chart=revenue_chart, expense_chart=expense_chart,
+        forecast_revenue_chart=forecast_revenue_chart, forecast_expense_chart=forecast_expense_chart,
+        forecast_revenue_total=forecast_revenue_total, forecast_expense_total=forecast_expense_total,
+        forecast_net_total=forecast_net_total,
+        total_paid=float(invoice_stats.get("total_paid") or 0),
+        outstanding=float(invoice_stats.get("outstanding") or 0),
+        overdue=float(invoice_stats.get("overdue") or 0),
+        total_expenses=float(expense_stats.get("total_expenses") or 0),
+        data_quality=data_quality, data_note=data_note,
+        revenue_method=revenue_method, expense_method=expense_method,
+        data_months=data_months, insights=insights
+    )
+
+
+
+
+
 # RUN APP
 if __name__ == "__main__":
 

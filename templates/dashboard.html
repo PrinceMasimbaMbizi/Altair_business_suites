@@ -2673,7 +2673,8 @@
             <a href="#" class="nav-item" title="Business Analytics">
                 <span class="nav-icon">📈</span><span>Business Analytics</span>
             </a>
-            <a href="#" class="nav-item" title="Forecasting">
+            <a href="{{ url_for('forecasting') }}"
+                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting">
                 <span class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
             <a href="#" class="nav-item" title="Altair AI Assistant">
@@ -2722,8 +2723,7 @@
             <a href="#" class="nav-item" title="Security">
                 <span class="nav-icon">🔐</span><span>Security</span>
             </a>
-            <a href="{{ url_for('help_support') }}"
-                class="nav-item {% if request.endpoint == 'help_support' %}active{% endif %}" title="Help & Support">
+            <a href="#" class="nav-item" title="Help & Support">
                 <span class="nav-icon">❓</span><span>Help &amp; Support</span>
             </a>
             <a href="{{ url_for('logout') }}" class="logout-link">
@@ -2764,7 +2764,7 @@
                 <div class="welcome">
 
                     <h1>
-                        Hey there 👋
+                        Good morning 👋
                     </h1>
 
                     <p>

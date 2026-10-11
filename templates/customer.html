@@ -1496,8 +1496,9 @@
             <a href="#" class="nav-link" title="Security">
                 <i class="fa-solid fa-shield-halved"></i><span>Security</span>
             </a>
-            <a href="#" class="nav-link" title="Help and Support">
-                <i class="fa-solid fa-circle-question"></i><span>Help &amp; Support</span>
+            <a href="{{ url_for('help_support') }}"
+                class="nav-item {% if request.endpoint == 'help_support' %}active{% endif %}" title="Help & Support">
+                <span class="nav-icon">❓</span><span>Help &amp; Support</span>
             </a>
             <a href="{{ url_for('logout') }}" class="nav-link logout-link">
                 <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>

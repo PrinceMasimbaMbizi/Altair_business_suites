@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Altair Business Suite</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+        /* 
+           RESET
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f5f6fa;
+            color: #171722;
+            overflow: hidden;
+        }
+
+
+        /* 
+           APP
+         */
+
+        .app {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        /* 
+           SIDEBAR
+         */
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+
+            background: #11111c;
+            color: white;
+
+            padding: 25px 18px;
+
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            z-index: 1000;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #35354b;
+            border-radius: 10px;
+        }
+
+
+        /* 
+           COMPANY LOGO
+         */
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            margin-bottom: 40px;
+            padding-left: 10px;
+
+            min-width: 0;
+        }
+
+
+        .company-logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .logo>div:last-child {
+            min-width: 0;
+        }
+
+        .logo span {
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+        /*  COMPANY BRAND */
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 35px;
+            padding: 5px 8px;
+
+            min-width: 0;
+        }
+
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px;
+            height: 44px;
+
+            min-width: 44px;
+            min-height: 44px;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+        .company-logo-image {
+            display: block;
+
+            background: #242435;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .company-logo-placeholder {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+
+            box-shadow:
+                0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        .company-brand-name {
+            color: #ffffff;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+        /* 
+           MENU
+         */
+
+        .menu-title {
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #242435;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-left: 3px solid #8b5cf6;
+        }
+
+
+        /* 
+           LOGOUT
+         */
+
+        .logout-link {
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
+            transition: 0.2s;
+        }
+
+        .logout-link:hover {
+            color: #ffffff;
+        }
+
+
+        /* 
+           MAIN CONTENT
+         */
+
+        .main {
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            height: 100vh;
+
+            padding: 28px 35px;
+
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f6fa;
+        }
+
+        .main::-webkit-scrollbar-thumb {
+            background: #c9c9d4;
+            border-radius: 10px;
+        }
+
+        .main::-webkit-scrollbar-thumb:hover {
+            background: #a7a7b6;
+        }
+
+
+        /* 
+           TOP BAR
+         */
+
+        .topbar {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+        .welcome h1 {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .welcome p {
+            color: #777789;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+        .top-actions {
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+        /* 
+           NOTIFICATION
+         */
+
+        .notification {
+            width: 40px;
+            height: 40px;
+
+            background: white;
+
+            border-radius: 11px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+
+        /* 
+           PROFILE
+         */
+
+        .profile {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: white;
+
+            padding: 6px 12px 6px 6px;
+
+            border-radius: 12px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+        .profile small {
+            display: block;
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 2px;
+        }
+
+
+        /* 
+           STAT CARDS
+         */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .stat-label {
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+        .stat-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 11px;
+
+            background: #f0ebff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card h2 {
+            margin-top: 12px;
+
+            font-size: 24px;
+        }
+
+        .growth {
+            margin-top: 7px;
+
+            font-size: 11px;
+
+            color: #16a34a;
+        }
+
+
+        /* 
+           DASHBOARD GRID
+         */
+
+        .dashboard-grid {
+            display: grid;
+
+            grid-template-columns:
+                2fr 1fr;
+
+            gap: 20px;
+        }
+
+        /* Revenue chart first, Otis advisor directly underneath */
+        .revenue-advisor-grid {
+            grid-template-columns: minmax(0, 1fr);
+            align-items: stretch;
+        }
+
+        .revenue-advisor-grid>.card {
+            width: 100%;
+        }
+
+        .revenue-advisor-grid .ai-card {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            border: 1px solid rgba(0, 180, 210, .14);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .revenue-advisor-grid .ai-card .card-header,
+        .revenue-advisor-grid .ai-card .ai-btn {
+            grid-column: 1 / -1;
+        }
+
+        .revenue-advisor-grid .ai-card .card-header {
+            margin-bottom: 0;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message {
+            margin: 0;
+            min-width: 0;
+            padding: 16px;
+            border-radius: 14px;
+            background: #13182e;
+            border: 1px solid #e8edf5;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message p {
+            line-height: 1.65;
+            overflow-wrap: anywhere;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-btn {
+            justify-self: start;
+            min-width: 150px;
+        }
+
+        @media (max-width: 650px) {
+            .revenue-advisor-grid .ai-card {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 16px;
+            }
+        }
+
+        .card {
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+        }
+
+        .card-header span {
+            font-size: 11px;
+
+            color: #777;
+        }
+
+        .company-logo-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* 
+           CHART
+         */
+
+        .chart-container {
+            position: relative;
+
+            width: 100%;
+
+            height: 300px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+
+        /* 
+           AI CARD
+         */
+
+        .ai-card {
+            background:
+                linear-gradient(135deg,
+                    #171126,
+                    #28203e);
+
+            color: white;
+        }
+
+        .ai-card .card-header span {
+            color: #bbb0d2;
+        }
+
+        .ai-badge {
+            background: #8b5cf6;
+
+            padding: 5px 9px;
+
+            border-radius: 7px;
+
+            font-size: 9px;
+
+            font-weight: 700;
+        }
+
+        .ai-message {
+            background:
+                rgba(255, 255, 255, 0.07);
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-bottom: 12px;
+        }
+
+        .ai-message strong {
+            display: block;
+
+            font-size: 12px;
+
+            margin-bottom: 5px;
+        }
+
+        .ai-message p {
+            color: #c9c4d2;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+        .ai-btn {
+            width: 100%;
+
+            border: none;
+
+            padding: 11px;
+
+            border-radius: 9px;
+
+            background: #8b5cf6;
+
+            color: white;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            margin-top: 5px;
+
+            transition: 0.2s;
+        }
+
+        .ai-btn:hover {
+            background: #7c3aed;
+
+            transform: translateY(-1px);
+        }
+
+
+        /* 
+           LEADS
+         */
+
+        .lead {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 13px 0;
+
+            border-bottom:
+                1px solid #eeeef3;
+        }
+
+        .lead:last-child {
+            border-bottom: none;
+        }
+
+        .lead-info {
+            display: flex;
+
+            gap: 10px;
+
+            align-items: center;
+
+            min-width: 0;
+        }
+
+        .lead-icon {
+            width: 35px;
+            height: 35px;
+
+            border-radius: 9px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+        }
+
+        .lead-name {
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        .lead-source {
+            color: #999;
+
+            font-size: 10px;
+
+            margin-top: 3px;
+        }
+
+        .score {
+            font-size: 11px;
+
+            font-weight: 700;
+
+            color: #16a34a;
+
+            flex-shrink: 0;
+        }
+
+
+        /* 
+           TRANSACTIONS
+         */
+
+        .transactions {
+            margin-top: 20px;
+        }
+
+        .transaction {
+            display: grid;
+
+            grid-template-columns:
+                2fr 1fr 1fr 1fr;
+
+            align-items: center;
+
+            padding: 14px 0;
+
+            border-bottom:
+                1px solid #eeeef3;
+
+            font-size: 11px;
+        }
+
+        .transaction:last-child {
+            border-bottom: none;
+        }
+
+        .transaction>div {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .transaction-heading {
+            color: #777789;
+            font-size: 10px;
+        }
+
+        .transaction-empty {
+            color: #888;
+            padding: 18px 0;
+            font-size: 12px;
+        }
+
+        .customer {
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #888;
+        }
+
+        .paid {
+            color: #16a34a;
+
+            font-weight: 600;
+        }
+
+        .pending {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .overdue-status {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+
+        /* 
+           MOBILE / TABLET
+         */
+
+        @media (max-width: 1000px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
+        /* 
+           MOBILE
+         */
+        /* 
+   ALTAIR AI INSIGHT CARDS
+ */
+
+        .ai-insight-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin-top: 5px;
+        }
+
+        .ai-insight-box {
+            background:
+                rgba(255, 255, 255, 0.055);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 13px;
+
+            padding: 13px;
+
+            min-height: 78px;
+
+            transition: 0.2s ease;
+        }
+
+        .ai-insight-box:hover {
+            background:
+                rgba(255, 255, 255, 0.09);
+
+            transform: translateY(-1px);
+        }
+
+        .ai-insight-label {
+            color: #aaa5b8;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.7px;
+
+            margin-bottom: 7px;
+        }
+
+        .ai-insight-value {
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            line-height: 1.3;
+        }
+
+        .ai-insight-value.accent {
+            color: #00f0ff;
+        }
+
+        .ai-insight-value.success {
+            color: #4ade80;
+        }
+
+        .ai-insight-value.warning {
+            color: #fbbf24;
+        }
+
+        .ai-insight-value.danger {
+            color: #fb7185;
+        }
+
+        @media (max-width: 700px) {
+
+            .ai-insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 700px) {
+            .company-brand {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .company-brand-name {
+                display: none;
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            body {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                width: 70px;
+
+                padding: 20px 10px;
+            }
+
+            .logo span,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+
+                padding: 0;
+            }
+
+            .logo img,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+            }
+
+            .nav-item {
+                justify-content: center;
+
+                padding: 12px 8px;
+            }
+
+            .main {
+                margin-left: 70px;
+
+                width:
+                    calc(100% - 70px);
+
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .welcome h1 {
+                font-size: 20px;
+            }
+
+            .welcome p {
+                font-size: 11px;
+            }
+
+            .profile div {
+                display: none;
+            }
+
+            .profile {
+                padding: 3px;
+            }
+
+            .top-actions {
+                gap: 8px;
+            }
+
+            .transaction {
+                grid-template-columns:
+                    1.5fr 1fr 1fr 1fr;
+
+                font-size: 10px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+        }
+
+
+        /* 
+           VERY SMALL SCREENS
+         */
+
+        @media (max-width: 450px) {
+
+            .main {
+                padding: 15px;
+            }
+
+            .welcome h1 {
+                font-size: 17px;
+            }
+
+            .notification {
+                width: 35px;
+                height: 35px;
+            }
+
+            .avatar {
+                width: 30px;
+                height: 30px;
+            }
+
+            .card {
+                padding: 17px;
+            }
+
+            .transaction {
+                grid-template-columns:
+                    1.4fr 0.9fr 0.9fr 0.9fr;
+
+                font-size: 9px;
+            }
+
+        }
+
+
+        /* 
+           WELCOME POPUP OVERLAY
+         */
+
+        .welcome-overlay {
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0, 0, 0, 0.65);
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            z-index: 99999;
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            transition:
+                opacity 0.3s ease,
+                visibility 0.3s ease;
+        }
+
+        .welcome-overlay.show {
+            opacity: 1;
+
+            visibility: visible;
+        }
+
+
+        /* 
+           POPUP BOX
+         */
+
+        .welcome-box {
+            width: 90%;
+
+            max-width: 420px;
+
+            padding: 35px 30px;
+
+            text-align: center;
+
+            background:
+                rgba(20, 25, 40, 0.95);
+
+            border:
+                1px solid rgba(0, 240, 255, 0.4);
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 0 30px rgba(0, 240, 255, 0.2);
+
+            transform: scale(0.8);
+
+            transition:
+                transform 0.3s ease;
+
+            color: white;
+        }
+
+        .welcome-overlay.show .welcome-box {
+            transform: scale(1);
+        }
+
+
+        /* 
+           POPUP ICON
+         */
+
+        .welcome-icon {
+            width: 60px;
+            height: 60px;
+
+            margin:
+                0 auto 15px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+
+        /* 
+           POPUP TITLE
+         */
+
+        .welcome-box h2 {
+            margin-bottom: 15px;
+
+            font-size: 25px;
+        }
+
+
+        /* 
+           POPUP MESSAGE
+         */
+
+        .welcome-box p {
+            font-size: 16px;
+
+            line-height: 1.6;
+
+            margin: 8px 0;
+        }
+
+        .welcome-box strong {
+            color: #00f0ff;
+        }
+
+        .welcome-subtext {
+            color: #aaa;
+        }
+
+
+        /* 
+           POPUP BUTTON
+         */
+
+        .welcome-box button {
+            margin-top: 20px;
+
+            padding: 12px 35px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+        }
+
+        .welcome-box button:hover {
+            transform: scale(1.05);
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+
+        /* 
+   ALTAIR AI BUSINESS ADVISOR
+ */
+
+        .altair-ai-overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            z-index: 9999;
+
+            background:
+                radial-gradient(circle at 50% 20%,
+                    rgba(0, 240, 255, 0.08),
+                    transparent 35%),
+                rgba(5, 5, 12, 0.78);
+
+            backdrop-filter: blur(10px);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+        }
+
+
+        /* 
+   WINDOW
+ */
+
+        .altair-ai-window {
+
+            width: min(100%, 1050px);
+
+            height: min(720px, calc(100vh - 36px));
+
+            background:
+                linear-gradient(145deg,
+                    #12121f,
+                    #0e0e18);
+
+            border: 1px solid rgba(0, 240, 255, 0.16);
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.55),
+                0 0 50px rgba(0, 240, 255, 0.08);
+
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: block;
+            position: relative;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, .35) transparent;
+            color: #fff;
+
+        }
+
+        .altair-ai-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .altair-ai-window::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, .35);
+            border-radius: 10px;
+        }
+
+        .altair-ai-header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: rgba(18, 18, 31, .97);
+            backdrop-filter: blur(12px);
+        }
+
+        .altair-ai-input-area {
+            position: sticky;
+            bottom: 0;
+            z-index: 5;
+            background: rgba(14, 14, 24, .98);
+        }
+
+
+        /* 
+   HEADER
+ */
+
+        .altair-ai-header {
+
+            height: 70px;
+
+            padding: 0 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .07);
+
+            background:
+                rgba(255, 255, 255, .015);
+
+        }
+
+
+        .altair-ai-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+        }
+
+
+        .altair-ai-avatar {
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 19px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            box-shadow:
+                0 0 22px rgba(0, 240, 255, .18);
+
+        }
+
+
+        .altair-ai-title h2 {
+
+            margin: 0;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+        }
+
+
+        .altair-ai-title p {
+
+            margin: 2px 0 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-header-right {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+        }
+
+
+        .altair-ai-status {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 11px;
+
+            color: #9ba0ad;
+
+        }
+
+
+        .altair-ai-status span {
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+
+            box-shadow:
+                0 0 8px rgba(34, 197, 94, .7);
+
+        }
+
+
+        .altair-ai-close {
+
+            width: 34px;
+            height: 34px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: rgba(255, 255, 255, .06);
+
+            color: #aaa;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-close:hover {
+
+            background: rgba(255, 255, 255, .12);
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   STATS
+ */
+
+        .altair-ai-stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+
+            padding: 12px 18px;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-stat {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 10px 12px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .055);
+
+            border-radius: 12px;
+
+        }
+
+
+        .stat-icon {
+
+            width: 31px;
+            height: 31px;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+
+        }
+
+
+        .stat-icon.cyan {
+
+            background:
+                rgba(0, 240, 255, .10);
+
+        }
+
+
+        .stat-icon.purple {
+
+            background:
+                rgba(157, 78, 221, .12);
+
+        }
+
+
+        .stat-icon.pink {
+
+            background:
+                rgba(255, 0, 212, .10);
+
+        }
+
+
+        .stat-icon.green {
+
+            background:
+                rgba(34, 197, 94, .10);
+
+        }
+
+
+        .altair-ai-stat span {
+
+            display: block;
+
+            color: #858595;
+
+            font-size: 9px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .altair-ai-stat strong {
+
+            display: block;
+
+            font-size: 13px;
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   BODY
+ */
+
+        .altair-ai-body {
+
+            flex: 1;
+
+            min-height: 0;
+            height: auto;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) 250px;
+
+            gap: 14px;
+
+            padding: 14px 18px;
+
+            overflow: visible;
+
+        }
+
+
+        .altair-ai-main {
+
+            min-width: 0;
+
+            overflow: visible;
+
+            padding-right: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar {
+
+            width: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar-thumb {
+
+            background: rgba(255, 255, 255, .12);
+
+            border-radius: 10px;
+
+        }
+
+
+        /* 
+   WELCOME
+ */
+
+        .advisor-welcome {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 13px 14px;
+
+            margin-bottom: 10px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(135deg,
+                    rgba(0, 240, 255, .07),
+                    rgba(255, 0, 212, .04));
+
+            border:
+                1px solid rgba(0, 240, 255, .10);
+
+        }
+
+
+        .advisor-welcome-icon {
+
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 16px;
+
+        }
+
+
+        .advisor-welcome h3 {
+
+            margin: 0 0 3px;
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-welcome p {
+
+            margin: 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* 
+   RECOMMENDATION
+ */
+
+        .advisor-recommendation {
+
+            padding: 14px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 9px;
+
+        }
+
+
+        .advisor-section-title>div {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .section-icon {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-section-title strong {
+
+            font-size: 12px;
+
+        }
+
+
+        .advisor-badge {
+
+            font-size: 8px;
+
+            padding: 4px 7px;
+
+            border-radius: 20px;
+
+            color: #00f0ff;
+
+            background:
+                rgba(0, 240, 255, .08);
+
+            border:
+                1px solid rgba(0, 240, 255, .12);
+
+        }
+
+
+        .advisor-recommendation p {
+
+            margin: 0;
+
+            color: #b8bac5;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+
+        }
+
+
+        /* 
+   QUESTIONS
+ */
+
+        .advisor-questions {
+
+            margin-top: 12px;
+
+        }
+
+
+        .advisor-section-heading {
+
+            color: #858595;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .advisor-question-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 7px;
+
+        }
+
+
+        .advisor-question-grid button {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 9px 10px;
+
+            border-radius: 10px;
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            color: #c6c8d2;
+
+            text-align: left;
+
+            font-size: 10px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .advisor-question-grid button span {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-question-grid button:hover {
+
+            border-color:
+                rgba(0, 240, 255, .20);
+
+            background:
+                rgba(0, 240, 255, .05);
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   CHAT
+ */
+
+        .altair-chat-messages {
+
+            margin-top: 12px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .altair-ai-message {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 8px;
+
+        }
+
+
+        .chat-avatar {
+
+            width: 27px;
+            height: 27px;
+
+            flex-shrink: 0;
+
+            border-radius: 8px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 12px;
+
+        }
+
+
+        .chat-bubble {
+
+            max-width: 90%;
+
+            padding: 9px 11px;
+
+            border-radius: 10px;
+
+            background:
+                rgba(0, 240, 255, .045);
+
+            border:
+                1px solid rgba(0, 240, 255, .08);
+
+        }
+
+
+        .chat-bubble strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 4px;
+
+            color: #00f0ff;
+
+        }
+
+
+        .chat-bubble p {
+
+            margin: 0;
+
+            color: #aaaebb;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* 
+   RIGHT SIDE
+ */
+
+        .altair-ai-side {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            min-width: 0;
+
+        }
+
+
+        .advisor-side-card {
+
+            padding: 13px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-side-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .advisor-intelligence {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .advisor-intelligence>div {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+        }
+
+
+        .advisor-intelligence span {
+
+            color: #858595;
+
+            font-size: 9px;
+
+        }
+
+
+        .advisor-intelligence strong {
+
+            font-size: 11px;
+
+        }
+
+
+        .warning-value {
+
+            color: #f59e0b;
+
+        }
+
+
+        /* 
+   FOCUS
+ */
+
+        .advisor-focus {
+
+            flex: 1;
+
+        }
+
+
+        .focus-item {
+
+            display: flex;
+
+            gap: 9px;
+
+            margin-bottom: 13px;
+
+        }
+
+
+        .focus-item>span {
+
+            width: 22px;
+            height: 22px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 7px;
+
+            background:
+                rgba(0, 240, 255, .07);
+
+            color: #00f0ff;
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+        }
+
+
+        .focus-item strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .focus-item p {
+
+            margin: 0;
+
+            color: #1a2bac;
+
+            font-size: 9px;
+
+            line-height: 1.45;
+
+        }
+
+
+        /* 
+   INPUT
+ */
+
+        .altair-ai-input-area {
+
+            padding: 11px 18px 13px;
+
+            border-top:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-input-wrapper {
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 4px 5px 4px 12px;
+
+            border-radius: 12px;
+
+            background:
+                #181824;
+
+            border:
+                1px solid rgba(255, 255, 255, .08);
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-input-wrapper:focus-within {
+
+            border-color:
+                rgba(0, 240, 255, .35);
+
+            box-shadow:
+                0 0 18px rgba(0, 240, 255, .06);
+
+        }
+
+
+        .input-ai-icon {
+
+            color: #00f0ff;
+
+            font-size: 14px;
+
+        }
+
+
+        .altair-ai-input-wrapper input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            border: 0;
+
+            outline: 0;
+
+            background: transparent;
+
+            color: #fff;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-input-wrapper input::placeholder {
+
+            color: #656675;
+
+        }
+
+
+        .altair-send-button {
+
+            height: 33px;
+
+            padding: 0 13px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            background:
+                linear-gradient(135deg,
+                    #00dff0,
+                    #00aeca);
+
+            color: #031014;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+        }
+
+
+        .altair-ai-input-area small {
+
+            display: block;
+
+            margin-top: 5px;
+
+            color: #555665;
+
+            font-size: 8px;
+
+        }
+
+
+        /* 
+   MOBILE
+ */
+
+        @media (max-width: 800px) {
+
+            .altair-ai-window {
+
+                height:
+                    calc(100vh - 20px);
+
+                border-radius: 16px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+
+            .altair-ai-body {
+
+                grid-template-columns: 1fr;
+                overflow: visible;
+
+            }
+
+
+            .altair-ai-side {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-main {
+
+                overflow: visible;
+
+            }
+
+        }
+
+
+        @media (max-width: 500px) {
+
+            .altair-ai-overlay {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-header {
+
+                height: 62px;
+
+                padding: 0 13px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                padding: 9px;
+
+                gap: 6px;
+
+            }
+
+
+            .altair-ai-stat {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-body {
+
+                padding: 10px;
+
+            }
+
+
+            .advisor-question-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .altair-ai-status {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-input-area {
+
+                padding: 8px 10px 10px;
+
+            }
+
+        }
+
+        /* Consistent sidebar alignment and responsive dashboard layout */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 22px 14px 24px;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06);
+        }
+
+        .company-brand {
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 4px 7px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .09);
+        }
+
+        .company-brand-name {
+            flex: 1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-title {
+            margin: 20px 10px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.25px;
+            line-height: 1.4;
+        }
+
+        .nav-item {
+            min-height: 43px;
+            width: 100%;
+            gap: 12px;
+            margin-bottom: 3px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: rgba(255, 255, 255, .05);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16));
+            border: 1px solid rgba(0, 240, 255, .16);
+            border-left: 3px solid #00f0ff;
+            color: #fff;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
+        }
+
+        .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            min-width: 22px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .nav-item>span:last-child,
+        .logout-link>span:last-child {
+            min-width: 0;
+        }
+
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #fda4af;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .logout-link:hover {
+            background: rgba(244, 63, 94, .1);
+            color: #fff;
+        }
+
+        .main {
+            min-width: 0;
+            padding: 30px clamp(18px, 3vw, 38px);
+        }
+
+        .topbar {
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .welcome h1 {
+            line-height: 1.25;
+            letter-spacing: -.6px;
+        }
+
+        .welcome p {
+            line-height: 1.6;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 72px;
+                padding: 18px 8px;
+                align-items: stretch;
+            }
+
+            .company-brand {
+                justify-content: center;
+                padding: 0 0 16px;
+                margin-bottom: 10px;
+            }
+
+            .company-brand-name,
+            .nav-item>span:last-child,
+            .menu-title,
+            .logout-link>span:last-child {
+                display: none;
+            }
+
+            .nav-item,
+            .logout-link {
+                justify-content: center;
+                gap: 0;
+                padding: 11px 6px;
+                min-height: 42px;
+                border-left-width: 1px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                min-width: 24px;
+                font-size: 17px;
+            }
+
+            .main {
+                margin-left: 72px;
+                width: calc(100% - 72px);
+                padding: 22px 16px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .main {
+                padding: 16px 12px;
+            }
+
+            .topbar {
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .welcome h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="app">
+
+
+        <!-- 
+             SIDEBAR
+         -->
+
+        <aside class="sidebar">
+            <div class="company-brand">
+                {% if company and company.logo %}
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% else %}
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% endif %}
+                <div class="company-brand-name">
+                    {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
+                </div>
+            </div>
+
+            <div class="menu-title">Main</div>
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
+                <span class="nav-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('customer') }}"
+                class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">
+                <span class="nav-icon">👥</span><span>Customers</span>
+            </a>
+            <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+                title="Invoices">
+                <span class="nav-icon">🧾</span><span>Invoices</span>
+            </a>
+            <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+                title="Inventory">
+                <span class="nav-icon">📦</span><span>Inventory</span>
+            </a>
+            <a href="#" class="nav-item" title="Transactions">
+                <span class="nav-icon">💳</span><span>Transactions</span>
+            </a>
+
+            <div class="menu-title">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">
+                <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
+            </a>
+            <a href="#" class="nav-item" title="Facebook Analytics">
+                <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="WhatsApp Analytics">
+                <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Business Analytics">
+                <span class="nav-icon">📈</span><span>Business Analytics</span>
+            </a>
+            <a href="{{ url_for('forecasting') }}"
+                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting">
+                <span class="nav-icon">🔮</span><span>Forecasting</span>
+            </a>
+            <a href="#" class="nav-item" title="Altair AI Assistant">
+                <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
+            </a>
+
+            <div class="menu-title">Business Management</div>
+            <a href="#" class="nav-item" title="Company Profile">
+                <span class="nav-icon">🏢</span><span>Company Profile</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='employees-team') }}" class="nav-item" title="Employees & Team">
+                <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='documents-reports') }}" class="nav-item"
+                title="Documents & Reports">
+                <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='notifications') }}" class="nav-item" title="Notifications">
+                <span class="nav-icon">🔔</span><span>Notifications</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='integrations') }}" class="nav-item" title="Integrations">
+                <span class="nav-icon">🔗</span><span>Integrations</span>
+            </a>
+
+            <div class="menu-title">Account &amp; Billing</div>
+            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
+                title="Subscription Plans">
+                <span class="nav-icon">👑</span><span>Subscription Plans</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item"
+                title="Billing & Payments">
+                <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
+                <span class="nav-icon">🧾</span><span>Billing History</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
+                <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
+            </a>
+
+            <div class="menu-title">Settings &amp; Support</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">
+                <span class="nav-icon">⚙️</span><span>Settings</span>
+            </a>
+            <a href="#" class="nav-item" title="Security">
+                <span class="nav-icon">🔐</span><span>Security</span>
+            </a>
+            <a href="#" class="nav-item" title="Help & Support">
+                <span class="nav-icon">❓</span><span>Help &amp; Support</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <span class="nav-icon">🚪</span><span>Logout</span>
+            </a>
+        </aside>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- 
+             MAIN CONTENT
+         -->
+
+        <main class="main">
+            <div class="topbar">
+                <div class="welcome">
+                    <h1>🔮 Forecasting Centre</h1>
+                    <p>Explore trends, plan ahead, and test possible business scenarios.</p>
+                </div>
+                <div class="top-actions">
+                    <div class="profile">
+                        <div class="avatar">{{ user_name[0]|upper if user_name else 'U' }}</div>
+                        <div><strong style="font-size:12px;">{{ user_name }}</strong><small>Business Forecasting</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}<div class="flash-wrap">{% for category, message in messages %}<div
+                    class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+            {% endwith %}
+
+            <section class="forecast-hero">
+                <div><span class="eyebrow">ALTAIR BUSINESS INTELLIGENCE</span>
+                    <h2>See what may come next.</h2>
+                    <p>Forecasts are estimates based on recorded paid invoices and expenses—not guarantees.</p>
+                </div>
+                <form method="get" action="{{ url_for('forecasting') }}" class="period-form"><label
+                        for="period">Forecast period</label><select name="period" id="period">
+                        <option value="3" {% if period==3 %}selected{% endif %}>Next 3 months</option>
+                        <option value="6" {% if period==6 %}selected{% endif %}>Next 6 months</option>
+                        <option value="12" {% if period==12 %}selected{% endif %}>Next 12 months</option>
+                    </select><button type="submit" class="btn-primary">Generate forecast</button></form>
+            </section>
+
+            <div class="forecast-cards">
+                <article class="forecast-card">
+                    <div class="card-label">Projected revenue</div>
+                    <div class="card-icon">📈</div>
+                    <h3>{{ forecast_revenue_total|money }}</h3>
+                    <p>Paid-invoice revenue estimate over {{ period }} months</p>
+                </article>
+                <article class="forecast-card">
+                    <div class="card-label">Projected expenses</div>
+                    <div class="card-icon">💸</div>
+                    <h3>{{ forecast_expense_total|money }}</h3>
+                    <p>Estimated recorded expenses over {{ period }} months</p>
+                </article>
+                <article class="forecast-card">
+                    <div class="card-label">Projected net difference</div>
+                    <div class="card-icon">⚖️</div>
+                    <h3 class="{% if forecast_net_total < 0 %}negative{% else %}positive{% endif %}">{{
+                        forecast_net_total|money }}</h3>
+                    <p>Projected revenue minus recorded expenses; not formal net profit</p>
+                </article>
+                <article class="forecast-card">
+                    <div class="card-label">Unpaid invoices</div>
+                    <div class="card-icon">🧾</div>
+                    <h3>{{ outstanding|money }}</h3>
+                    <p>Outstanding amount, including pending and overdue invoices</p>
+                </article>
+            </div>
+
+            <section class="panel forecast-chart-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Actual vs forecast</h2>
+                        <p>Monthly history and projected trend</p>
+                    </div><span class="status-pill">{{ data_quality }}</span>
+                </div>
+                <div class="chart-box"><canvas id="forecastChart"
+                        aria-label="Actual and forecast revenue and expenses chart"></canvas></div>
+            </section>
+
+            <div class="two-col">
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>🧠 Altair forecasting insights</h2>
+                            <p>What the current estimates suggest</p>
+                        </div>
+                    </div>
+                    <div class="insight-list">{% for insight in insights %}<div class="insight-item"><span>✦</span>
+                            <p>{{ insight }}</p>
+                        </div>{% endfor %}</div>
+                    <div class="data-note"><strong>Data note:</strong> {{ data_note }}</div>
+                </section>
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>📌 Current business data</h2>
+                            <p>Values retrieved from your account</p>
+                        </div>
+                    </div>
+                    <div class="metric-row"><span>Total paid invoices</span><strong>{{ total_paid|money }}</strong>
+                    </div>
+                    <div class="metric-row"><span>Total recorded expenses</span><strong>{{ total_expenses|money
+                            }}</strong></div>
+                    <div class="metric-row"><span>Overdue invoices</span><strong
+                            class="{% if overdue > 0 %}negative{% endif %}">{{ overdue|money }}</strong></div>
+                    <div class="metric-row"><span>Months with recorded activity</span><strong>{{ data_months }} /
+                            12</strong></div>
+                    <p class="small-muted">Revenue method: {{ revenue_method }}.<br>Expense method: {{ expense_method
+                        }}.</p>
+                </section>
+            </div>
+
+            <section class="panel scenario-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>🧪 What-if scenario simulator</h2>
+                        <p>Test assumptions without changing your saved business records.</p>
+                    </div>
+                </div>
+                <form method="post" action="{{ url_for('forecasting') }}" class="scenario-form">
+                    <input type="hidden" name="period" value="{{ period }}">
+                    <div class="scenario-field"><label for="revenue_change">Revenue change <strong id="revenueValue">{{
+                                revenue_change|int }}%</strong></label><input type="range" min="-50" max="100" step="5"
+                            id="revenue_change" name="revenue_change" value="{{ revenue_change|int }}"
+                            oninput="document.getElementById('revenueValue').textContent=this.value+'%'" /><small>Example:
+                            15 means revenue is 15% higher than the baseline forecast.</small></div>
+                    <div class="scenario-field"><label for="expense_change">Expense change <strong id="expenseValue">{{
+                                expense_change|int }}%</strong></label><input type="range" min="-50" max="100" step="5"
+                            id="expense_change" name="expense_change" value="{{ expense_change|int }}"
+                            oninput="document.getElementById('expenseValue').textContent=this.value+'%'" /><small>Example:
+                            10 means expenses are 10% higher than the baseline forecast.</small></div>
+                    <button type="submit" class="btn-primary">Simulate scenario</button><a class="btn-secondary"
+                        href="{{ url_for('forecasting', period=period) }}">Reset scenario</a>
+                </form>
+                <div class="scenario-result">
+                    <div><span>Scenario revenue</span><strong>{{ forecast_revenue_total|money }}</strong></div>
+                    <div><span>Scenario expenses</span><strong>{{ forecast_expense_total|money }}</strong></div>
+                    <div><span>Net difference</span><strong
+                            class="{% if forecast_net_total < 0 %}negative{% else %}positive{% endif %}">{{
+                            forecast_net_total|money }}</strong></div>
+                </div>
+            </section>
+            <p class="forecast-disclaimer">Forecasts are planning estimates only. This page uses paid invoices as a
+                revenue proxy and recorded expenses as costs. It does not yet model payment timing, tax, inventory
+                demand, seasonality, or formal accounting profit.</p>
+        </main>
+    </div>
+    <script>
+        const forecastLabels = {{ chart_labels| tojson }};
+        const revenueHistory = {{ revenue_chart| tojson }};
+        const expenseHistory = {{ expense_chart| tojson }};
+        const revenueForecast = {{ forecast_revenue_chart| tojson }};
+        const expenseForecast = {{ forecast_expense_chart| tojson }};
+        const ctx = document.getElementById('forecastChart');
+        if (ctx && window.Chart) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: forecastLabels, datasets: [
+                        { label: 'Actual paid-invoice revenue', data: revenueHistory, borderColor: '#00a6c7', backgroundColor: 'rgba(0,166,199,.10)', borderWidth: 2, tension: .3, spanGaps: false },
+                        { label: 'Actual expenses', data: expenseHistory, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.08)', borderWidth: 2, tension: .3, spanGaps: false },
+                        { label: 'Revenue forecast', data: revenueForecast, borderColor: '#8b5cf6', borderDash: [7, 5], borderWidth: 3, tension: .3, pointRadius: 3, spanGaps: false },
+                        { label: 'Expense forecast', data: expenseForecast, borderColor: '#db2777', borderDash: [7, 5], borderWidth: 3, tension: .3, pointRadius: 3, spanGaps: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { callback: (value) => new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(value) } }, x: { ticks: { maxRotation: 45, minRotation: 0 } } } }
+            });
+        }
+    </script>
+    <style>
+        .forecast-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 28px;
+            border-radius: 22px;
+            background: linear-gradient(120deg, #11111c, #252047 62%, #17354a);
+            color: #fff;
+            margin-bottom: 22px;
+            box-shadow: 0 14px 32px rgba(20, 20, 45, .13)
+        }
+
+        .forecast-hero h2 {
+            font-size: clamp(23px, 3vw, 34px);
+            margin: 10px 0
+        }
+
+        .forecast-hero p {
+            color: #d5d8e8;
+            margin: 0;
+            max-width: 600px
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #67e8f9;
+            font-weight: 800
+        }
+
+        .period-form {
+            min-width: 220px;
+            display: grid;
+            gap: 8px
+        }
+
+        .period-form label,
+        .scenario-field label {
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .period-form select {
+            padding: 11px;
+            border-radius: 10px;
+            border: 1px solid #d8dce7;
+            background: white;
+            color: #111827
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 15px;
+            font-weight: 750;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00c6df, #8b5cf6);
+            color: #101323
+        }
+
+        .btn-secondary {
+            background: #f1f3f8;
+            color: #33384b
+        }
+
+        .forecast-cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 20px
+        }
+
+        .forecast-card,
+        .panel {
+            background: #fff;
+            border: 1px solid #e9ebf2;
+            border-radius: 18px;
+            padding: 21px;
+            box-shadow: 0 7px 22px rgba(26, 32, 56, .045);
+            min-width: 0
+        }
+
+        .forecast-card {
+            position: relative
+        }
+
+        .card-label {
+            font-size: 12px;
+            color: #73788c;
+            font-weight: 700;
+            padding-right: 32px
+        }
+
+        .card-icon {
+            position: absolute;
+            right: 18px;
+            top: 16px;
+            font-size: 22px
+        }
+
+        .forecast-card h3 {
+            font-size: clamp(21px, 2.5vw, 29px);
+            margin: 18px 0 8px;
+            overflow-wrap: anywhere;
+            color: #191b2d
+        }
+
+        .forecast-card p,
+        .panel-heading p,
+        .small-muted {
+            font-size: 12px;
+            color: #85899b;
+            line-height: 1.6;
+            margin: 0
+        }
+
+        .panel {
+            margin-bottom: 20px
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px
+        }
+
+        .panel-heading h2 {
+            font-size: 17px;
+            margin: 0 0 5px;
+            color: #1c2034
+        }
+
+        .status-pill {
+            font-size: 11px;
+            padding: 7px 10px;
+            background: #eef7ff;
+            color: #176b8b;
+            border-radius: 20px;
+            font-weight: 800;
+            white-space: nowrap
+        }
+
+        .chart-box {
+            height: 330px;
+            position: relative
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px
+        }
+
+        .insight-list {
+            display: grid;
+            gap: 12px
+        }
+
+        .insight-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px;
+            background: #f8f9fc;
+            border-radius: 12px
+        }
+
+        .insight-item span {
+            color: #8b5cf6
+        }
+
+        .insight-item p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #484d61
+        }
+
+        .data-note {
+            margin-top: 15px;
+            padding: 12px;
+            border-left: 3px solid #00a6c7;
+            background: #f2fbfd;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #50566b
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid #eff0f5;
+            font-size: 13px;
+            color: #6e7385
+        }
+
+        .metric-row strong {
+            color: #20243a
+        }
+
+        .small-muted {
+            margin-top: 16px
+        }
+
+        .scenario-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: end
+        }
+
+        .scenario-field {
+            display: grid;
+            gap: 11px
+        }
+
+        .scenario-field label {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px
+        }
+
+        .scenario-field label strong {
+            color: #7c3aed
+        }
+
+        .scenario-field input {
+            width: 100%;
+            accent-color: #7c3aed
+        }
+
+        .scenario-field small {
+            font-size: 11px;
+            line-height: 1.5;
+            color: #85899b
+        }
+
+        .scenario-form .btn-primary {
+            grid-column: 1
+        }
+
+        .scenario-form .btn-secondary {
+            grid-column: 2;
+            grid-row: 2
+        }
+
+        .scenario-result {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px
+        }
+
+        .scenario-result>div {
+            background: #f7f8fc;
+            border-radius: 12px;
+            padding: 15px;
+            display: grid;
+            gap: 8px
+        }
+
+        .scenario-result span {
+            font-size: 11px;
+            color: #7a7f91
+        }
+
+        .scenario-result strong {
+            font-size: 20px;
+            overflow-wrap: anywhere
+        }
+
+        .positive {
+            color: #059669 !important
+        }
+
+        .negative {
+            color: #dc2626 !important
+        }
+
+        .forecast-disclaimer {
+            font-size: 11px;
+            line-height: 1.7;
+            color: #81869a;
+            padding: 0 4px 20px
+        }
+
+        .flash-wrap {
+            margin-bottom: 16px
+        }
+
+        .flash {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 13px
+        }
+
+        .flash.error {
+            background: #fff0f0;
+            color: #b42318
+        }
+
+        .flash.success {
+            background: #eafaf1;
+            color: #067647
+        }
+
+        @media(max-width:1050px) {
+            .forecast-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .forecast-hero {
+                align-items: flex-start;
+                flex-direction: column
+            }
+
+            .period-form {
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+                align-items: end
+            }
+
+            .period-form label {
+                grid-column: 1/-1
+            }
+
+            .period-form button {
+                min-height: 42px
+            }
+        }
+
+        @media(max-width:700px) {
+            .two-col {
+                grid-template-columns: 1fr
+            }
+
+            .scenario-form {
+                grid-template-columns: 1fr
+            }
+
+            .scenario-form .btn-primary,
+            .scenario-form .btn-secondary {
+                grid-column: 1;
+                grid-row: auto
+            }
+
+            .scenario-result {
+                grid-template-columns: 1fr
+            }
+
+            .chart-box {
+                height: 300px
+            }
+
+            .forecast-card,
+            .panel {
+                padding: 16px
+            }
+
+            .forecast-hero {
+                padding: 22px
+            }
+
+            .period-form {
+                grid-template-columns: 1fr
+            }
+
+            .period-form label {
+                grid-column: auto
+            }
+        }
+    </style>
+</body>
+
+</html>
