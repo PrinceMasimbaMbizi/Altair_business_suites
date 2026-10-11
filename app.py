@@ -7453,30 +7453,42 @@ def settings():
                         url_for("settings")
                     )
 
-                original_filename = secure_filename(
-                    logo.filename
-                )
-
-                extension = original_filename.rsplit(
-                    ".",
-                    1
-                )[1].lower()
-
-                logo_url = (
-                    f"company_{user_id}.{extension}"
-                )
-
-                os.makedirs(
-                    app.config["UPLOAD_FOLDER"],
-                    exist_ok=True
-                )
-
-                logo.save(
-                    os.path.join(
-                        app.config["UPLOAD_FOLDER"],
-                        logo_url
+                # Upload to Cloudinary so the logo persists across
+                # Render deployments/restarts, just like Company Setup.
+                try:
+                    upload_result = cloudinary.uploader.upload(
+                        logo,
+                        folder="altair_business_suite/company_logos",
+                        public_id=f"company_{user_id}",
+                        overwrite=True,
+                        resource_type="image"
                     )
-                )
+
+                    logo_url = upload_result.get("secure_url")
+
+                    if not logo_url:
+                        raise RuntimeError(
+                            "Cloudinary did not return a secure logo URL."
+                        )
+
+                    app.logger.info(
+                        "Company logo uploaded to Cloudinary for user_id=%s",
+                        user_id
+                    )
+
+                except Exception as upload_error:
+                    app.logger.exception(
+                        "SETTINGS CLOUDINARY LOGO UPLOAD ERROR: %s",
+                        upload_error
+                    )
+
+                    flash(
+                        "Could not upload the company logo. Please check "
+                        "your Cloudinary environment variables and try again.",
+                        "error"
+                    )
+
+                    return redirect(url_for("settings"))
 
             
             # CHECK COMPANY
