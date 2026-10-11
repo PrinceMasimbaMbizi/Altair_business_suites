@@ -195,12 +195,23 @@
         }
 
         .nav-link.active {
-            border-left: 3px solid #8b5cf6;
+            border-left: 3px solid #00f0ff;
             border-radius: 8px;
+            background: linear-gradient(90deg, rgba(0, 240, 255, .13), rgba(255, 0, 212, .06));
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
         }
 
         .nav-link.active i {
-            color: #a78bfa;
+            color: #00f0ff;
+        }
+
+        .nav-link.logout-link {
+            color: #ff9baf;
+        }
+
+        .nav-link.logout-link:hover {
+            background: rgba(239, 68, 68, .13);
+            color: #fff;
         }
 
         .sidebar-bottom {
@@ -1400,7 +1411,6 @@
                 {{ (company.get('company_name', 'A') if company else 'A')[0]|upper }}
             </div>
             {% endif %}
-
             <div class="company-brand-name">
                 {{ company.get('company_name', 'Altair Business Suite') if company else 'Altair Business Suite' }}
             </div>
@@ -1408,47 +1418,88 @@
 
         <div class="nav-heading">Main</div>
         <nav class="nav-menu">
-            <a href="{{ url_for('dashboard') }}" class="nav-link">
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
                 <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
             </a>
-            <a href="{{ url_for('customer') }}" class="nav-link active">
+            <a href="{{ url_for('customer') }}"
+                class="nav-link {% if request.endpoint == 'customer' %}active{% endif %}">
                 <i class="fa-solid fa-users"></i><span>Customers</span>
             </a>
-            <a href="{{ url_for('invoice') }}" class="nav-link">
+            <a href="{{ url_for('invoice') }}" class="nav-link {% if request.endpoint == 'invoice' %}active{% endif %}">
                 <i class="fa-solid fa-file-invoice-dollar"></i><span>Invoices</span>
             </a>
-            <a href="{{ url_for('items') }}" class="nav-link">
+            <a href="{{ url_for('items') }}" class="nav-link {% if request.endpoint == 'items' %}active{% endif %}">
                 <i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span>
             </a>
-            <a href="#" class="nav-link" aria-label="Transactions">
+            <a href="#" class="nav-link" title="Transactions">
                 <i class="fa-solid fa-credit-card"></i><span>Transactions</span>
             </a>
 
-            <div class="nav-heading">Intelligence</div>
-            <a href="{{ url_for('ai_leads') }}" class="nav-link">
+            <div class="nav-heading">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-link {% if request.endpoint == 'ai_leads' %}active{% endif %}">
                 <i class="fa-solid fa-robot"></i><span>AI Lead Finder</span>
             </a>
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" title="Facebook Analytics">
                 <i class="fa-brands fa-facebook"></i><span>Facebook Analytics</span>
             </a>
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" title="WhatsApp Analytics">
                 <i class="fa-brands fa-whatsapp"></i><span>WhatsApp Analytics</span>
             </a>
-            <a href="#" class="nav-link">
-                <i class="fa-solid fa-building"></i><span>Company Profile</span>
-            </a>
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" title="Business Analytics">
                 <i class="fa-solid fa-chart-line"></i><span>Business Analytics</span>
             </a>
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" title="Forecasting">
                 <i class="fa-solid fa-chart-column"></i><span>Forecasting</span>
             </a>
+            <a href="#" class="nav-link" title="Altair AI Assistant">
+                <i class="fa-solid fa-wand-magic-sparkles"></i><span>Altair AI Assistant</span>
+            </a>
 
-            <div class="nav-heading">Account</div>
-            <a href="{{ url_for('settings') }}" class="nav-link">
+            <div class="nav-heading">Business Management</div>
+            <a href="#" class="nav-link" title="Company Profile">
+                <i class="fa-solid fa-building"></i><span>Company Profile</span>
+            </a>
+            <a href="#" class="nav-link" title="Employees and Team">
+                <i class="fa-solid fa-user-group"></i><span>Employees &amp; Team</span>
+            </a>
+            <a href="#" class="nav-link" title="Documents and Reports">
+                <i class="fa-solid fa-folder-open"></i><span>Documents &amp; Reports</span>
+            </a>
+            <a href="#" class="nav-link" title="Notifications">
+                <i class="fa-solid fa-bell"></i><span>Notifications</span>
+            </a>
+            <a href="#" class="nav-link" title="Integrations">
+                <i class="fa-solid fa-plug"></i><span>Integrations</span>
+            </a>
+
+            <div class="nav-heading">Account &amp; Billing</div>
+            <a href="#" class="nav-link" title="Subscription Plans">
+                <i class="fa-solid fa-crown"></i><span>Subscription Plans</span>
+            </a>
+            <a href="#" class="nav-link" title="Billing and Payments">
+                <i class="fa-solid fa-wallet"></i><span>Billing &amp; Payments</span>
+            </a>
+            <a href="#" class="nav-link" title="Billing History">
+                <i class="fa-solid fa-receipt"></i><span>Billing History</span>
+            </a>
+            <a href="#" class="nav-link" title="Usage and Limits">
+                <i class="fa-solid fa-gauge-high"></i><span>Usage &amp; Limits</span>
+            </a>
+
+            <div class="nav-heading">Settings &amp; Support</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}">
                 <i class="fa-solid fa-gear"></i><span>Settings</span>
             </a>
-            <a href="{{ url_for('logout') }}" class="nav-link">
+            <a href="#" class="nav-link" title="Security">
+                <i class="fa-solid fa-shield-halved"></i><span>Security</span>
+            </a>
+            <a href="#" class="nav-link" title="Help and Support">
+                <i class="fa-solid fa-circle-question"></i><span>Help &amp; Support</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-link logout-link">
                 <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
             </a>
         </nav>
@@ -1462,7 +1513,6 @@
                 </div>
             </div>
         </div>
-
     </aside>
 
 

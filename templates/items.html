@@ -1068,109 +1068,55 @@
  -->
 
     <aside class="sidebar">
-
         <div class="brand">
-
-            <div class="brand-icon">
-                A
-            </div>
-
+            <div class="brand-icon">A</div>
             <div>
-
-                <div class="brand-name">
-                    Altair Business
-                </div>
-
-                <div class="brand-subtitle">
-                    Business Suite
-                </div>
-
+                <div class="brand-name">Altair Business</div>
+                <div class="brand-subtitle">Business Suite</div>
             </div>
-
         </div>
 
+        <div class="nav-title">Main</div>
+        <a href="{{ url_for('dashboard') }}"
+            class="nav-link{% if request.endpoint == 'dashboard' %} active{% endif %}">📊 Dashboard</a>
+        <a href="{{ url_for('customer') }}" class="nav-link{% if request.endpoint == 'customer' %} active{% endif %}">👥
+            Customers</a>
+        <a href="{{ url_for('invoice') }}" class="nav-link{% if request.endpoint == 'invoice' %} active{% endif %}">🧾
+            Invoices</a>
+        <a href="{{ url_for('items') }}" class="nav-link{% if request.endpoint == 'items' %} active{% endif %}">📦
+            Inventory</a>
+        <a href="#" class="nav-link">💳 Transactions</a>
 
-        <div class="nav-title">
-            Main
-        </div>
+        <div class="nav-title">Business Intelligence</div>
+        <a href="{{ url_for('ai_leads') }}" class="nav-link{% if request.endpoint == 'ai_leads' %} active{% endif %}">🤖
+            AI Lead Finder</a>
+        <a href="#" class="nav-link">📈 Facebook Analytics</a>
+        <a href="#" class="nav-link">💬 WhatsApp Analytics</a>
+        <a href="#" class="nav-link">📊 Business Analytics</a>
+        <a href="#" class="nav-link">🔮 Forecasting</a>
+        <a href="#" class="nav-link">✨ Altair AI Assistant</a>
 
+        <div class="nav-title">Business Management</div>
+        <a href="{{ url_for('settings') }}" class="nav-link{% if request.endpoint == 'settings' %} active{% endif %}">🏢
+            Company Profile</a>
+        <a href="#" class="nav-link">👥 Employees &amp; Team</a>
+        <a href="#" class="nav-link">📄 Documents &amp; Reports</a>
+        <a href="#" class="nav-link">🔔 Notifications</a>
+        <a href="#" class="nav-link">🔗 Integrations</a>
 
-        <a href="{{ url_for('dashboard') }}" class="nav-link">
-            📊 Dashboard
-        </a>
+        <div class="nav-title">Account &amp; Billing</div>
+        <a href="#" class="nav-link">💎 Subscription Plans</a>
+        <a href="#" class="nav-link">💳 Billing &amp; Payments</a>
+        <a href="#" class="nav-link">🧾 Billing History</a>
+        <a href="#" class="nav-link">📉 Usage &amp; Limits</a>
 
-
-        <a href="{{ url_for('customer') }}" class="nav-link">
-            👥 Customers
-        </a>
-
-
-        <a href="{{ url_for('invoice') }}" class="nav-link">
-            🧾 Invoices
-        </a>
-
-
-        <a href="{{ url_for('items') }}" class="nav-link active">
-            📦 Inventory
-        </a>
-
-
-        <div class="nav-title">
-            Business
-        </div>
-
-
-        <a href="#" class="nav-link">
-            💳 Transactions
-        </a>
-
-
-        <a href="{{ url_for('ai_leads') }}" class="nav-item">
-            🤖
-            <span>AI Lead Finder</span>
-        </a>
-
-
-
-        <a href="#" class="nav-link">
-            📈 Facebook Analytics
-        </a>
-
-
-        <a href="#" class="nav-link">
-            💬 WhatsApp Analytics
-        </a>
-
-
-        <div class="nav-title">
-            Settings
-        </div>
-
-
-        <a href="{{ url_for('settings') }}" class="nav-link">
-            🏢 Company Profile
-        </a>
-
-
-        <a href="#" class="nav-link">
-            📊 Business Analytics
-        </a>
-
-
-        <a href="#" class="nav-link">
-            🔮 Forecasting
-        </a>
-
-
-        <a href="{{ url_for('settings') }}" class="nav-link">
-            ⚙ Settings
-        </a>
-
-
-        <a href="{{ url_for('logout') }}" class="nav-link">
-            🚪 Logout
-        </a>
-
+        <div class="nav-title">Settings &amp; Support</div>
+        <a href="{{ url_for('settings') }}" class="nav-link{% if request.endpoint == 'settings' %} active{% endif %}">⚙️
+            Settings</a>
+        <a href="#" class="nav-link">🔐 Security</a>
+        <a href="#" class="nav-link">🛟 Help &amp; Support</a>
+        <a href="{{ url_for('logout') }}" class="nav-link{% if request.endpoint == 'logout' %} active{% endif %}">🚪
+            Logout</a>
     </aside>
 
 
@@ -1186,7 +1132,7 @@
          TOPBAR
      -->
 
-        <div class="topbar">z
+        <div class="topbar">
 
             <div class="title-area">
 
@@ -1205,7 +1151,7 @@
 
                 {% if company and company.logo %}
 
-                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}" class="company-logo"
+                <img src="{{ url_for('company_logo') }}" class="company-logo"
                     alt="{{ company.company_name|default('Company') }}">
 
                 {% elif company %}

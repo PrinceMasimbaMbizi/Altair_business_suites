@@ -526,6 +526,29 @@
             box-shadow: 0 8px 20px #7c3aed38;
         }
 
+        /* Dashboard-aligned navigation refinements */
+        .nav-item {
+            min-height: 40px;
+            gap: 12px;
+        }
+
+        .nav-item>span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 12px;
+            border-radius: 10px;
+        }
+
+        .logout-link:hover {
+            background: #242435;
+        }
+
         @media (max-width: 1000px) {
             .main {
                 padding: 24px;
@@ -665,38 +688,67 @@
     <div class="app">
         <aside class="sidebar">
             <div class="logo">
-                {% if company.logo %}
-                {% if company.logo.startswith('http://') or company.logo.startswith('https://') %}
-                <img src="{{ company.logo }}" alt="{{ company.company_name or 'Company logo' }}">
+                {% if company and company.logo %}
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name or 'Company logo' }}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
                 {% else %}
-                <img src="{{ url_for('static', filename='uploads/' + company.logo) }}"
-                    alt="{{ company.company_name or 'Company logo' }}">
-                {% endif %}
-                {% else %}
-                <div class="company-logo-placeholder">{{ company.company_name[0] if company.company_name else 'A' }}
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
                 </div>
                 {% endif %}
-                <div class="logo-name">{{ company.company_name or 'Altair Business Suite' }}</div>
+                <div class="logo-name">
+                    {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
+                </div>
             </div>
 
             <div class="menu-title">Main</div>
-            <a href="{{ url_for('dashboard') }}" class="nav-item">📊 <span>Dashboard</span></a>
-            <a href="{{ url_for('customer') }}" class="nav-item">👥 <span>Customers</span></a>
-            <a href="{{ url_for('invoice') }}" class="nav-item">🧾 <span>Invoices</span></a>
-            <a href="{{ url_for('items') }}" class="nav-item">📦 <span>Inventory</span></a>
-            <a href="#" class="nav-item">💳 <span>Transactions</span></a>
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">📊
+                <span>Dashboard</span></a>
+            <a href="{{ url_for('customer') }}"
+                class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">👥
+                <span>Customers</span></a>
+            <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+                title="Invoices">🧾 <span>Invoices</span></a>
+            <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+                title="Inventory">📦 <span>Inventory</span></a>
+            <a href="#" class="nav-item" title="Transactions">💳 <span>Transactions</span></a>
 
-            <div class="menu-title">Intelligence</div>
-            <a href="{{ url_for('ai_leads') }}" class="nav-item">🤖 <span>AI Lead Finder</span></a>
-            <a href="#" class="nav-item">🇫 <span>Facebook Analytics</span></a>
-            <a href="#" class="nav-item">🟢 <span>WhatsApp Analytics</span></a>
-            <a href="#" class="nav-item">💼 <span>Company Profile</span></a>
-            <a href="#" class="nav-item">📈 <span>Business Analytics</span></a>
-            <a href="#" class="nav-item">📊 <span>Forecasting</span></a>
+            <div class="menu-title">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">🤖
+                <span>AI Lead Finder</span></a>
+            <a href="#" class="nav-item" title="Facebook Analytics">🇫 <span>Facebook Analytics</span></a>
+            <a href="#" class="nav-item" title="WhatsApp Analytics">🟢 <span>WhatsApp Analytics</span></a>
+            <a href="#" class="nav-item" title="Business Analytics">📈 <span>Business Analytics</span></a>
+            <a href="#" class="nav-item" title="Forecasting">📊 <span>Forecasting</span></a>
+            <a href="#" class="nav-item" title="Altair AI Assistant">✨ <span>Altair AI Assistant</span></a>
 
-            <div class="menu-title">System</div>
-            <a href="{{ url_for('settings') }}" class="nav-item active">⚙️ <span>Settings</span></a>
-            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+            <div class="menu-title">Business Management</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Company Profile">🏢
+                <span>Company Profile</span></a>
+            <a href="#" class="nav-item" title="Employees & Team">👨‍👩‍👧 <span>Employees &amp; Team</span></a>
+            <a href="#" class="nav-item" title="Documents & Reports">📄 <span>Documents &amp; Reports</span></a>
+            <a href="#" class="nav-item" title="Notifications">🔔 <span>Notifications</span></a>
+            <a href="#" class="nav-item" title="Integrations">🔌 <span>Integrations</span></a>
+
+            <div class="menu-title">Account &amp; Billing</div>
+            <a href="#" class="nav-item" title="Subscription Plans">💎 <span>Subscription Plans</span></a>
+            <a href="#" class="nav-item" title="Billing & Payments">💳 <span>Billing &amp; Payments</span></a>
+            <a href="#" class="nav-item" title="Billing History">🧾 <span>Billing History</span></a>
+            <a href="#" class="nav-item" title="Usage & Limits">📊 <span>Usage &amp; Limits</span></a>
+
+            <div class="menu-title">Settings &amp; Support</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">⚙️
+                <span>Settings</span></a>
+            <a href="#" class="nav-item" title="Security">🔒 <span>Security</span></a>
+            <a href="#" class="nav-item" title="Help & Support">❓ <span>Help &amp; Support</span></a>
+            <a href="{{ url_for('logout') }}" class="logout-link">🚪 <span>Logout</span></a>
         </aside>
 
         <main class="main">

@@ -2438,6 +2438,174 @@
             }
 
         }
+
+        /* Consistent sidebar alignment and responsive dashboard layout */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 22px 14px 24px;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06);
+        }
+
+        .company-brand {
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 4px 7px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .09);
+        }
+
+        .company-brand-name {
+            flex: 1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-title {
+            margin: 20px 10px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.25px;
+            line-height: 1.4;
+        }
+
+        .nav-item {
+            min-height: 43px;
+            width: 100%;
+            gap: 12px;
+            margin-bottom: 3px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: rgba(255, 255, 255, .05);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16));
+            border: 1px solid rgba(0, 240, 255, .16);
+            border-left: 3px solid #00f0ff;
+            color: #fff;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
+        }
+
+        .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            min-width: 22px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .nav-item>span:last-child,
+        .logout-link>span:last-child {
+            min-width: 0;
+        }
+
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #fda4af;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .logout-link:hover {
+            background: rgba(244, 63, 94, .1);
+            color: #fff;
+        }
+
+        .main {
+            min-width: 0;
+            padding: 30px clamp(18px, 3vw, 38px);
+        }
+
+        .topbar {
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .welcome h1 {
+            line-height: 1.25;
+            letter-spacing: -.6px;
+        }
+
+        .welcome p {
+            line-height: 1.6;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 72px;
+                padding: 18px 8px;
+                align-items: stretch;
+            }
+
+            .company-brand {
+                justify-content: center;
+                padding: 0 0 16px;
+                margin-bottom: 10px;
+            }
+
+            .company-brand-name,
+            .nav-item>span:last-child,
+            .menu-title,
+            .logout-link>span:last-child {
+                display: none;
+            }
+
+            .nav-item,
+            .logout-link {
+                justify-content: center;
+                gap: 0;
+                padding: 11px 6px;
+                min-height: 42px;
+                border-left-width: 1px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                min-width: 24px;
+                font-size: 17px;
+            }
+
+            .main {
+                margin-left: 72px;
+                width: calc(100% - 72px);
+                padding: 22px 16px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .main {
+                padding: 16px 12px;
+            }
+
+            .topbar {
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .welcome h1 {
+                font-size: 18px;
+            }
+        }
     </style>
 
 </head>
@@ -2453,202 +2621,110 @@
          -->
 
         <aside class="sidebar">
-
-
-            <!-- COMPANY LOGO -->
-
             <div class="company-brand">
-
                 {% if company and company.logo %}
-
                 <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-
                 <div class="company-logo-placeholder" style="display:none;">
                     {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
                 </div>
-
                 {% else %}
-
                 <div class="company-logo-placeholder">
                     {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
                 </div>
-
                 {% endif %}
-
-
-                {% if company and company.company_name %}
-
                 <div class="company-brand-name">
-                    {{ company.company_name }}
+                    {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
                 </div>
-
-                {% endif %}
-
             </div>
 
-
-            <!-- MAIN MENU -->
-
-            <div class="menu-title">
-                Main
-            </div>
-
-
-            <!-- DASHBOARD -->
-
-            <a href="{{ url_for('dashboard') }}" class="nav-item active">
-
-                📊
-
-                <span>
-                    Dashboard
-                </span>
-
+            <div class="menu-title">Main</div>
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
+                <span class="nav-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('customer') }}"
+                class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">
+                <span class="nav-icon">👥</span><span>Customers</span>
+            </a>
+            <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+                title="Invoices">
+                <span class="nav-icon">🧾</span><span>Invoices</span>
+            </a>
+            <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+                title="Inventory">
+                <span class="nav-icon">📦</span><span>Inventory</span>
+            </a>
+            <a href="#" class="nav-item" title="Transactions">
+                <span class="nav-icon">💳</span><span>Transactions</span>
             </a>
 
-
-            <!-- CUSTOMERS -->
-
-            <a href="{{ url_for('customer') }}" class="nav-item">
-
-                👥
-
-                <span>
-                    Customers
-                </span>
-
+            <div class="menu-title">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">
+                <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
+            </a>
+            <a href="#" class="nav-item" title="Facebook Analytics">
+                <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="WhatsApp Analytics">
+                <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Business Analytics">
+                <span class="nav-icon">📈</span><span>Business Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Forecasting">
+                <span class="nav-icon">🔮</span><span>Forecasting</span>
+            </a>
+            <a href="#" class="nav-item" title="Altair AI Assistant">
+                <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
             </a>
 
-
-            <!-- INVOICES -->
-
-            <a href="{{ url_for('invoice') }}" class="nav-item">
-
-                🧾
-
-                <span>
-                    Invoices
-                </span>
-
+            <div class="menu-title">Business Management</div>
+            <a href="#" class="nav-item" title="Company Profile">
+                <span class="nav-icon">🏢</span><span>Company Profile</span>
+            </a>
+            <a href="#" class="nav-item" title="Employees & Team">
+                <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
+            </a>
+            <a href="#" class="nav-item" title="Documents & Reports">
+                <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
+            </a>
+            <a href="#" class="nav-item" title="Notifications">
+                <span class="nav-icon">🔔</span><span>Notifications</span>
+            </a>
+            <a href="#" class="nav-item" title="Integrations">
+                <span class="nav-icon">🔗</span><span>Integrations</span>
             </a>
 
-
-            <!-- INVENTORY -->
-
-            <a href="{{ url_for('items') }}" class="nav-item">
-
-                📦
-
-                <span>
-                    Inventory
-                </span>
-
+            <div class="menu-title">Account &amp; Billing</div>
+            <a href="#" class="nav-item" title="Subscription Plans">
+                <span class="nav-icon">👑</span><span>Subscription Plans</span>
+            </a>
+            <a href="#" class="nav-item" title="Billing & Payments">
+                <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
+            </a>
+            <a href="#" class="nav-item" title="Billing History">
+                <span class="nav-icon">🧾</span><span>Billing History</span>
+            </a>
+            <a href="#" class="nav-item" title="Usage & Limits">
+                <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
             </a>
 
-
-            <!-- TRANSACTIONS -->
-
-            <a href="#" class="nav-item">
-
-                💳
-
-                <span>
-                    Transactions
-                </span>
-
-            </a>
-
-
-            <!-- INTELLIGENCE -->
-
-            <div class="menu-title">
-                Intelligence
-            </div>
-
-
-            <a href="{{ url_for('ai_leads') }}" class="nav-item">
-                🤖
-                <span>AI Lead Finder</span>
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                🇫
-
-                <span>
-                    Facebook Analytics
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                🟢
-
-                <span>
-                    WhatsApp Analytics
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                💼
-
-                <span>
-                    Company Profile
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                📈
-
-                <span>
-                    Business Analytics
-                </span>
-
-            </a>
-
-
-            <a href="#" class="nav-item">
-
-                📊
-
-                <span>
-                    Forecasting
-                </span>
-
-            </a>
-
-
-            <!-- SETTINGS -->
-
+            <div class="menu-title">Settings &amp; Support</div>
             <a href="{{ url_for('settings') }}"
-                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}">
-
-                ⚙️
-
-                <span>
-                    Settings
-                </span>
-
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">
+                <span class="nav-icon">⚙️</span><span>Settings</span>
             </a>
-
-
-            <!-- LOGOUT -->
-
+            <a href="#" class="nav-item" title="Security">
+                <span class="nav-icon">🔐</span><span>Security</span>
+            </a>
+            <a href="#" class="nav-item" title="Help & Support">
+                <span class="nav-icon">❓</span><span>Help &amp; Support</span>
+            </a>
             <a href="{{ url_for('logout') }}" class="logout-link">
-                Logout
+                <span class="nav-icon">🚪</span><span>Logout</span>
             </a>
-
-
         </aside>
 
 
