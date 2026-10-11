@@ -1,0 +1,3402 @@
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Help & Support | Altair Business Suite</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+        /* 
+           RESET
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f5f6fa;
+            color: #171722;
+            overflow: hidden;
+        }
+
+
+        /* 
+           APP
+         */
+
+        .app {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+
+        /* 
+           SIDEBAR
+         */
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+
+            background: #11111c;
+            color: white;
+
+            padding: 25px 18px;
+
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            z-index: 1000;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #35354b;
+            border-radius: 10px;
+        }
+
+
+        /* 
+           COMPANY LOGO
+         */
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            margin-bottom: 40px;
+            padding-left: 10px;
+
+            min-width: 0;
+        }
+
+
+        .company-logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .logo>div:last-child {
+            min-width: 0;
+        }
+
+        .logo span {
+            display: block;
+
+            color: white;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+        /*  COMPANY BRAND */
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 35px;
+            padding: 5px 8px;
+
+            min-width: 0;
+        }
+
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px;
+            height: 44px;
+
+            min-width: 44px;
+            min-height: 44px;
+
+            border-radius: 12px;
+
+            object-fit: cover;
+        }
+
+        .company-logo-image {
+            display: block;
+
+            background: #242435;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .company-logo-placeholder {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+
+            box-shadow:
+                0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        .company-brand-name {
+            color: #ffffff;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            max-width: 145px;
+        }
+
+        /* 
+           MENU
+         */
+
+        .menu-title {
+            color: #77778a;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            margin: 25px 10px 10px;
+
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: #aaaabb;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+
+            transition: 0.2s;
+
+            white-space: nowrap;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #242435;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-left: 3px solid #8b5cf6;
+        }
+
+
+        /* 
+           LOGOUT
+         */
+
+        .logout-link {
+            display: block;
+
+            color: #777;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            margin: 25px 10px 10px;
+
+            transition: 0.2s;
+        }
+
+        .logout-link:hover {
+            color: #ffffff;
+        }
+
+
+        /* 
+           MAIN CONTENT
+         */
+
+        .main {
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            height: 100vh;
+
+            padding: 28px 35px;
+
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main::-webkit-scrollbar-track {
+            background: #f5f6fa;
+        }
+
+        .main::-webkit-scrollbar-thumb {
+            background: #c9c9d4;
+            border-radius: 10px;
+        }
+
+        .main::-webkit-scrollbar-thumb:hover {
+            background: #a7a7b6;
+        }
+
+
+        /* 
+           TOP BAR
+         */
+
+        .topbar {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 30px;
+        }
+
+        .welcome h1 {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .welcome p {
+            color: #777789;
+
+            font-size: 13px;
+
+            margin-top: 5px;
+        }
+
+        .top-actions {
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+        /* 
+           NOTIFICATION
+         */
+
+        .notification {
+            width: 40px;
+            height: 40px;
+
+            background: white;
+
+            border-radius: 11px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.04);
+        }
+
+
+        /* 
+           PROFILE
+         */
+
+        .profile {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: white;
+
+            padding: 6px 12px 6px 6px;
+
+            border-radius: 12px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #7c3aed,
+                    #4f46e5);
+
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+        }
+
+        .profile small {
+            display: block;
+
+            color: #888;
+
+            font-size: 10px;
+
+            margin-top: 2px;
+        }
+
+
+        /* 
+           STAT CARDS
+         */
+
+        .stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .stat-label {
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+        .stat-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 11px;
+
+            background: #f0ebff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card h2 {
+            margin-top: 12px;
+
+            font-size: 24px;
+        }
+
+        .growth {
+            margin-top: 7px;
+
+            font-size: 11px;
+
+            color: #16a34a;
+        }
+
+
+        /* 
+           DASHBOARD GRID
+         */
+
+        .dashboard-grid {
+            display: grid;
+
+            grid-template-columns:
+                2fr 1fr;
+
+            gap: 20px;
+        }
+
+        /* Revenue chart first, Otis advisor directly underneath */
+        .revenue-advisor-grid {
+            grid-template-columns: minmax(0, 1fr);
+            align-items: stretch;
+        }
+
+        .revenue-advisor-grid>.card {
+            width: 100%;
+        }
+
+        .revenue-advisor-grid .ai-card {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            border: 1px solid rgba(0, 180, 210, .14);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .revenue-advisor-grid .ai-card .card-header,
+        .revenue-advisor-grid .ai-card .ai-btn {
+            grid-column: 1 / -1;
+        }
+
+        .revenue-advisor-grid .ai-card .card-header {
+            margin-bottom: 0;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message {
+            margin: 0;
+            min-width: 0;
+            padding: 16px;
+            border-radius: 14px;
+            background: #13182e;
+            border: 1px solid #e8edf5;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-message p {
+            line-height: 1.65;
+            overflow-wrap: anywhere;
+        }
+
+        .revenue-advisor-grid .ai-card .ai-btn {
+            justify-self: start;
+            min-width: 150px;
+        }
+
+        @media (max-width: 650px) {
+            .revenue-advisor-grid .ai-card {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 16px;
+            }
+        }
+
+        .card {
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.04);
+
+            min-width: 0;
+        }
+
+        .card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .card-header h3 {
+            font-size: 15px;
+        }
+
+        .card-header span {
+            font-size: 11px;
+
+            color: #777;
+        }
+
+        .company-logo-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* 
+           CHART
+         */
+
+        .chart-container {
+            position: relative;
+
+            width: 100%;
+
+            height: 300px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+
+        /* 
+           AI CARD
+         */
+
+        .ai-card {
+            background:
+                linear-gradient(135deg,
+                    #171126,
+                    #28203e);
+
+            color: white;
+        }
+
+        .ai-card .card-header span {
+            color: #bbb0d2;
+        }
+
+        .ai-badge {
+            background: #8b5cf6;
+
+            padding: 5px 9px;
+
+            border-radius: 7px;
+
+            font-size: 9px;
+
+            font-weight: 700;
+        }
+
+        .ai-message {
+            background:
+                rgba(255, 255, 255, 0.07);
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-bottom: 12px;
+        }
+
+        .ai-message strong {
+            display: block;
+
+            font-size: 12px;
+
+            margin-bottom: 5px;
+        }
+
+        .ai-message p {
+            color: #c9c4d2;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+        .ai-btn {
+            width: 100%;
+
+            border: none;
+
+            padding: 11px;
+
+            border-radius: 9px;
+
+            background: #8b5cf6;
+
+            color: white;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            margin-top: 5px;
+
+            transition: 0.2s;
+        }
+
+        .ai-btn:hover {
+            background: #7c3aed;
+
+            transform: translateY(-1px);
+        }
+
+
+        /* 
+           LEADS
+         */
+
+        .lead {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 13px 0;
+
+            border-bottom:
+                1px solid #eeeef3;
+        }
+
+        .lead:last-child {
+            border-bottom: none;
+        }
+
+        .lead-info {
+            display: flex;
+
+            gap: 10px;
+
+            align-items: center;
+
+            min-width: 0;
+        }
+
+        .lead-icon {
+            width: 35px;
+            height: 35px;
+
+            border-radius: 9px;
+
+            background: #f0ebff;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+        }
+
+        .lead-name {
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        .lead-source {
+            color: #999;
+
+            font-size: 10px;
+
+            margin-top: 3px;
+        }
+
+        .score {
+            font-size: 11px;
+
+            font-weight: 700;
+
+            color: #16a34a;
+
+            flex-shrink: 0;
+        }
+
+
+        /* 
+           TRANSACTIONS
+         */
+
+        .transactions {
+            margin-top: 20px;
+        }
+
+        .transaction {
+            display: grid;
+
+            grid-template-columns:
+                2fr 1fr 1fr 1fr;
+
+            align-items: center;
+
+            padding: 14px 0;
+
+            border-bottom:
+                1px solid #eeeef3;
+
+            font-size: 11px;
+        }
+
+        .transaction:last-child {
+            border-bottom: none;
+        }
+
+        .transaction>div {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .transaction-heading {
+            color: #777789;
+            font-size: 10px;
+        }
+
+        .transaction-empty {
+            color: #888;
+            padding: 18px 0;
+            font-size: 12px;
+        }
+
+        .customer {
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #888;
+        }
+
+        .paid {
+            color: #16a34a;
+
+            font-weight: 600;
+        }
+
+        .pending {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .overdue-status {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+
+        /* 
+           MOBILE / TABLET
+         */
+
+        @media (max-width: 1000px) {
+
+            .stats {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+
+        /* 
+           MOBILE
+         */
+        /* 
+   ALTAIR AI INSIGHT CARDS
+ */
+
+        .ai-insight-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin-top: 5px;
+        }
+
+        .ai-insight-box {
+            background:
+                rgba(255, 255, 255, 0.055);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 13px;
+
+            padding: 13px;
+
+            min-height: 78px;
+
+            transition: 0.2s ease;
+        }
+
+        .ai-insight-box:hover {
+            background:
+                rgba(255, 255, 255, 0.09);
+
+            transform: translateY(-1px);
+        }
+
+        .ai-insight-label {
+            color: #aaa5b8;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.7px;
+
+            margin-bottom: 7px;
+        }
+
+        .ai-insight-value {
+            color: #ffffff;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            line-height: 1.3;
+        }
+
+        .ai-insight-value.accent {
+            color: #00f0ff;
+        }
+
+        .ai-insight-value.success {
+            color: #4ade80;
+        }
+
+        .ai-insight-value.warning {
+            color: #fbbf24;
+        }
+
+        .ai-insight-value.danger {
+            color: #fb7185;
+        }
+
+        @media (max-width: 700px) {
+
+            .ai-insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 700px) {
+            .company-brand {
+                justify-content: center;
+                padding: 0;
+            }
+
+            .company-brand-name {
+                display: none;
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            body {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                width: 70px;
+
+                padding: 20px 10px;
+            }
+
+            .logo span,
+            .nav-item span,
+            .menu-title,
+            .logout-link {
+                display: none;
+            }
+
+            .logo {
+                justify-content: center;
+
+                padding: 0;
+            }
+
+            .logo img,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+            }
+
+            .nav-item {
+                justify-content: center;
+
+                padding: 12px 8px;
+            }
+
+            .main {
+                margin-left: 70px;
+
+                width:
+                    calc(100% - 70px);
+
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .welcome h1 {
+                font-size: 20px;
+            }
+
+            .welcome p {
+                font-size: 11px;
+            }
+
+            .profile div {
+                display: none;
+            }
+
+            .profile {
+                padding: 3px;
+            }
+
+            .top-actions {
+                gap: 8px;
+            }
+
+            .transaction {
+                grid-template-columns:
+                    1.5fr 1fr 1fr 1fr;
+
+                font-size: 10px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+        }
+
+
+        /* 
+           VERY SMALL SCREENS
+         */
+
+        @media (max-width: 450px) {
+
+            .main {
+                padding: 15px;
+            }
+
+            .welcome h1 {
+                font-size: 17px;
+            }
+
+            .notification {
+                width: 35px;
+                height: 35px;
+            }
+
+            .avatar {
+                width: 30px;
+                height: 30px;
+            }
+
+            .card {
+                padding: 17px;
+            }
+
+            .transaction {
+                grid-template-columns:
+                    1.4fr 0.9fr 0.9fr 0.9fr;
+
+                font-size: 9px;
+            }
+
+        }
+
+
+        /* 
+           WELCOME POPUP OVERLAY
+         */
+
+        .welcome-overlay {
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(0, 0, 0, 0.65);
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            z-index: 99999;
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            transition:
+                opacity 0.3s ease,
+                visibility 0.3s ease;
+        }
+
+        .welcome-overlay.show {
+            opacity: 1;
+
+            visibility: visible;
+        }
+
+
+        /* 
+           POPUP BOX
+         */
+
+        .welcome-box {
+            width: 90%;
+
+            max-width: 420px;
+
+            padding: 35px 30px;
+
+            text-align: center;
+
+            background:
+                rgba(20, 25, 40, 0.95);
+
+            border:
+                1px solid rgba(0, 240, 255, 0.4);
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 0 30px rgba(0, 240, 255, 0.2);
+
+            transform: scale(0.8);
+
+            transition:
+                transform 0.3s ease;
+
+            color: white;
+        }
+
+        .welcome-overlay.show .welcome-box {
+            transform: scale(1);
+        }
+
+
+        /* 
+           POPUP ICON
+         */
+
+        .welcome-icon {
+            width: 60px;
+            height: 60px;
+
+            margin:
+                0 auto 15px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+
+        /* 
+           POPUP TITLE
+         */
+
+        .welcome-box h2 {
+            margin-bottom: 15px;
+
+            font-size: 25px;
+        }
+
+
+        /* 
+           POPUP MESSAGE
+         */
+
+        .welcome-box p {
+            font-size: 16px;
+
+            line-height: 1.6;
+
+            margin: 8px 0;
+        }
+
+        .welcome-box strong {
+            color: #00f0ff;
+        }
+
+        .welcome-subtext {
+            color: #aaa;
+        }
+
+
+        /* 
+           POPUP BUTTON
+         */
+
+        .welcome-box button {
+            margin-top: 20px;
+
+            padding: 12px 35px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+        }
+
+        .welcome-box button:hover {
+            transform: scale(1.05);
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+
+        /* 
+   ALTAIR AI BUSINESS ADVISOR
+ */
+
+        .altair-ai-overlay {
+            display: none;
+
+            position: fixed;
+            inset: 0;
+
+            z-index: 9999;
+
+            background:
+                radial-gradient(circle at 50% 20%,
+                    rgba(0, 240, 255, 0.08),
+                    transparent 35%),
+                rgba(5, 5, 12, 0.78);
+
+            backdrop-filter: blur(10px);
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+        }
+
+
+        /* 
+   WINDOW
+ */
+
+        .altair-ai-window {
+
+            width: min(100%, 1050px);
+
+            height: min(720px, calc(100vh - 36px));
+
+            background:
+                linear-gradient(145deg,
+                    #12121f,
+                    #0e0e18);
+
+            border: 1px solid rgba(0, 240, 255, 0.16);
+
+            border-radius: 22px;
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.55),
+                0 0 50px rgba(0, 240, 255, 0.08);
+
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: block;
+            position: relative;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 240, 255, .35) transparent;
+            color: #fff;
+
+        }
+
+        .altair-ai-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .altair-ai-window::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, .35);
+            border-radius: 10px;
+        }
+
+        .altair-ai-header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: rgba(18, 18, 31, .97);
+            backdrop-filter: blur(12px);
+        }
+
+        .altair-ai-input-area {
+            position: sticky;
+            bottom: 0;
+            z-index: 5;
+            background: rgba(14, 14, 24, .98);
+        }
+
+
+        /* 
+   HEADER
+ */
+
+        .altair-ai-header {
+
+            height: 70px;
+
+            padding: 0 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .07);
+
+            background:
+                rgba(255, 255, 255, .015);
+
+        }
+
+
+        .altair-ai-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+        }
+
+
+        .altair-ai-avatar {
+
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 19px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            box-shadow:
+                0 0 22px rgba(0, 240, 255, .18);
+
+        }
+
+
+        .altair-ai-title h2 {
+
+            margin: 0;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+        }
+
+
+        .altair-ai-title p {
+
+            margin: 2px 0 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-header-right {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+        }
+
+
+        .altair-ai-status {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            font-size: 11px;
+
+            color: #9ba0ad;
+
+        }
+
+
+        .altair-ai-status span {
+
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: #22c55e;
+
+            box-shadow:
+                0 0 8px rgba(34, 197, 94, .7);
+
+        }
+
+
+        .altair-ai-close {
+
+            width: 34px;
+            height: 34px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: rgba(255, 255, 255, .06);
+
+            color: #aaa;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-close:hover {
+
+            background: rgba(255, 255, 255, .12);
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   STATS
+ */
+
+        .altair-ai-stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 10px;
+
+            padding: 12px 18px;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-stat {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 10px 12px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .055);
+
+            border-radius: 12px;
+
+        }
+
+
+        .stat-icon {
+
+            width: 31px;
+            height: 31px;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+
+        }
+
+
+        .stat-icon.cyan {
+
+            background:
+                rgba(0, 240, 255, .10);
+
+        }
+
+
+        .stat-icon.purple {
+
+            background:
+                rgba(157, 78, 221, .12);
+
+        }
+
+
+        .stat-icon.pink {
+
+            background:
+                rgba(255, 0, 212, .10);
+
+        }
+
+
+        .stat-icon.green {
+
+            background:
+                rgba(34, 197, 94, .10);
+
+        }
+
+
+        .altair-ai-stat span {
+
+            display: block;
+
+            color: #858595;
+
+            font-size: 9px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .altair-ai-stat strong {
+
+            display: block;
+
+            font-size: 13px;
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   BODY
+ */
+
+        .altair-ai-body {
+
+            flex: 1;
+
+            min-height: 0;
+            height: auto;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) 250px;
+
+            gap: 14px;
+
+            padding: 14px 18px;
+
+            overflow: visible;
+
+        }
+
+
+        .altair-ai-main {
+
+            min-width: 0;
+
+            overflow: visible;
+
+            padding-right: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar {
+
+            width: 4px;
+
+        }
+
+
+        .altair-ai-main::-webkit-scrollbar-thumb {
+
+            background: rgba(255, 255, 255, .12);
+
+            border-radius: 10px;
+
+        }
+
+
+        /* 
+   WELCOME
+ */
+
+        .advisor-welcome {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 13px 14px;
+
+            margin-bottom: 10px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(135deg,
+                    rgba(0, 240, 255, .07),
+                    rgba(255, 0, 212, .04));
+
+            border:
+                1px solid rgba(0, 240, 255, .10);
+
+        }
+
+
+        .advisor-welcome-icon {
+
+            width: 34px;
+            height: 34px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 16px;
+
+        }
+
+
+        .advisor-welcome h3 {
+
+            margin: 0 0 3px;
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-welcome p {
+
+            margin: 0;
+
+            color: #858595;
+
+            font-size: 11px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* 
+   RECOMMENDATION
+ */
+
+        .advisor-recommendation {
+
+            padding: 14px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 9px;
+
+        }
+
+
+        .advisor-section-title>div {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .section-icon {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-section-title strong {
+
+            font-size: 12px;
+
+        }
+
+
+        .advisor-badge {
+
+            font-size: 8px;
+
+            padding: 4px 7px;
+
+            border-radius: 20px;
+
+            color: #00f0ff;
+
+            background:
+                rgba(0, 240, 255, .08);
+
+            border:
+                1px solid rgba(0, 240, 255, .12);
+
+        }
+
+
+        .advisor-recommendation p {
+
+            margin: 0;
+
+            color: #b8bac5;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+
+        }
+
+
+        /* 
+   QUESTIONS
+ */
+
+        .advisor-questions {
+
+            margin-top: 12px;
+
+        }
+
+
+        .advisor-section-heading {
+
+            color: #858595;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .advisor-question-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 7px;
+
+        }
+
+
+        .advisor-question-grid button {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 9px 10px;
+
+            border-radius: 10px;
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            color: #c6c8d2;
+
+            text-align: left;
+
+            font-size: 10px;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .advisor-question-grid button span {
+
+            font-size: 13px;
+
+        }
+
+
+        .advisor-question-grid button:hover {
+
+            border-color:
+                rgba(0, 240, 255, .20);
+
+            background:
+                rgba(0, 240, 255, .05);
+
+            color: #fff;
+
+        }
+
+
+        /* 
+   CHAT
+ */
+
+        .altair-chat-messages {
+
+            margin-top: 12px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .altair-ai-message {
+
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 8px;
+
+        }
+
+
+        .chat-avatar {
+
+            width: 27px;
+            height: 27px;
+
+            flex-shrink: 0;
+
+            border-radius: 8px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            font-size: 12px;
+
+        }
+
+
+        .chat-bubble {
+
+            max-width: 90%;
+
+            padding: 9px 11px;
+
+            border-radius: 10px;
+
+            background:
+                rgba(0, 240, 255, .045);
+
+            border:
+                1px solid rgba(0, 240, 255, .08);
+
+        }
+
+
+        .chat-bubble strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 4px;
+
+            color: #00f0ff;
+
+        }
+
+
+        .chat-bubble p {
+
+            margin: 0;
+
+            color: #aaaebb;
+
+            font-size: 10px;
+
+            line-height: 1.5;
+
+        }
+
+
+        /* 
+   RIGHT SIDE
+ */
+
+        .altair-ai-side {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 10px;
+
+            min-width: 0;
+
+        }
+
+
+        .advisor-side-card {
+
+            padding: 13px;
+
+            border-radius: 13px;
+
+            background:
+                rgba(255, 255, 255, .025);
+
+            border:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .advisor-side-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .advisor-intelligence {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 9px;
+
+        }
+
+
+        .advisor-intelligence>div {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+        }
+
+
+        .advisor-intelligence span {
+
+            color: #858595;
+
+            font-size: 9px;
+
+        }
+
+
+        .advisor-intelligence strong {
+
+            font-size: 11px;
+
+        }
+
+
+        .warning-value {
+
+            color: #f59e0b;
+
+        }
+
+
+        /* 
+   FOCUS
+ */
+
+        .advisor-focus {
+
+            flex: 1;
+
+        }
+
+
+        .focus-item {
+
+            display: flex;
+
+            gap: 9px;
+
+            margin-bottom: 13px;
+
+        }
+
+
+        .focus-item>span {
+
+            width: 22px;
+            height: 22px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 7px;
+
+            background:
+                rgba(0, 240, 255, .07);
+
+            color: #00f0ff;
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+        }
+
+
+        .focus-item strong {
+
+            display: block;
+
+            font-size: 10px;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .focus-item p {
+
+            margin: 0;
+
+            color: #1a2bac;
+
+            font-size: 9px;
+
+            line-height: 1.45;
+
+        }
+
+
+        /* 
+   INPUT
+ */
+
+        .altair-ai-input-area {
+
+            padding: 11px 18px 13px;
+
+            border-top:
+                1px solid rgba(255, 255, 255, .06);
+
+        }
+
+
+        .altair-ai-input-wrapper {
+
+            height: 43px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 4px 5px 4px 12px;
+
+            border-radius: 12px;
+
+            background:
+                #181824;
+
+            border:
+                1px solid rgba(255, 255, 255, .08);
+
+            transition: .2s;
+
+        }
+
+
+        .altair-ai-input-wrapper:focus-within {
+
+            border-color:
+                rgba(0, 240, 255, .35);
+
+            box-shadow:
+                0 0 18px rgba(0, 240, 255, .06);
+
+        }
+
+
+        .input-ai-icon {
+
+            color: #00f0ff;
+
+            font-size: 14px;
+
+        }
+
+
+        .altair-ai-input-wrapper input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            border: 0;
+
+            outline: 0;
+
+            background: transparent;
+
+            color: #fff;
+
+            font-size: 11px;
+
+        }
+
+
+        .altair-ai-input-wrapper input::placeholder {
+
+            color: #656675;
+
+        }
+
+
+        .altair-send-button {
+
+            height: 33px;
+
+            padding: 0 13px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            background:
+                linear-gradient(135deg,
+                    #00dff0,
+                    #00aeca);
+
+            color: #031014;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+        }
+
+
+        .altair-ai-input-area small {
+
+            display: block;
+
+            margin-top: 5px;
+
+            color: #555665;
+
+            font-size: 8px;
+
+        }
+
+
+        /* 
+   MOBILE
+ */
+
+        @media (max-width: 800px) {
+
+            .altair-ai-window {
+
+                height:
+                    calc(100vh - 20px);
+
+                border-radius: 16px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+
+            .altair-ai-body {
+
+                grid-template-columns: 1fr;
+                overflow: visible;
+
+            }
+
+
+            .altair-ai-side {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-main {
+
+                overflow: visible;
+
+            }
+
+        }
+
+
+        @media (max-width: 500px) {
+
+            .altair-ai-overlay {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-header {
+
+                height: 62px;
+
+                padding: 0 13px;
+
+            }
+
+
+            .altair-ai-stats {
+
+                padding: 9px;
+
+                gap: 6px;
+
+            }
+
+
+            .altair-ai-stat {
+
+                padding: 8px;
+
+            }
+
+
+            .altair-ai-body {
+
+                padding: 10px;
+
+            }
+
+
+            .advisor-question-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .altair-ai-status {
+
+                display: none;
+
+            }
+
+
+            .altair-ai-input-area {
+
+                padding: 8px 10px 10px;
+
+            }
+
+        }
+
+        /* Consistent sidebar alignment and responsive dashboard layout */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 22px 14px 24px;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06);
+        }
+
+        .company-brand {
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 4px 7px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .09);
+        }
+
+        .company-brand-name {
+            flex: 1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-title {
+            margin: 20px 10px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.25px;
+            line-height: 1.4;
+        }
+
+        .nav-item {
+            min-height: 43px;
+            width: 100%;
+            gap: 12px;
+            margin-bottom: 3px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: rgba(255, 255, 255, .05);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16));
+            border: 1px solid rgba(0, 240, 255, .16);
+            border-left: 3px solid #00f0ff;
+            color: #fff;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
+        }
+
+        .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            min-width: 22px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .nav-item>span:last-child,
+        .logout-link>span:last-child {
+            min-width: 0;
+        }
+
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #fda4af;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .logout-link:hover {
+            background: rgba(244, 63, 94, .1);
+            color: #fff;
+        }
+
+        .main {
+            min-width: 0;
+            padding: 30px clamp(18px, 3vw, 38px);
+        }
+
+        .topbar {
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .welcome h1 {
+            line-height: 1.25;
+            letter-spacing: -.6px;
+        }
+
+        .welcome p {
+            line-height: 1.6;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 72px;
+                padding: 18px 8px;
+                align-items: stretch;
+            }
+
+            .company-brand {
+                justify-content: center;
+                padding: 0 0 16px;
+                margin-bottom: 10px;
+            }
+
+            .company-brand-name,
+            .nav-item>span:last-child,
+            .menu-title,
+            .logout-link>span:last-child {
+                display: none;
+            }
+
+            .nav-item,
+            .logout-link {
+                justify-content: center;
+                gap: 0;
+                padding: 11px 6px;
+                min-height: 42px;
+                border-left-width: 1px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                min-width: 24px;
+                font-size: 17px;
+            }
+
+            .main {
+                margin-left: 72px;
+                width: calc(100% - 72px);
+                padding: 22px 16px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .main {
+                padding: 16px 12px;
+            }
+
+            .topbar {
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .welcome h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+
+    <style>
+        .help-wrap {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 8px 0 42px;
+            color: #1f2937
+        }
+
+        .help-hero {
+            padding: 30px;
+            border-radius: 22px;
+            background: linear-gradient(120deg, #11111c, #23203a 68%, #34204a);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 14px 35px rgba(17, 17, 28, .13)
+        }
+
+        .help-hero:after {
+            content: '?';
+            position: absolute;
+            right: 34px;
+            top: -40px;
+            font-size: 220px;
+            font-weight: 800;
+            color: rgba(0, 240, 255, .08);
+            pointer-events: none
+        }
+
+        .help-eyebrow {
+            font-size: 12px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: #00f0ff;
+            font-weight: 800
+        }
+
+        .help-hero h1 {
+            margin: 10px 0 8px;
+            font-size: clamp(27px, 3vw, 38px);
+            color: #fff
+        }
+
+        .help-hero p {
+            margin: 0;
+            max-width: 680px;
+            color: #d8d8e5;
+            line-height: 1.7
+        }
+
+        .help-search {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+            max-width: 720px;
+            position: relative;
+            z-index: 1
+        }
+
+        .help-search input {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid rgba(255, 255, 255, .2);
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 14px;
+            outline: none
+        }
+
+        .help-search button,
+        .help-btn {
+            border: 0;
+            border-radius: 11px;
+            padding: 13px 17px;
+            font-weight: 750;
+            cursor: pointer;
+            background: linear-gradient(100deg, #00ddeb, #ff00d4);
+            color: #11111c;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px
+        }
+
+        .help-section {
+            margin-top: 28px
+        }
+
+        .help-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 15px
+        }
+
+        .help-section h2 {
+            font-size: 21px;
+            margin: 0;
+            color: #171725
+        }
+
+        .help-muted {
+            color: #6b7280;
+            font-size: 13px;
+            margin: 5px 0 0
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px
+        }
+
+        .help-card {
+            background: #fff;
+            border: 1px solid #e8e9f0;
+            border-radius: 17px;
+            padding: 21px;
+            box-shadow: 0 5px 18px rgba(20, 20, 40, .035);
+            min-width: 0
+        }
+
+        .help-card:hover {
+            border-color: #b9dfe8;
+            transform: translateY(-2px);
+            transition: .18s ease
+        }
+
+        .help-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0fbfd;
+            font-size: 22px;
+            margin-bottom: 13px
+        }
+
+        .help-card h3 {
+            margin: 0 0 7px;
+            font-size: 16px;
+            color: #191927
+        }
+
+        .help-card p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.65
+        }
+
+        .help-card a {
+            display: inline-block;
+            margin-top: 14px;
+            color: #6541b8;
+            font-size: 13px;
+            font-weight: 750;
+            text-decoration: none
+        }
+
+        .help-two-col {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+            gap: 17px;
+            align-items: start
+        }
+
+        .help-faq-list {
+            display: grid;
+            gap: 9px
+        }
+
+        .help-faq {
+            border: 1px solid #e8e9f0;
+            background: #fff;
+            border-radius: 12px;
+            padding: 0 15px
+        }
+
+        .help-faq summary {
+            padding: 15px 0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            color: #272739
+        }
+
+        .help-faq p {
+            color: #626779;
+            font-size: 13px;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0 0 15px
+        }
+
+        .help-form {
+            display: grid;
+            gap: 13px
+        }
+
+        .help-form label {
+            display: block;
+            font-size: 12px;
+            font-weight: 750;
+            color: #444458;
+            margin-bottom: 6px
+        }
+
+        .help-form input,
+        .help-form select,
+        .help-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #dfe2ea;
+            border-radius: 10px;
+            padding: 11px 12px;
+            font: inherit;
+            font-size: 13px;
+            background: #fff;
+            color: #222233
+        }
+
+        .help-form textarea {
+            min-height: 130px;
+            resize: vertical
+        }
+
+        .help-form input:focus,
+        .help-form select:focus,
+        .help-form textarea:focus {
+            outline: 2px solid rgba(0, 240, 255, .25);
+            border-color: #49c9d7
+        }
+
+        .help-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .help-ticket {
+            background: #fff;
+            border: 1px solid #e8e9f0;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 10px
+        }
+
+        .help-ticket-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: start
+        }
+
+        .help-ticket h3 {
+            font-size: 14px;
+            margin: 0 0 7px
+        }
+
+        .help-ticket p {
+            font-size: 13px;
+            color: #626779;
+            line-height: 1.6;
+            margin: 8px 0 0;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere
+        }
+
+        .help-ticket-meta {
+            font-size: 11px;
+            color: #747789;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px
+        }
+
+        .help-badge {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            background: #eef2ff;
+            color: #4f46a5;
+            white-space: nowrap
+        }
+
+        .status-open {
+            background: #fff4db;
+            color: #8a5a00
+        }
+
+        .status-in-progress {
+            background: #e8f4ff;
+            color: #145da0
+        }
+
+        .status-resolved,
+        .status-closed {
+            background: #e5f8ec;
+            color: #16703b
+        }
+
+        .help-empty {
+            border: 1px dashed #cfd3df;
+            border-radius: 13px;
+            padding: 24px;
+            text-align: center;
+            color: #747789;
+            font-size: 13px;
+            background: #fff
+        }
+
+        .help-flashes {
+            margin: 14px 0
+        }
+
+        .help-flash {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 13px
+        }
+
+        .help-flash.success {
+            background: #e7f8ed;
+            color: #17653a
+        }
+
+        .help-flash.error,
+        .help-flash.warning {
+            background: #fff1f1;
+            color: #9a2d2d
+        }
+
+        .help-status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f4;
+            font-size: 13px
+        }
+
+        .help-status-row:last-child {
+            border-bottom: 0
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #16a34a;
+            flex-shrink: 0
+        }
+
+        .help-note {
+            font-size: 12px;
+            line-height: 1.65;
+            color: #6b7280;
+            margin-top: 12px
+        }
+
+        @media(max-width:1000px) {
+            .help-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .help-two-col {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:600px) {
+            .help-wrap {
+                padding-top: 0
+            }
+
+            .help-hero {
+                padding: 22px 18px;
+                border-radius: 16px
+            }
+
+            .help-hero:after {
+                right: 4px;
+                font-size: 140px;
+                top: -12px
+            }
+
+            .help-search {
+                flex-direction: column
+            }
+
+            .help-search button {
+                width: 100%
+            }
+
+            .help-grid {
+                grid-template-columns: 1fr
+            }
+
+            .help-form-row {
+                grid-template-columns: 1fr
+            }
+
+            .help-section-head {
+                align-items: start;
+                flex-direction: column
+            }
+
+            .help-ticket-top {
+                flex-direction: column
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="company-brand">
+                {% if company and company.logo %}
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% else %}
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% endif %}
+                <div class="company-brand-name">
+                    {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
+                </div>
+            </div>
+
+            <div class="menu-title">Main</div>
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
+                <span class="nav-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('customer') }}"
+                class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">
+                <span class="nav-icon">👥</span><span>Customers</span>
+            </a>
+            <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+                title="Invoices">
+                <span class="nav-icon">🧾</span><span>Invoices</span>
+            </a>
+            <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+                title="Inventory">
+                <span class="nav-icon">📦</span><span>Inventory</span>
+            </a>
+            <a href="#" class="nav-item" title="Transactions">
+                <span class="nav-icon">💳</span><span>Transactions</span>
+            </a>
+
+            <div class="menu-title">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">
+                <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
+            </a>
+            <a href="#" class="nav-item" title="Facebook Analytics">
+                <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="WhatsApp Analytics">
+                <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Business Analytics">
+                <span class="nav-icon">📈</span><span>Business Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Forecasting">
+                <span class="nav-icon">🔮</span><span>Forecasting</span>
+            </a>
+            <a href="#" class="nav-item" title="Altair AI Assistant">
+                <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
+            </a>
+
+            <div class="menu-title">Business Management</div>
+            <a href="#" class="nav-item" title="Company Profile">
+                <span class="nav-icon">🏢</span><span>Company Profile</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='employees-team') }}" class="nav-item" title="Employees & Team">
+                <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='documents-reports') }}" class="nav-item"
+                title="Documents & Reports">
+                <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='notifications') }}" class="nav-item" title="Notifications">
+                <span class="nav-icon">🔔</span><span>Notifications</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='integrations') }}" class="nav-item" title="Integrations">
+                <span class="nav-icon">🔗</span><span>Integrations</span>
+            </a>
+
+            <div class="menu-title">Account &amp; Billing</div>
+            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
+                title="Subscription Plans">
+                <span class="nav-icon">👑</span><span>Subscription Plans</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item"
+                title="Billing & Payments">
+                <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
+                <span class="nav-icon">🧾</span><span>Billing History</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
+                <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
+            </a>
+
+            <div class="menu-title">Settings &amp; Support</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">
+                <span class="nav-icon">⚙️</span><span>Settings</span>
+            </a>
+            <a href="#" class="nav-item" title="Security">
+                <span class="nav-icon">🔐</span><span>Security</span>
+            </a>
+            <a href="{{ url_for('help_support') }}" class="nav-item active" title="Help & Support">
+                <span class="nav-icon">❓</span><span>Help &amp; Support</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <span class="nav-icon">🚪</span><span>Logout</span>
+            </a>
+        </aside>
+
+        <main class="main">
+            <div class="help-wrap">
+                <section class="help-hero">
+                    <div class="help-eyebrow">ALTAIR CUSTOMER CARE</div>
+                    <h1>Help &amp; Support</h1>
+                    <p>Find answers, learn how to use your business tools, or send our support team a message. We're
+                        here to help you get more out of Altair Business Suite.</p>
+                    <form class="help-search" id="helpSearchForm" action="#help-guides" method="get">
+                        <input id="helpSearch" type="search"
+                            placeholder="Search help articles, invoices, AI features..."
+                            aria-label="Search help articles">
+                        <button type="submit">⌕ Search Help</button>
+                    </form>
+                </section>
+
+                <div class="help-flashes">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                    <div class="help-flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endwith %}
+                </div>
+
+                <section class="help-section" id="help-guides">
+                    <div class="help-section-head">
+                        <div>
+                            <h2>How can we help?</h2>
+                            <p class="help-muted">Choose a support option to get started.</p>
+                        </div>
+                    </div>
+                    <div class="help-grid" id="helpCards">
+                        <article class="help-card help-searchable"
+                            data-search="getting started setup company profile logo guide">
+                            <div class="help-card-icon">🚀</div>
+                            <h3>Getting Started</h3>
+                            <p>Learn the basics, set up your company profile, and find your way around the dashboard.
+                            </p><a href="#faqs">View starter guides →</a>
+                        </article>
+                        <article class="help-card help-searchable"
+                            data-search="customers invoices create invoice paid overdue">
+                            <div class="help-card-icon">🧾</div>
+                            <h3>Customers &amp; Invoices</h3>
+                            <p>Get help managing customer records, creating invoices, and understanding invoice
+                                statuses.</p><a href="#faqs">Browse answers →</a>
+                        </article>
+                        <article class="help-card help-searchable"
+                            data-search="AI lead finder leads people individuals companies prospects">
+                            <div class="help-card-icon">🤖</div>
+                            <h3>AI Features</h3>
+                            <p>Learn about AI Lead Finder, business insights, forecasting, and the AI assistant.</p><a
+                                href="#faqs">Explore AI help →</a>
+                        </article>
+                        <article class="help-card help-searchable"
+                            data-search="support ticket problem technical bug error submit contact">
+                            <div class="help-card-icon">🎫</div>
+                            <h3>Submit a Support Ticket</h3>
+                            <p>Tell us what went wrong. You can track the ticket and its status below.</p><a
+                                href="#submit-ticket">Create a ticket →</a>
+                        </article>
+                        <article class="help-card help-searchable"
+                            data-search="account login password security company profile settings">
+                            <div class="help-card-icon">🔐</div>
+                            <h3>Account &amp; Security</h3>
+                            <p>Find guidance for login, account settings, and keeping business information secure.</p><a
+                                href="#faqs">View account help →</a>
+                        </article>
+                        <article class="help-card help-searchable"
+                            data-search="contact support email question help team">
+                            <div class="help-card-icon">💬</div>
+                            <h3>Contact Support</h3>
+                            <p>Submit a message using the support form. Include the page and steps that caused the
+                                issue.</p><a href="#submit-ticket">Contact the team →</a>
+                        </article>
+                    </div>
+                    <p id="noHelpResults" class="help-empty" style="display:none;margin-top:12px;">No matching help
+                        topics. Try another search or submit a support ticket.</p>
+                </section>
+
+                <section class="help-section help-two-col" id="faqs">
+                    <div>
+                        <div class="help-section-head">
+                            <div>
+                                <h2>Frequently Asked Questions</h2>
+                                <p class="help-muted">Quick answers to common questions.</p>
+                            </div>
+                        </div>
+                        <div class="help-faq-list" id="faqList">
+                            <details class="help-faq help-searchable"
+                                data-search="company profile setup logo edit company details">
+                                <summary>How do I update my company profile?</summary>
+                                <p>Open Company Profile or Settings from the dashboard and update the available company
+                                    details. If a field is not available yet, submit a support ticket and tell us what
+                                    you need to change.</p>
+                            </details>
+                            <details class="help-faq help-searchable"
+                                data-search="create customer invoice add customer paid pending overdue">
+                                <summary>How do I create an invoice?</summary>
+                                <p>Open Invoices from the sidebar and use the invoice form to select or enter the
+                                    customer, add the item or service details, set the dates and amount, then save the
+                                    invoice. Check the invoice status after saving.</p>
+                            </details>
+                            <details class="help-faq help-searchable"
+                                data-search="AI Lead Finder company individuals people missing email phone website">
+                                <summary>Why doesn't every lead include an email or phone number?</summary>
+                                <p>Lead sources only return information that is publicly available to them. Some records
+                                    do not contain a verified email address or phone number. Treat missing details as
+                                    unavailable—not proof that the person or business has no contact information.</p>
+                            </details>
+                            <details class="help-faq help-searchable"
+                                data-search="lead score missing service information website no website">
+                                <summary>What does a lead score mean?</summary>
+                                <p>A lead score is an estimate based on the available information and selected criteria.
+                                    It is not a guarantee that a prospect will buy. Missing information should be
+                                    treated as an information gap, not automatically as a bad lead.</p>
+                            </details>
+                            <details class="help-faq help-searchable"
+                                data-search="revenue expenses dashboard zero data transactions">
+                                <summary>Why might my dashboard show zero or incomplete figures?</summary>
+                                <p>Check that you are signed into the correct account and that the relevant records have
+                                    been saved with the right dates and statuses. If the numbers still look wrong, open
+                                    a ticket and include the page, date range, and the figures you expected. Do not
+                                    include passwords or secret keys.</p>
+                            </details>
+                            <details class="help-faq help-searchable"
+                                data-search="ticket status open in progress resolved waiting support response">
+                                <summary>How do I track a support ticket?</summary>
+                                <p>After submitting a ticket, scroll to My Support Tickets on this page. Your reference
+                                    number, priority, submission date, and current status will appear there.</p>
+                            </details>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="help-section-head">
+                            <div>
+                                <h2>Service Overview</h2>
+                                <p class="help-muted">Support information for your workspace.</p>
+                            </div>
+                        </div>
+                        <div class="help-card">
+                            <div class="help-status-row"><span class="status-dot"></span><span>Help Centre</span><span
+                                    style="margin-left:auto;color:#16803d;font-weight:750">Available</span></div>
+                            <div class="help-status-row"><span class="status-dot"></span><span>Support Ticket
+                                    Submission</span><span
+                                    style="margin-left:auto;color:#16803d;font-weight:750">Available</span></div>
+                            <div class="help-status-row"><span class="status-dot"></span><span>Account-specific
+                                    troubleshooting</span><span
+                                    style="margin-left:auto;color:#6b7280;font-weight:750">By ticket</span></div>
+                            <p class="help-note">This overview describes the help features on this page; it is not a
+                                live uptime monitor for every Altair service. Never include passwords, API keys, payment
+                                card details, or other secrets in a support request.</p>
+                        </div>
+                        <div class="help-card" style="margin-top:14px">
+                            <div class="help-card-icon">✉️</div>
+                            <h3>Contact details</h3>
+                            <p>We will use the contact email entered with your ticket to follow up. Make sure it is
+                                correct and can receive replies.</p>
+                            <p style="margin-top:10px"><strong>Signed-in email:</strong><br>{{ user_email or 'Not
+                                available — enter an email in the ticket form.' }}</p><a href="#submit-ticket">Send a
+                                support request →</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="help-section help-two-col" id="submit-ticket">
+                    <div class="help-card">
+                        <div class="help-section-head">
+                            <div>
+                                <h2>Submit a Support Ticket</h2>
+                                <p class="help-muted">Give us enough detail to understand and reproduce the issue.</p>
+                            </div>
+                        </div>
+                        <form class="help-form" method="POST" action="{{ url_for('help_support') }}">
+                            <div><label for="subject">Subject *</label><input id="subject" name="subject"
+                                    maxlength="180" required placeholder="e.g. Invoice page won't save"></div>
+                            <div class="help-form-row">
+                                <div><label for="category">Category</label><select id="category" name="category">
+                                        <option>General Enquiry</option>
+                                        <option>Technical Issue</option>
+                                        <option>Account &amp; Login</option>
+                                        <option>Billing</option>
+                                        <option>AI Features</option>
+                                        <option>Customers &amp; Invoices</option>
+                                        <option>Data &amp; Reports</option>
+                                        <option>Security Concern</option>
+                                    </select></div>
+                                <div><label for="priority">Priority</label><select id="priority" name="priority">
+                                        <option>Low</option>
+                                        <option selected>Normal</option>
+                                        <option>High</option>
+                                        <option>Urgent</option>
+                                    </select></div>
+                            </div>
+                            <div><label for="contact_email">Contact email</label><input id="contact_email" type="email"
+                                    name="contact_email" maxlength="255" value="{{ user_email or '' }}"
+                                    placeholder="you@example.com"></div>
+                            <div><label for="description">Describe the issue *</label><textarea id="description"
+                                    name="description" maxlength="12000" required
+                                    placeholder="What were you trying to do? What happened? Include any error message and the steps to reproduce it."></textarea>
+                            </div>
+                            <button class="help-btn" type="submit">🎫 Submit Ticket</button>
+                            <p class="help-note">Do not include passwords, API keys, bank details, or other confidential
+                                secrets. File attachments are not enabled in this version.</p>
+                        </form>
+                    </div>
+                    <div id="my-tickets">
+                        <div class="help-section-head">
+                            <div>
+                                <h2>My Support Tickets</h2>
+                                <p class="help-muted">Your latest 50 tickets.</p>
+                            </div>
+                        </div>
+                        {% if tickets %}
+                        {% for ticket in tickets %}
+                        <article class="help-ticket">
+                            <div class="help-ticket-top">
+                                <div>
+                                    <h3>{{ ticket.subject }}</h3>
+                                    <div class="help-ticket-meta"><span>{{ ticket.ticket_number }}</span><span>{{
+                                            ticket.category }}</span><span>{{ ticket.created_at.strftime('%d %b %Y,
+                                            %H:%M') if ticket.created_at else '' }}</span></div>
+                                </div>
+                                <span
+                                    class="help-badge {% if ticket.status|lower == 'open' %}status-open{% elif ticket.status|lower == 'in progress' %}status-in-progress{% elif ticket.status|lower in ['resolved','closed'] %}status-resolved{% endif %}">{{
+                                    ticket.status }}</span>
+                            </div>
+                            <p>{{ ticket.description }}</p>
+                            <div class="help-ticket-meta" style="margin-top:10px"><span>Priority: {{ ticket.priority
+                                    }}</span><span>Updated: {{ ticket.updated_at.strftime('%d %b %Y, %H:%M') if
+                                    ticket.updated_at else '—' }}</span></div>
+                        </article>
+                        {% endfor %}
+                        {% else %}
+                        <div class="help-empty">You haven't submitted any support tickets yet. If you need help, use the
+                            form to create your first ticket.</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+        </main>
+        <script>
+            (function () {
+                const input = document.getElementById('helpSearch');
+                const form = document.getElementById('helpSearchForm');
+                const searchable = [...document.querySelectorAll('.help-searchable')];
+                const noResults = document.getElementById('noHelpResults');
+                function filterHelp() {
+                    const q = (input.value || '').trim().toLowerCase(); let shown = 0;
+                    searchable.forEach(el => { const hay = (el.innerText + ' ' + (el.dataset.search || '')).toLowerCase(); const match = !q || hay.includes(q); el.style.display = match ? '' : 'none'; if (match) shown++; });
+                    noResults.style.display = shown ? 'none' : '';
+                }
+                input.addEventListener('input', filterHelp);
+                form.addEventListener('submit', function (e) { e.preventDefault(); filterHelp(); document.getElementById('help-guides').scrollIntoView({ behavior: 'smooth' }); });
+            })();
+        </script>
+    </div>
+</body>
+
+</html>

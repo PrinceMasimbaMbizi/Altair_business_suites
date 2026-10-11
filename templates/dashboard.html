@@ -2722,7 +2722,8 @@
             <a href="#" class="nav-item" title="Security">
                 <span class="nav-icon">🔐</span><span>Security</span>
             </a>
-            <a href="#" class="nav-item" title="Help & Support">
+            <a href="{{ url_for('help_support') }}"
+                class="nav-item {% if request.endpoint == 'help_support' %}active{% endif %}" title="Help & Support">
                 <span class="nav-icon">❓</span><span>Help &amp; Support</span>
             </a>
             <a href="{{ url_for('logout') }}" class="logout-link">
@@ -2763,7 +2764,7 @@
                 <div class="welcome">
 
                     <h1>
-                        Good morning 👋
+                        Hey there 👋
                     </h1>
 
                     <p>

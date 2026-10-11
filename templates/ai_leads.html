@@ -3095,6 +3095,24 @@
                         </div>
 
 
+                        <!-- PROSPECT TYPE -->
+
+                        <div class="field">
+                            <label>Who do you want to find? <span class="required">*</span></label>
+                            <select name="prospect_type">
+                                <option value="businesses" {% if
+                                    search_prospect_type|default('businesses')=='businesses' %}selected{% endif %}>
+                                    Businesses / Organizations</option>
+                                <option value="people" {% if search_prospect_type|default('')=='people' %}selected{%
+                                    endif %}>Individuals / People</option>
+                                <option value="both" {% if search_prospect_type|default('')=='both' %}selected{% endif
+                                    %}>Both people and businesses</option>
+                            </select>
+                            <small>Choose the type of prospect. Individual search uses BRAVE_SEARCH_API_KEY and returns
+                                public web results.</small>
+                        </div>
+
+
                         <!--TARGET LOCATION-->
 
                         <div class="field field-large">
@@ -3221,7 +3239,7 @@
                             </select>
 
                             <small>
-                                Maximum number of businesses to return
+                                Maximum number of prospects to return
                             </small>
 
                         </div>
@@ -3246,15 +3264,13 @@
 
                             <p>
                                 Example:
-                                <b>Website Development</b>
+                                <b>Accounting, tutoring, catering, repairs, or any offer</b>
                                 →
-                                <b>Johannesburg, South Africa</b>
+                                <b>your target location</b>
                                 →
-                                <b>Restaurants</b>
+                                <b>people, businesses, or both</b>
                                 →
-                                <b>Small</b>
-                                →
-                                <b>new restaurants, local businesses</b>
+                                <b>optional industry and keywords</b>
                             </p>
 
                         </div>
@@ -3351,7 +3367,7 @@
                             <tr>
 
                                 <th>
-                                    Business
+                                    Prospect
                                 </th>
 
                                 <th>
@@ -3359,7 +3375,7 @@
                                 </th>
 
                                 <th>
-                                    Address
+                                    Location / Source
                                 </th>
 
                                 <th>
@@ -3493,11 +3509,7 @@
 
                                     <span class="google-status">
 
-                                        {{
-                                        lead.business_status
-                                        or
-                                        "Unknown"
-                                        }}
+                                        {{ lead.prospect_type or lead.business_status or "Prospect" }}
 
                                     </span>
 

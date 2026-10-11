@@ -3886,6 +3886,131 @@ def api_business_insights():
             db.close()
 
 
+
+# HELP & SUPPORT CENTRE
+@app.route("/help-support", methods=["GET", "POST"])
+def help_support():
+    """Help centre and user-owned support tickets."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    db = None
+    cursor = None
+    company = None
+    tickets = []
+
+    # The table is created automatically so no separate SQL import is required.
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                ticket_number VARCHAR(32) NOT NULL UNIQUE,
+                user_id BIGINT NOT NULL,
+                company_id BIGINT NULL,
+                subject VARCHAR(180) NOT NULL,
+                category VARCHAR(60) NOT NULL,
+                priority VARCHAR(20) NOT NULL DEFAULT 'Normal',
+                description TEXT NOT NULL,
+                contact_email VARCHAR(255) NULL,
+                status VARCHAR(30) NOT NULL DEFAULT 'Open',
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_support_user_created (user_id, created_at),
+                INDEX idx_support_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """)
+
+        cursor.execute("""
+            SELECT * FROM companies WHERE user_id = %s LIMIT 1
+        """, (user_id,))
+        company = cursor.fetchone()
+
+        if not company:
+            if request.method == "POST":
+                flash("Please complete your company profile before submitting a support ticket.", "warning")
+            else:
+                return redirect(url_for("company_setup"))
+
+        if request.method == "POST":
+            subject = (request.form.get("subject") or "").strip()
+            category = (request.form.get("category") or "General Enquiry").strip()
+            priority = (request.form.get("priority") or "Normal").strip()
+            description = (request.form.get("description") or "").strip()
+            contact_email = (request.form.get("contact_email") or session.get("user_email") or "").strip()
+
+            allowed_categories = {
+                "Technical Issue", "Account & Login", "Billing", "AI Features",
+                "Customers & Invoices", "Data & Reports", "General Enquiry", "Security Concern"
+            }
+            allowed_priorities = {"Low", "Normal", "High", "Urgent"}
+
+            if not company:
+                pass
+            elif not subject or not description:
+                flash("Please enter both a subject and a description.", "error")
+            elif len(subject) > 180:
+                flash("The subject must be 180 characters or fewer.", "error")
+            elif len(description) > 12000:
+                flash("Please keep the description under 12,000 characters.", "error")
+            elif category not in allowed_categories or priority not in allowed_priorities:
+                flash("Please choose a valid category and priority.", "error")
+            elif len(contact_email) > 255:
+                flash("Please enter a valid contact email address.", "error")
+            else:
+                # Use a unique ticket reference and bind every user value as SQL parameters.
+                cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM support_tickets")
+                next_id_row = cursor.fetchone() or {}
+                ticket_number = "ALT-" + datetime.now().strftime("%y%m%d") + "-" + str(next_id_row.get("next_id", 1)).zfill(5)
+                company_id = company.get("id") if company else None
+                cursor.execute("""
+                    INSERT INTO support_tickets
+                        (ticket_number, user_id, company_id, subject, category, priority,
+                         description, contact_email, status)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'Open')
+                """, (ticket_number, user_id, company_id, subject, category, priority,
+                      description, contact_email or None))
+                db.commit()
+                flash("Support ticket " + ticket_number + " was submitted successfully.", "success")
+                return redirect(url_for("help_support", _anchor="my-tickets"))
+
+        # Strictly limit the ticket list to the authenticated user.
+        cursor.execute("""
+            SELECT ticket_number, subject, category, priority, description,
+                   contact_email, status, created_at, updated_at
+            FROM support_tickets
+            WHERE user_id = %s
+            ORDER BY created_at DESC
+            LIMIT 50
+        """, (user_id,))
+        tickets = cursor.fetchall() or []
+
+    except Exception as exc:
+        if db:
+            try:
+                db.rollback()
+            except Exception:
+                pass
+        app.logger.exception("Help & Support page failed")
+        flash("The Help & Support service could not load right now. Please try again later.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    return render_template(
+        "help_support.html",
+        company=company,
+        tickets=tickets,
+        user_name=session.get("user_name"),
+        user_email=session.get("user_email"),
+    )
+
+
 # DASHBOARD
 @app.route("/")
 def dashboard():
@@ -8889,6 +9014,10 @@ def search_ai_leads():
         ""
     ).strip()
 
+    prospect_type = request.form.get("prospect_type", "businesses").strip().lower()
+    if prospect_type not in {"businesses", "people", "both"}:
+        prospect_type = "businesses"
+
 
     
     # MAX RESULTS
@@ -8950,16 +9079,19 @@ def search_ai_leads():
         )
 
 
-    if not GOOGLE_PLACES_API_KEY:
+    brave_search_api_key = os.environ.get("BRAVE_SEARCH_API_KEY", "").strip()
 
-        flash(
-            "Google Places API key is not configured.",
-            "error"
-        )
+    if prospect_type == "businesses" and not GOOGLE_PLACES_API_KEY:
+        flash("Google Places API key is not configured for business searches.", "error")
+        return redirect(url_for("ai_leads"))
 
-        return redirect(
-            url_for("ai_leads")
-        )
+    if prospect_type == "people" and not brave_search_api_key:
+        flash("Individual-prospect search needs BRAVE_SEARCH_API_KEY. Add it to your environment to search public web results for people-related requests.", "error")
+        return redirect(url_for("ai_leads"))
+
+    if prospect_type == "both" and not GOOGLE_PLACES_API_KEY and not brave_search_api_key:
+        flash("Configure GOOGLE_PLACES_API_KEY for business leads and/or BRAVE_SEARCH_API_KEY for public web search of individual prospects.", "error")
+        return redirect(url_for("ai_leads"))
 
 
     
@@ -9103,127 +9235,116 @@ def search_ai_leads():
 
 
     
-    # GOOGLE PLACES API
-    
+    # DISCOVER PROSPECTS FROM THE SELECTED SOURCE(S)
+    # Google Places provides business listings only. For individual prospects,
+    # use Brave Search API to find public web pages that may show service requests.
+    google_places = []
+    source_errors = []
 
-    url = (
-        "https://places.googleapis.com/v1/"
-        "places:searchText"
-    )
-
-
-    headers = {
-
-        "Content-Type":
-            "application/json",
-
-        "X-Goog-Api-Key":
-            GOOGLE_PLACES_API_KEY,
-
-        "X-Goog-FieldMask":
-            ",".join([
-
-                "places.id",
-
-                "places.displayName",
-
-                "places.formattedAddress",
-
-                "places.websiteUri",
-
-                "places.nationalPhoneNumber",
-
-                "places.internationalPhoneNumber",
-
-                "places.types",
-
-                "places.businessStatus",
-
-                "places.googleMapsUri"
+    if prospect_type in ("businesses", "both") and GOOGLE_PLACES_API_KEY:
+        places_url = "https://places.googleapis.com/v1/places:searchText"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+            "X-Goog-FieldMask": ",".join([
+                "places.id", "places.displayName", "places.formattedAddress",
+                "places.websiteUri", "places.nationalPhoneNumber",
+                "places.internationalPhoneNumber", "places.types",
+                "places.businessStatus", "places.googleMapsUri"
             ])
-    }
-
-
-    payload = {
-
-        "textQuery":
-            search_query,
-
-        "pageSize":
-            max_results
-    }
-
-
-    
-    # SEND GOOGLE REQUEST
-    
-
-    try:
-
-        response = requests.post(
-
-            url,
-
-            headers=headers,
-
-            json=payload,
-
-            timeout=30
-        )
-
-
-        print(
-            "GOOGLE STATUS:",
-            response.status_code
-        )
-
-
-        # Avoid logging the entire Places payload: it can be large and may
-        # consume unnecessary memory/log bandwidth on small Render instances.
-        print("GOOGLE RESPONSE BYTES:", len(response.content))
-
-
-        if response.status_code != 200:
-
-            flash(
-                "Google Places search failed. "
-                "Please check your Google Places API configuration.",
-                "error"
+        }
+        try:
+            response = requests.post(
+                places_url, headers=headers,
+                json={"textQuery": search_query, "pageSize": max_results}, timeout=30
             )
+            print("GOOGLE PLACES STATUS:", response.status_code)
+            if response.status_code == 200:
+                for place in response.json().get("places", []):
+                    place["_prospect_type"] = "Business / Organization"
+                    place["_source_type"] = "Google Places"
+                    google_places.append(place)
+            else:
+                source_errors.append("Google Places returned an error; business results may be missing.")
+                print("GOOGLE PLACES ERROR BODY:", response.text[:500])
+        except requests.RequestException as exc:
+            source_errors.append("Could not connect to Google Places.")
+            print("GOOGLE PLACES API ERROR:", type(exc).__name__, str(exc))
+    elif prospect_type in ("businesses", "both") and not GOOGLE_PLACES_API_KEY:
+        source_errors.append("Business search is unavailable because GOOGLE_PLACES_API_KEY is not configured.")
 
-            return redirect(
-                url_for("ai_leads")
+    if prospect_type in ("people", "both") and brave_search_api_key:
+        from hashlib import sha256
+        people_query_parts = [f'("looking for" OR "need" OR "recommend" OR "seeking") {services}', location]
+        if industry:
+            people_query_parts.append(industry)
+        if keywords:
+            people_query_parts.append(keywords)
+        people_query = " ".join(part for part in people_query_parts if part).strip()
+        try:
+            brave_response = requests.get(
+                "https://api.search.brave.com/res/v1/web/search",
+                headers={"Accept": "application/json", "X-Subscription-Token": brave_search_api_key},
+                params={"q": people_query, "count": min(max_results, 10), "safesearch": "moderate"},
+                timeout=20
             )
+            print("BRAVE SEARCH STATUS:", brave_response.status_code)
+            if brave_response.status_code == 200:
+                web_results = (brave_response.json().get("web") or {}).get("results", [])
+                for item in web_results:
+                    link = (item.get("url") or "").strip()
+                    if not link:
+                        continue
+                    snippet = (item.get("description") or "").strip()
+                    title = (item.get("title") or "Public profile / request")[:250]
+                    # Use only data actually returned by the search API; do not
+                    # infer a person's identity or invent contact details.
+                    email_match = re.search(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", snippet, re.I)
+                    phone_match = re.search(r"(?:\+?\d[\d ()-]{7,}\d)", snippet)
+                    synthetic_id = "web_" + sha256(link.encode("utf-8")).hexdigest()[:32]
+                    google_places.append({
+                        "id": synthetic_id,
+                        "displayName": {"text": title},
+                        "formattedAddress": "",
+                        "websiteUri": link,
+                        "nationalPhoneNumber": phone_match.group(0).strip() if phone_match else "",
+                        "internationalPhoneNumber": "",
+                        "types": ["individual_prospect"],
+                        "businessStatus": "",
+                        "googleMapsUri": link,
+                        "_prospect_type": "Individual / Public Web Result",
+                        "_source_type": "Brave Web Search",
+                        "_evidence_text": snippet,
+                        "_person_search_query": people_query,
+                        "_email_from_snippet": email_match.group(0).lower() if email_match else ""
+                    })
+            else:
+                source_errors.append("Brave Search returned an error; individual public-web results may be missing.")
+                print("BRAVE SEARCH ERROR BODY:", brave_response.text[:500])
+        except requests.RequestException as exc:
+            source_errors.append("Could not connect to Brave Search.")
+            print("BRAVE SEARCH ERROR:", type(exc).__name__, str(exc))
+    elif prospect_type in ("people", "both") and not brave_search_api_key:
+        source_errors.append("Individual search is not configured. Add BRAVE_SEARCH_API_KEY to enable public web search for people-related requests.")
 
+    if source_errors:
+        for source_error in source_errors:
+            flash(source_error, "error" if prospect_type == "people" else "warning")
 
-        data = response.json()
+    # Preserve source-specific results while removing duplicate URLs/IDs.
+    deduped_results = []
+    seen_result_ids = set()
+    for result in google_places:
+        result_id = result.get("id") or result.get("googleMapsUri") or result.get("websiteUri")
+        if result_id and result_id not in seen_result_ids:
+            seen_result_ids.add(result_id)
+            deduped_results.append(result)
+    google_places = deduped_results[:max_results * (2 if prospect_type == "both" else 1)]
 
-
-    except requests.RequestException as e:
-
-        print(
-            "GOOGLE API ERROR:",
-            e
-        )
-
-
-        flash(
-            "Unable to connect to Google Places.",
-            "error"
-        )
-
-
-        return redirect(
-            url_for("ai_leads")
-        )
-
-
-    
     # PROCESS GOOGLE RESULTS
     # Fetch existing lead statuses in ONE database query rather than opening
     # a separate MySQL connection for every Google result. This reduces the
     # chance of a slow search hitting Gunicorn's worker timeout.
-    google_places = data.get("places", [])
     place_ids = [place.get("id") for place in google_places if place.get("id")]
     existing_lead_statuses = {}
 
@@ -9250,7 +9371,12 @@ def search_ai_leads():
                 status_db.close()
 
     google_results = []
-
+    try:
+        seller_profile = get_company_for_user(user_id) or {}
+    except Exception as exc:
+        print("LEAD OUTREACH PROFILE LOOKUP ERROR:", type(exc).__name__, str(exc))
+        seller_profile = {}
+    sender_name = (seller_profile.get("company_name") or session.get("user_name") or "our team").strip()
 
     for place in google_places:
 
@@ -9377,7 +9503,7 @@ def search_ai_leads():
 
         # Google Places has no email field; look for a publicly listed
         # email on the business's own website when a website is available.
-        business_email = find_public_business_email(website)
+        business_email = place.get("_email_from_snippet") or (find_public_business_email(website) if place.get("_source_type", "Google Places") == "Google Places" else "")
 
 
         
@@ -9442,11 +9568,20 @@ def search_ai_leads():
             "source_url":
                 google_maps_url,
 
+            "prospect_type": place.get("_prospect_type", "Business / Organization"),
+            "source_type": place.get("_source_type", "Google Places"),
+            "evidence_text": place.get("_evidence_text", ""),
+            "services_offered": "",
+
             # Cached from the single batch query above.
             "_not_contacted_or_converted": (
                 existing_lead_statuses.get(place.get("id"))
                 not in ("contacted", "converted")
-            )
+            ),
+            "_prospect_type": place.get("_prospect_type", "Business / Organization"),
+            "_source_type": place.get("_source_type", "Google Places"),
+            "evidence_text": place.get("_evidence_text", ""),
+            "prospect_type": place.get("_prospect_type", "Business / Organization")
         }
 
 
@@ -9454,12 +9589,7 @@ def search_ai_leads():
         # CHECK FOR COMPETITOR
         
 
-        if is_likely_competitor(
-
-            potential_lead,
-
-            services
-        ):
+        if potential_lead.get("prospect_type") == "Business / Organization" and is_likely_competitor(potential_lead, services):
 
             print(
                 "COMPETITOR SKIPPED:",
@@ -9487,7 +9617,8 @@ def search_ai_leads():
 
             keywords=keywords,
 
-            user_id=user_id
+            user_id=user_id,
+            sender_name=sender_name
         )
 
 
@@ -9628,6 +9759,8 @@ def search_ai_leads():
         search_business_size=business_size,
 
         search_keywords=keywords,
+
+        search_prospect_type=prospect_type,
 
         user_name=session.get(
             "user_name"
@@ -9784,103 +9917,24 @@ def get_lead_status_count(
 # CHECK IF BUSINESS IS LIKELY A COMPETITOR
 
 
-def is_likely_competitor(
-    lead,
-    service
-):
+def is_likely_competitor(lead, service):
+    """Exclude only a clearly evidenced direct competitor for the chosen offer.
 
-    company_name = lead.get(
-        "company_name",
-        ""
-    ).lower()
-
-
-    industry = lead.get(
-        "industry",
-        ""
-    ).lower()
-
-
-    website = lead.get(
-        "website",
-        ""
-    ).lower()
-
-
-    
-    # COMPETITOR TERMS
-    
-
-    competitor_terms = [
-
-        "web design",
-
-        "web development",
-
-        "website design",
-
-        "website development",
-
-        "web developer",
-
-        "website developer",
-
-        "digital agency",
-
-        "digital marketing agency",
-
-        "software development",
-
-        "software company",
-
-        "app development",
-
-        "application development",
-
-        "web agency",
-
-        "website agency",
-
-        "seo agency",
-
-        "marketing agency"
-    ]
-
-
-    
-    # COMBINE BUSINESS INFORMATION
-    
-
-    combined_text = (
-
-        company_name
-
-        + " "
-
-        + industry
-
-        + " "
-
-        + website
-    )
-
-
-    
-    # CHECK TERMS
-    
-
-    for term in competitor_terms:
-
-        if term in combined_text:
-
-            return True
-
-
-    return False
-
-
-
-
+    A name, website, or broad industry alone is not enough to classify a lead as
+    a competitor. This intentionally avoids hard-coded assumptions about web
+    agencies or any one seller's service catalogue.
+    """
+    offer_text = " ".join(str(lead.get(key) or "") for key in (
+        "services_offered", "service_description", "evidence_text", "industry"
+    )).lower()
+    service_text = (service or "").strip().lower()
+    if not offer_text or not service_text:
+        return False
+    service_tokens = [token for token in re.findall(r"[a-z0-9]+", service_text) if len(token) > 3]
+    if not service_tokens:
+        return False
+    overlap = sum(1 for token in set(service_tokens) if token in offer_text)
+    return overlap >= max(1, min(2, len(set(service_tokens))))
 
 
 
@@ -10021,37 +10075,49 @@ def _lead_text_requests_service(text, service):
     return 0, ""
 
 
-def qualify_lead_with_ai(lead, service, target_industry, target_location, business_size, keywords, user_id=None):
-    'Evidence-based score: main 80 points plus supplementary evidence capped at 20.'
+def qualify_lead_with_ai(lead, service, target_industry, target_location, business_size, keywords, user_id=None, sender_name="our team"):
+    """Evidence-based, seller-neutral lead score (0-100).
+
+    Main score: missing public service/product details (40), buying intent (25),
+    recency (10), relevance (5). Supplementary evidence is capped at 20.
+    Missing website is NOT a scoring criterion.
+    """
     from datetime import datetime
-    company_name = (lead.get("company_name") or "").strip()
+    prospect_name = (lead.get("company_name") or "").strip()
     website = (lead.get("website") or "").strip()
     email = (lead.get("email") or "").strip()
     phone = (lead.get("phone") or "").strip()
     industry = (lead.get("industry") or "").strip()
     address = (lead.get("address") or lead.get("location") or "").strip()
     business_status = (lead.get("business_status") or "").upper()
-    maps_url = (lead.get("google_maps_url") or lead.get("source_url") or "").strip()
-    source_text = lead.get("evidence_text") or lead.get("post_text") or lead.get("source_text") or ""
+    source_url = (lead.get("source_url") or lead.get("google_maps_url") or "").strip()
+    source_text = (lead.get("evidence_text") or lead.get("post_text") or lead.get("source_text") or "").strip()
     published_at = lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")
     reasons, analysis_points = [], []
 
-    # A. Missing website: potential signal, not definitive proof.
-    missing_website_points = 40 if not website else 0
-    if not website:
-        reasons.append("Google Places does not list a website; this is a potential missing-website signal, not proof.")
-        analysis_points.append("No website is listed in Google Places; this does not prove the business has no website.")
+    # A. Missing service/product information: a flexible opportunity signal.
+    # The existence of a website alone does not prove that offerings are listed.
+    service_listing = (lead.get("services_offered") or lead.get("service_description") or lead.get("offering_evidence") or "").strip()
+    if not service_listing and not source_text:
+        missing_service_info_points = 40
+        reasons.append("The available public listing does not show a clear list or description of services/products; this is an information gap, not proof that the prospect offers none.")
+        analysis_points.append("No clear services/products list was supplied by the source, so the information-gap signal earned 40 points. Website presence or absence was not used for this score.")
+    elif not service_listing and source_text and not re.search(r"\b(service|services|product|products|offering|offers|speciali[sz]e|provide|provides|we do|menu|treatments|solutions)\b", source_text, re.I):
+        missing_service_info_points = 40
+        reasons.append("The available public text does not clearly describe services/products.")
+        analysis_points.append("The public snippet does not clearly describe services/products; the website field itself does not affect this score.")
     else:
-        analysis_points.append("A website is listed, so no missing-website points were awarded; website quality was not independently assessed.")
+        missing_service_info_points = 0
+        analysis_points.append("Public text includes service/product information, so no missing-offerings points were awarded.")
 
-    # B. Buying intent: only actual source text can earn points.
+    # B. Buying intent: only source text with actual evidence can earn points.
     intent_points, intent_reason = _lead_text_requests_service(source_text, service)
     if intent_reason:
         reasons.append(intent_reason)
     else:
-        analysis_points.append("No source text demonstrating a request to buy this service was provided; buying-intent points are zero.")
+        analysis_points.append("No source text demonstrating a request to buy the selected service was available; buying-intent points are zero.")
 
-    # C. Recency from the original timestamp only.
+    # C. Recency: only use a source-provided timestamp.
     recency_points = 0
     if published_at:
         try:
@@ -10063,26 +10129,24 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
             elif age_hours < 24: recency_points = 4
             elif age_hours <= 72: recency_points = 2
         except (ValueError, TypeError, OverflowError):
-            analysis_points.append("Timestamp could not be parsed; no recency points were awarded.")
+            analysis_points.append("The source timestamp could not be parsed; no recency points were awarded.")
     else:
-        analysis_points.append("No original publication/listing timestamp was available; no recency points were awarded.")
+        analysis_points.append("No original publication timestamp was available; no recency points were awarded.")
 
-    # D. Relevance dynamically follows the selected service/industry.
+    # D. Relevance is derived dynamically from the user's chosen search terms.
     relevance_points = 0
-    service_l = (service or "").lower()
-    industry_l = industry.lower()
-    target_industry_l = (target_industry or "").lower()
-    service_tokens = [word for word in re.findall(r"[a-z0-9]+", service_l) if len(word) > 3]
-    is_website_service = any(term in service_l for term in ("website", "web development", "web design", "ecommerce", "e-commerce", "online store"))
-    if is_website_service and not website:
+    service_tokens = [w for w in re.findall(r"[a-z0-9]+", (service or "").lower()) if len(w) > 3]
+    target_tokens = [w for w in re.findall(r"[a-z0-9]+", " ".join([target_industry or "", keywords or ""]).lower()) if len(w) > 3]
+    searchable_text = " ".join([industry, source_text, " ".join(lead.get("types") or [])]).lower()
+    if any(token in searchable_text for token in service_tokens + target_tokens):
         relevance_points = 5
-    elif service_tokens and industry_l and any(word in industry_l for word in service_tokens):
-        relevance_points = 5
-    elif keywords and industry_l and any(word in industry_l for word in re.findall(r"[a-z0-9]+", keywords.lower()) if len(word) > 3):
-        relevance_points = 5
-    main_score = min(80, missing_website_points + intent_points + recency_points + relevance_points)
+        analysis_points.append("Available listing text/category matches one or more of the selected service, industry, or keyword terms.")
+    else:
+        analysis_points.append("No direct text/category match was available for the selected search terms; no relevance points were awarded.")
 
-    # Supplementary criteria: each supported criterion is exactly one point.
+    main_score = min(80, missing_service_info_points + intent_points + recency_points + relevance_points)
+
+    # Supplementary evidence: each supported criterion earns one point, capped at 20.
     supplementary = 0
     supplementary_reasons = []
     def award(condition, label):
@@ -10091,29 +10155,26 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
             supplementary += 1
             supplementary_reasons.append(label)
 
-    award(bool(phone), "Public business phone is listed.")
-    award(bool(email and lead.get("email_verified") is True), "Business email is verified by a reliable process.")
-    award(bool(address), "Business location is available.")
+    award(bool(phone), "A public phone number is listed.")
+    award(bool(email and lead.get("email_verified") is True), "Email is verified by a reliable process.")
+    award(bool(address), "A location/address is available from the source.")
     target_location_l = (target_location or "").lower()
-    award(bool(target_location_l and address and target_location_l in address.lower()), "Address matches target location text.")
-    award(bool(company_name and company_name.lower() not in ("unknown business", "unknown")), "Credible business name is available.")
-    award(bool(industry and target_industry_l and (industry_l in target_industry_l or target_industry_l in industry_l)), "Business category matches target industry.")
-    award(business_status == "OPERATIONAL", "Google Places lists the business as operational.")
-    award(bool(maps_url), "Public Google business profile URL is available.")
-    award(bool(lead.get("social_url")), "Public social media URL is available.")
-    award(bool(phone or email or website), "A public contact channel is listed.")
-    award(bool(lead.get("source_url") or maps_url), "Lead source URL is available.")
-    award(bool(published_at), "Original listing/post date is recorded.")
-    award(bool(website or maps_url), "Documented online presence is available.")
-    award(bool(website and lead.get("visibility_issue_evidence")), "Observable evidence indicates an online-visibility issue.")
-    award(bool(lead.get("mobile_friendly_evidence")), "Mobile-friendliness evidence is available.")
-    award(bool(lead.get("booking_feature_evidence")), "Evidence supports an online-booking opportunity.")
+    award(bool(target_location_l and address and target_location_l in address.lower()), "Location matches the requested location text.")
+    award(bool(prospect_name and prospect_name.lower() not in ("unknown business", "unknown", "public profile / request")), "A prospect/profile name is available.")
+    award(bool(industry and (not target_industry or target_industry.lower() in industry.lower() or industry.lower() in target_industry.lower())), "Category is consistent with the selected target industry.")
+    award(business_status == "OPERATIONAL", "The business listing is marked operational.")
+    award(bool(source_url), "A public source/profile URL is available.")
+    award(bool(lead.get("social_url")), "A public social profile URL is available.")
+    award(bool(phone or email or website), "At least one public contact channel is listed.")
+    award(bool(published_at), "The original source date is recorded.")
+    award(bool(website or source_url), "A public online profile or source page is available.")
+    award(bool(lead.get("visibility_issue_evidence")), "Evidence supports an online-visibility opportunity.")
+    award(bool(lead.get("mobile_friendly_evidence")), "Evidence supports a mobile usability opportunity.")
+    award(bool(lead.get("booking_feature_evidence")), "Evidence supports a booking opportunity.")
     award(bool(lead.get("ecommerce_feature_evidence")), "Evidence supports an e-commerce opportunity.")
-    award(bool(lead.get("contact_form_evidence")), "Evidence supports an enquiry/contact-form opportunity.")
-    award(bool(company_name and industry and address and (phone or website or email)), "Evidence is sufficiently complete to assess the business.")
+    award(bool(lead.get("contact_form_evidence")), "Evidence supports an enquiry/contact opportunity.")
+    award(bool(prospect_name and (phone or email or website or source_url)), "The prospect has a name and at least one supporting contact/source field.")
 
-    # Prefer the status cached by the search route. The fallback preserves
-    # compatibility with other callers that do not provide the cached value.
     if "_not_contacted_or_converted" in lead:
         not_contacted_or_converted = bool(lead.get("_not_contacted_or_converted"))
     else:
@@ -10123,15 +10184,9 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
             try:
                 db = get_db_connection()
                 cursor = db.cursor(dictionary=True)
-                cursor.execute(
-                    "SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1",
-                    (user_id, lead.get("google_place_id"))
-                )
+                cursor.execute("SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1", (user_id, lead.get("google_place_id")))
                 existing = cursor.fetchone()
-                not_contacted_or_converted = bool(
-                    not existing or
-                    (existing.get("lead_status") or "").lower() not in ("contacted", "converted")
-                )
+                not_contacted_or_converted = bool(not existing or (existing.get("lead_status") or "").lower() not in ("contacted", "converted"))
             except Exception as exc:
                 print("LEAD STATUS SCORE CHECK ERROR:", type(exc).__name__, str(exc))
             finally:
@@ -10141,26 +10196,22 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
 
     supplementary = min(20, supplementary)
     score = max(0, min(100, main_score + supplementary))
-    quality = ("Excellent potential lead" if score >= 80 else
-               "Strong potential lead" if score >= 60 else
-               "Potential lead" if score >= 40 else
-               "Weak potential lead" if score >= 20 else "Low potential lead")
-    analysis_points.append(
-        f"Score breakdown: missing-website signal {missing_website_points}%, buying intent {intent_points}%, "
-        f"recency {recency_points}%, service relevance {relevance_points}%, supplementary evidence {supplementary}%. "
-        f"Final lead score: {score}%."
-    )
-    ai_analysis = f"{company_name or 'This business'} was evaluated for {service or 'the selected service'}. " + " ".join(analysis_points)
-    ai_reason = " ".join(reasons) if reasons else "Score is based only on available listing evidence. Verify details before outreach."
+    quality = ("Excellent potential lead" if score >= 80 else "Strong potential lead" if score >= 60 else "Potential lead" if score >= 40 else "Weak potential lead" if score >= 20 else "Low potential lead")
+    analysis_points.append(f"Score breakdown: missing service/product information {missing_service_info_points}%, buying intent {intent_points}%, recency {recency_points}%, relevance {relevance_points}%, supplementary evidence {supplementary}%. Final lead score: {score}%.")
+    ai_analysis = f"{prospect_name or 'This prospect'} was evaluated for {service or 'the selected offer'}. " + " ".join(analysis_points)
+    ai_reason = " ".join(reasons) if reasons else "Score is based only on available source evidence. Verify details before outreach."
+    sender_name = (sender_name or "our team").strip() or "our team"
+    recipient_greeting = prospect_name or "there"
     ai_message = (
-        f"Hi {company_name or 'there'},\n\n"
-        f"I came across your business while researching companies in {target_location or 'your area'}.\n\n"
-        f"We provide {service or 'business services'} and may be able to help with your business goals. "
-        "Would you be open to a brief conversation?\n\nKind regards,\nSkies Altair Technologies"
+        f"Hi {recipient_greeting},\n\n"
+        f"I came across your public profile/listing while researching potential contacts in {target_location or 'your area'}.\n\n"
+        f"I’m reaching out from {sender_name}. We offer {service or 'services relevant to your needs'} and I wanted to ask whether this is something you may be interested in discussing.\n\n"
+        "If this is not relevant, no problem at all.\n\n"
+        f"Kind regards,\n{sender_name}"
     )
     return {"lead_score": score, "ai_analysis": ai_analysis, "ai_reason": ai_reason,
             "ai_message": ai_message, "lead_quality": quality,
-            "score_breakdown": {"missing_website": missing_website_points, "buying_intent": intent_points,
+            "score_breakdown": {"missing_service_information": missing_service_info_points, "buying_intent": intent_points,
                                 "recency": recency_points, "service_relevance": relevance_points,
                                 "main_score": main_score, "supplementary_score": supplementary,
                                 "final_score": score, "supplementary_reasons": supplementary_reasons}}
