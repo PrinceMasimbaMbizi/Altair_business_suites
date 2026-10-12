@@ -1,6 +1,6 @@
 import types
 
-from flask import (Flask,render_template,request,redirect,url_for,flash,session,send_from_directory,abort,jsonify)
+from flask import (Flask,render_template,request,redirect,url_for,flash as _flask_flash,session,send_from_directory,abort,jsonify)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
@@ -49,6 +49,134 @@ if not app.secret_key:
     raise RuntimeError(
         "FLASK_SECRET_KEY is not configured."
     )
+
+
+# ================================================================
+# ALTAIR UI: INLINE TOAST NOTIFICATIONS + LOADING INDICATOR
+# All UI assets are embedded here so no additional static files are needed.
+# ================================================================
+ALTAIR_UI_CSS = r"""#altair-toast-container{position:fixed;top:22px;right:22px;z-index:2147483000;display:flex;flex-direction:column;gap:11px;width:min(390px,calc(100vw - 28px));pointer-events:none}
+.altair-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;padding:15px 16px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(17,17,28,.96);color:#f7f8ff;box-shadow:0 18px 55px rgba(0,0,0,.28);backdrop-filter:blur(18px);font:500 14px/1.45 Inter,system-ui,sans-serif;animation:altairToastIn .28s ease both;overflow:hidden}
+.altair-toast::before{content:"";width:4px;align-self:stretch;flex:0 0 4px;border-radius:5px;background:#00f0ff}.altair-toast.success::before{background:#22c55e}.altair-toast.error::before{background:#fb7185}.altair-toast.warning::before{background:#fbbf24}.altair-toast .altair-toast-icon{font-size:19px;line-height:1.2}.altair-toast .altair-toast-message{flex:1;overflow-wrap:anywhere}.altair-toast .altair-toast-close{border:0;background:transparent;color:#aab0c7;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 4px}.altair-toast.hide{animation:altairToastOut .22s ease forwards}
+@keyframes altairToastIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}@keyframes altairToastOut{to{opacity:0;transform:translateX(18px)}}
+#altair-loading-overlay{position:fixed;inset:0;z-index:2147482000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,8,20,.72);backdrop-filter:blur(9px)}#altair-loading-overlay.show{display:flex}
+.altair-loading-card{width:min(440px,100%);padding:30px 28px;border:1px solid rgba(0,240,255,.28);border-radius:24px;background:linear-gradient(145deg,rgba(20,23,43,.98),rgba(13,14,27,.98));color:#f8faff;text-align:center;box-shadow:0 22px 80px rgba(0,0,0,.4),0 0 40px rgba(0,240,255,.08);font-family:Inter,system-ui,sans-serif}
+.altair-loader-orbit{width:66px;height:66px;margin:0 auto 20px;border-radius:50%;border:3px solid rgba(0,240,255,.13);border-top-color:#00f0ff;border-right-color:#ff00d4;animation:altairSpin .9s linear infinite;position:relative}.altair-loader-orbit::after{content:"";position:absolute;inset:10px;border:2px dashed rgba(255,0,212,.65);border-radius:50%;animation:altairSpin 4s linear infinite reverse}@keyframes altairSpin{to{transform:rotate(360deg)}}
+.altair-loading-title{font-size:20px;font-weight:800;margin:0 0 8px}.altair-loading-message{font-size:14px;color:#b8c1da;min-height:22px;margin:0}.altair-loading-track{height:5px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden;margin:22px 0 0}.altair-loading-track span{display:block;height:100%;width:38%;border-radius:99px;background:linear-gradient(90deg,#00f0ff,#9d4edd,#ff00d4);animation:altairProgress 1.5s ease-in-out infinite alternate}@keyframes altairProgress{from{transform:translateX(-20%);width:25%}to{transform:translateX(280%);width:48%}}
+button.altair-submitting{opacity:.72;cursor:wait!important}
+@media(max-width:520px){#altair-toast-container{top:12px;right:12px;width:calc(100vw - 24px)}.altair-toast{padding:13px;border-radius:13px}.altair-loading-card{padding:26px 20px}}"""
+
+ALTAIR_UI_JS = r"""(function(){
+  if(window.__altairUIBooted)return;
+  window.__altairUIBooted=true;
+  const icons={success:'✓',error:'!',warning:'⚠',info:'i',message:'✓'};
+  window.altairShowToast=function(message,category='success',duration=4200){
+    const container=document.getElementById('altair-toast-container');if(!container||!message)return;
+    category=String(category||'info').toLowerCase();if(!['success','error','warning','info','message'].includes(category))category='info';
+    const toast=document.createElement('div');toast.className='altair-toast '+category;
+    const icon=document.createElement('span');icon.className='altair-toast-icon';icon.textContent=icons[category]||'i';
+    const text=document.createElement('div');text.className='altair-toast-message';text.textContent=String(message);
+    const close=document.createElement('button');close.className='altair-toast-close';close.type='button';close.setAttribute('aria-label','Dismiss notification');close.textContent='×';
+    const remove=()=>{if(!toast.isConnected)return;toast.classList.add('hide');setTimeout(()=>toast.remove(),240)};
+    close.addEventListener('click',remove);toast.append(icon,text,close);container.appendChild(toast);setTimeout(remove,duration);
+  };
+  function readPayload(doc){try{const node=doc.querySelector('#altair-toast-payload');return node?JSON.parse(node.textContent||'[]'):[]}catch(e){return[]}}
+  function displayPayload(items){(items||[]).forEach((item,i)=>setTimeout(()=>window.altairShowToast(item.message,item.category,4800),i*180))}
+  displayPayload(readPayload(document));
+  const overlay=document.getElementById('altair-loading-overlay');
+  const loadingMessage=document.getElementById('altair-loading-message');let progressTimer=null;
+  const progressMessages=['Searching Google Places and public web sources…','Checking prospect details and contact information…','Removing duplicate results…','Ranking the most relevant prospects…','Preparing your lead cards…'];
+  function showLeadLoader(){if(!overlay)return;overlay.classList.add('show');document.body.style.overflow='hidden';if(loadingMessage)loadingMessage.textContent=progressMessages[0];let index=0;clearInterval(progressTimer);progressTimer=setInterval(()=>{index=(index+1)%progressMessages.length;if(loadingMessage)loadingMessage.textContent=progressMessages[index]},2600)}
+  function hideLeadLoader(){if(overlay)overlay.classList.remove('show');document.body.style.overflow='';clearInterval(progressTimer);progressTimer=null}
+  window.altairHideLeadLoader=hideLeadLoader;
+  window.addEventListener('pageshow',hideLeadLoader);
+
+  // Lead search uses normal navigation so the browser displays the returned results,
+  // while the overlay remains visible until the new results page loads.
+  document.addEventListener('submit',function(event){
+    const form=event.target;if(!(form instanceof HTMLFormElement))return;
+    if(form.dataset.altairNativeSubmit==='true'){
+      if(form.dataset.altairLoading==='true'||/\/ai-leads\/search(?:$|\?)/.test(form.action))showLeadLoader();
+      form.querySelectorAll('button[type="submit"],input[type="submit"]').forEach(b=>{b.classList.add('altair-submitting');b.disabled=true});
+    }
+  },true);
+
+  // AJAX-style saves/updates/deletes: update the main content and keep the page shell.
+  document.addEventListener('submit',async function(event){
+    const form=event.target;if(!(form instanceof HTMLFormElement)||event.defaultPrevented)return;
+    const method=(form.method||'GET').toUpperCase();
+    if(method==='GET'||form.dataset.altairNativeSubmit==='true'||form.dataset.noAjax==='true'||form.hasAttribute('target'))return;
+    if(form.dataset.altairBusy==='true'){event.preventDefault();return;}
+    event.preventDefault();form.dataset.altairBusy='true';
+    const submitter=event.submitter;const buttons=Array.from(form.querySelectorAll('button[type="submit"],input[type="submit"]'));
+    buttons.forEach(b=>{b.dataset.altairWasDisabled=b.disabled?'1':'0';b.disabled=true;b.classList.add('altair-submitting')});
+    try{
+      const body=new FormData(form);if(submitter&&submitter.name&&!body.has(submitter.name))body.append(submitter.name,submitter.value||'');
+      const response=await fetch(form.action||window.location.href,{method,body,credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest','Accept':'text/html, application/json'}});
+      const contentType=(response.headers.get('content-type')||'').toLowerCase();
+      if(contentType.includes('application/json')){
+        const data=await response.json();window.altairShowToast(data.message||(response.ok?'Saved successfully.':'The action could not be completed.'),data.success?'success':(response.ok?'success':'error'));
+        if(data.redirect_url){window.location.assign(data.redirect_url);return;}if(!response.ok)throw new Error(data.message||'Request failed');return;
+      }
+      const html=await response.text();const parsed=new DOMParser().parseFromString(html,'text/html');
+      const messages=readPayload(parsed);const selector='main.main, .main, main, .main-content, #main-content, .page-content';
+      const oldRoot=document.querySelector(selector);const newRoot=parsed.querySelector(selector);
+      if(!response.ok){window.altairShowToast('The request could not be completed. Please check the form and try again.','error');return;}
+      if(!oldRoot||!newRoot){window.location.assign(response.url||window.location.href);return;}
+      document.title=parsed.title||document.title;oldRoot.replaceWith(document.importNode(newRoot,true));
+      try{const u=new URL(response.url,window.location.href);if(u.origin===window.location.origin)history.replaceState({},'',u.pathname+u.search+u.hash)}catch(e){}
+      displayPayload(messages);window.dispatchEvent(new CustomEvent('altair:page-updated',{detail:{url:response.url}}));
+      // Re-run initializers that bind handlers to newly rendered page elements.
+      document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));
+    }catch(error){console.error('Altair AJAX form error:',error);window.altairShowToast('Could not save your changes. Please check your connection and try again.','error')}
+    finally{delete form.dataset.altairBusy;buttons.forEach(b=>{b.disabled=b.dataset.altairWasDisabled==='1';b.classList.remove('altair-submitting');delete b.dataset.altairWasDisabled})}
+  });
+})();"""
+
+
+def flash(message, category="message"):
+    """Keep Flask flash behavior and also queue a toast notification."""
+    _flask_flash(message, category)
+    try:
+        queue = session.get("_altair_ui_toasts", [])
+        queue.append({"message": str(message), "category": str(category or "info")})
+        session["_altair_ui_toasts"] = queue[-8:]
+    except RuntimeError:
+        pass
+
+
+@app.after_request
+def altair_ui_inject(response):
+    """Embed toast/loading UI directly into HTML responses (no extra files)."""
+    try:
+        if (response.status_code == 200
+                and "text/html" in (response.content_type or "")
+                and not response.is_streamed
+                and request.endpoint != "static"):
+            html = response.get_data(as_text=True)
+            toasts = session.pop("_altair_ui_toasts", [])
+            session.modified = True
+            payload = json.dumps(toasts, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+            injection = (
+                '<style id="altair-ui-inline-styles">' + ALTAIR_UI_CSS + '</style>'
+                '<div id="altair-toast-container" aria-live="polite" aria-atomic="false"></div>'
+                '<div id="altair-loading-overlay" role="status" aria-live="polite" aria-label="Loading">'
+                '<div class="altair-loading-card"><div class="altair-loader-orbit"></div>'
+                '<h2 class="altair-loading-title" id="altair-loading-title">Finding potential customers</h2>'
+                '<p class="altair-loading-message" id="altair-loading-message">Searching trusted sources. This may take a moment…</p>'
+                '<div class="altair-loading-track"><span></span></div></div></div>'
+                '<script type="application/json" id="altair-toast-payload">' + payload + '</script>'
+                '<script id="altair-ui-inline-script">' + ALTAIR_UI_JS + '</script>'
+            )
+            match = re.search(r"</body\s*>", html, flags=re.IGNORECASE)
+            if match:
+                html = html[:match.start()] + injection + html[match.start():]
+                response.set_data(html)
+            else:
+                response.set_data(html + injection)
+    except Exception as ui_error:
+        print("ALTAIR UI INJECTION ERROR:", ui_error)
+    return response
 
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
@@ -10388,208 +10516,6 @@ def save_google_lead():
             "message": "Could not save lead."
         }), 500
     
-
-
-# ============================================================
-# ALTAIR BUSINESS FORECASTING
-# Uses the logged-in user's own invoices and expenses.
-# ============================================================
-
-def _forecast_month_label(month_date):
-    return month_date.strftime("%b %Y")
-
-
-def _linear_forecast(values, periods):
-    """Simple transparent trend forecast. Returns non-negative estimates.
-
-    This is a lightweight baseline, not a guarantee. It deliberately avoids
-    claiming statistical confidence when there is little historical data.
-    """
-    cleaned = [max(0.0, float(v or 0)) for v in values]
-    n = len(cleaned)
-    if n == 0:
-        return [0.0] * periods, "No historical data"
-    if n < 3:
-        avg = sum(cleaned) / n
-        return [avg] * periods, "Limited data: historical average"
-    # Least-squares line computed with the existing NumPy dependency.
-    x = np.arange(n, dtype=float)
-    y = np.array(cleaned, dtype=float)
-    slope, intercept = np.polyfit(x, y, 1)
-    predictions = []
-    for step in range(periods):
-        predictions.append(max(0.0, float(intercept + slope * (n + step))))
-    return predictions, "Linear trend based on available monthly history"
-
-
-@app.route("/forecasting", methods=["GET", "POST"])
-def forecasting():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    user_id = session["user_id"]
-    forecast_period = request.values.get("period", "6")
-    if forecast_period not in {"3", "6", "12"}:
-        forecast_period = "6"
-    periods = int(forecast_period)
-
-    revenue_change = 0.0
-    expense_change = 0.0
-    if request.method == "POST":
-        try:
-            revenue_change = float(request.form.get("revenue_change", 0))
-            expense_change = float(request.form.get("expense_change", 0))
-        except (TypeError, ValueError):
-            revenue_change, expense_change = 0.0, 0.0
-        revenue_change = max(-90.0, min(200.0, revenue_change))
-        expense_change = max(-90.0, min(200.0, expense_change))
-
-    db = None
-    cursor = None
-    try:
-        db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
-
-        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
-        company = cursor.fetchone()
-        if not company:
-            return redirect(url_for("company_setup"))
-
-        # Paid invoices are used as a revenue proxy. Pending invoices are
-        # shown separately and are not incorrectly counted as collected revenue.
-        cursor.execute("""
-            SELECT DATE_FORMAT(invoice_date, '%Y-%m') AS month_key,
-                   COALESCE(SUM(CASE WHEN LOWER(status) = 'paid' THEN amount ELSE 0 END), 0) AS revenue,
-                   COALESCE(SUM(CASE WHEN LOWER(status) IN ('pending', 'overdue') THEN amount ELSE 0 END), 0) AS outstanding,
-                   COUNT(*) AS invoice_count
-            FROM invoices
-            WHERE user_id = %s
-              AND invoice_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
-            GROUP BY DATE_FORMAT(invoice_date, '%Y-%m')
-            ORDER BY month_key ASC
-        """, (user_id,))
-        revenue_rows = cursor.fetchall() or []
-
-        cursor.execute("""
-            SELECT DATE_FORMAT(expense_date, '%Y-%m') AS month_key,
-                   COALESCE(SUM(amount), 0) AS expenses,
-                   COUNT(*) AS expense_count
-            FROM expenses
-            WHERE user_id = %s
-              AND expense_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)
-            GROUP BY DATE_FORMAT(expense_date, '%Y-%m')
-            ORDER BY month_key ASC
-        """, (user_id,))
-        expense_rows = cursor.fetchall() or []
-
-        cursor.execute("""
-            SELECT COALESCE(SUM(CASE WHEN LOWER(status) = 'paid' THEN amount ELSE 0 END), 0) AS total_paid,
-                   COALESCE(SUM(CASE WHEN LOWER(status) IN ('pending', 'overdue') THEN amount ELSE 0 END), 0) AS outstanding,
-                   COALESCE(SUM(CASE WHEN LOWER(status) = 'overdue' THEN amount ELSE 0 END), 0) AS overdue,
-                   COUNT(*) AS invoice_count
-            FROM invoices WHERE user_id = %s
-        """, (user_id,))
-        invoice_stats = cursor.fetchone() or {}
-
-        cursor.execute("SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE user_id = %s", (user_id,))
-        expense_stats = cursor.fetchone() or {}
-
-    except Exception:
-        app.logger.exception("Forecasting data could not be loaded")
-        flash("Forecasting could not load your business data. Check that your invoices and expenses tables are available.", "error")
-        company = get_current_company()
-        revenue_rows, expense_rows = [], []
-        invoice_stats, expense_stats = {}, {}
-    finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
-
-    # Build a continuous monthly timeline for the previous 12 months.
-    today = date.today().replace(day=1)
-    months = []
-    for back in range(11, -1, -1):
-        year = today.year
-        month = today.month - back
-        while month <= 0:
-            month += 12
-            year -= 1
-        months.append(date(year, month, 1))
-
-    revenue_map = {str(row.get("month_key")): float(row.get("revenue") or 0) for row in revenue_rows}
-    expense_map = {str(row.get("month_key")): float(row.get("expenses") or 0) for row in expense_rows}
-    actual_revenue = [revenue_map.get(m.strftime("%Y-%m"), 0.0) for m in months]
-    actual_expenses = [expense_map.get(m.strftime("%Y-%m"), 0.0) for m in months]
-
-    revenue_predictions, revenue_method = _linear_forecast(actual_revenue, periods)
-    expense_predictions, expense_method = _linear_forecast(actual_expenses, periods)
-    future_months = []
-    year, month = today.year, today.month
-    for _ in range(periods):
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
-        future_months.append(date(year, month, 1))
-
-    # Scenario adjustments are applied to forecast estimates only.
-    scenario_revenue = [v * (1 + revenue_change / 100.0) for v in revenue_predictions]
-    scenario_expenses = [v * (1 + expense_change / 100.0) for v in expense_predictions]
-    scenario_net = [r - e for r, e in zip(scenario_revenue, scenario_expenses)]
-    forecast_revenue_total = sum(scenario_revenue)
-    forecast_expense_total = sum(scenario_expenses)
-    forecast_net_total = sum(scenario_net)
-    data_months = sum(1 for m in months if m.strftime("%Y-%m") in revenue_map or m.strftime("%Y-%m") in expense_map)
-
-    if data_months < 3:
-        data_quality = "Limited data"
-        data_note = "Fewer than three months contain recorded invoice or expense activity. Treat these estimates as rough planning guides."
-    else:
-        data_quality = "Early estimate"
-        data_note = "Forecasts use a simple linear trend from the latest 12 months. They do not account for seasonality, unrecorded transactions, or guaranteed invoice payment dates."
-
-    labels = [_forecast_month_label(m) for m in months] + [_forecast_month_label(m) for m in future_months]
-    revenue_chart = [round(v, 2) for v in actual_revenue] + [None] * periods
-    expense_chart = [round(v, 2) for v in actual_expenses] + [None] * periods
-    forecast_revenue_chart = [None] * (len(months) - 1) + [round(actual_revenue[-1], 2)] + [round(v, 2) for v in scenario_revenue]
-    forecast_expense_chart = [None] * (len(months) - 1) + [round(actual_expenses[-1], 2)] + [round(v, 2) for v in scenario_expenses]
-
-    insights = []
-    if forecast_net_total < 0:
-        insights.append("Projected expenses exceed projected paid-invoice revenue in this scenario. Review spending and expected collections.")
-    elif forecast_net_total > 0:
-        insights.append("The forecast shows revenue above recorded expenses, but this is not a full profit calculation and does not guarantee cash availability.")
-    else:
-        insights.append("The forecast is approximately break-even. Check whether all income and expenses have been recorded.")
-    if float(invoice_stats.get("overdue") or 0) > 0:
-        insights.append("You have overdue invoices. Follow up on those payments; overdue invoice values are not treated as collected revenue.")
-    if data_months < 3:
-        insights.append("Add more historical invoices and expenses to improve the usefulness of future forecasts.")
-
-    return render_template(
-        "forecasting.html", company=company,
-        user_name=session.get("user_name", "User"),
-        user_email=session.get("user_email", ""),
-        period=periods, revenue_change=revenue_change, expense_change=expense_change,
-        history_labels=[_forecast_month_label(m) for m in months],
-        future_labels=[_forecast_month_label(m) for m in future_months],
-        chart_labels=labels, revenue_chart=revenue_chart, expense_chart=expense_chart,
-        forecast_revenue_chart=forecast_revenue_chart, forecast_expense_chart=forecast_expense_chart,
-        forecast_revenue_total=forecast_revenue_total, forecast_expense_total=forecast_expense_total,
-        forecast_net_total=forecast_net_total,
-        total_paid=float(invoice_stats.get("total_paid") or 0),
-        outstanding=float(invoice_stats.get("outstanding") or 0),
-        overdue=float(invoice_stats.get("overdue") or 0),
-        total_expenses=float(expense_stats.get("total_expenses") or 0),
-        data_quality=data_quality, data_note=data_note,
-        revenue_method=revenue_method, expense_method=expense_method,
-        data_months=data_months, insights=insights
-    )
-
-
-
-
 
 # RUN APP
 if __name__ == "__main__":
