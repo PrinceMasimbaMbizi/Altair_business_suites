@@ -3862,7 +3862,10 @@
                                             data-phone="{{ (lead.phone or '')|e }}"
                                             data-company="{{ (lead.company_name or '')|e }}"
                                             data-contact-person="{{ (lead.contact_person or '')|e }}"
-                                            data-notes="{{ (lead.notes or '')|e }}" onclick="contactLeadWhatsApp(this)"
+                                            data-trade="{{ (lead.industry or '')|e }}"
+                                            data-area="{{ (lead.location or '')|e }}"
+                                            data-notes="{{ (lead.notes or '')|e }}"
+                                            onclick="window.contactLeadWhatsApp(this); return false;"
                                             title="Contact via WhatsApp" aria-label="Contact via WhatsApp"><i
                                                 class="fa-brands fa-whatsapp"></i></button>
                                         <button type="button" class="icon-button view-action"
@@ -4246,46 +4249,69 @@
 
                 const deleteLeadUrlTemplate = "{{ url_for('delete_ai_lead', lead_id=0) }}";
 
-                function contactLeadWhatsApp(button) {
-                    const phoneRaw = button.dataset.phone || "";
-                    const phone = phoneRaw.replace(/[^0-9]/g, "");
+                // Keep this function on window so both server-rendered and
+                // dynamically-added lead buttons can call it reliably.
+                window.contactLeadWhatsApp = function (button) {
+                    if (!button) return;
+
+                    const phoneRaw = String(button.dataset.phone || "").trim();
+                    let phone = phoneRaw.replace(/[^0-9]/g, "");
+
                     if (!phone) {
+                        const warning = "This lead has no phone number saved. Click the eye button to add a WhatsApp number with country code.";
                         if (window.altairShowToast) {
-                            window.altairShowToast("This lead does not have a phone number saved. Click the eye button to add one.", "warning");
+                            window.altairShowToast(warning, "warning");
                         } else {
-                            alert("This lead does not have a phone number saved. Click the eye button to add one.");
+                            alert(warning);
                         }
                         return;
                     }
-                    javascript
-                    const company = button.dataset.company || "your business";
-                    const person = button.dataset.contactPerson || "there";
-                    const trade = button.dataset.trade || "your industry";
-                    const area = button.dataset.area || "your area";
 
-                    const message = `Good day ${person} 👋 Love what ${company} is doing! Quick thing we noticed: we couldn't find your business online - no website - so customers searching for ${trade} in ${area} are finding your competitors first.
+                    // WhatsApp requires the number in international format,
+                    // digits only (no +, spaces, brackets, or hyphens).
+                    if (phone.startsWith("00")) phone = phone.slice(2);
 
-We fix that at Skies Altair Technologies: modern websites from R3,000 + free business email setup this month. Logo & socials done for you too.
+                    const company = (button.dataset.company || "your business").trim();
+                    const person = (button.dataset.contactPerson || "").trim();
+                    const trade = (button.dataset.trade || button.closest("tr")?.dataset.industry || "your industry").trim();
+                    const area = (button.dataset.area || button.closest("tr")?.dataset.location || "your area").trim();
 
-Want a free quote for ${company}? No pressure , Please just let us know if you are interested or not .`;
+                    const greetingName = person || "there";
+                    const message =
+                        `Hi ${greetingName} 👋 Love what ${company} is doing! Quick thing we noticed: we couldn't find your business online - no website - so customers searching for ${trade} in ${area} are finding your competitors first.\n\n` +
+                        `We fix that at Skies Altair Technologies: modern websites from R3,000 + free business email setup this month. Logo & socials done for you too.\n\n` +
+                        `Want a free quote for ${company}? No pressure - just reply here 🚀`;
 
-                    window.open(
-                        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-                        "_blank",
-                        "noopener,noreferrer"
-                    );
+                    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
+                    // Open synchronously during the click to avoid popup blockers.
+                    const whatsappWindow = window.open("about:blank", "_blank");
+                    if (whatsappWindow) {
+                        whatsappWindow.opener = null;
+                        whatsappWindow.location.href = whatsappUrl;
+                    } else {
+                        // Fallback for browsers that block new tabs.
+                        window.location.href = whatsappUrl;
+                    }
+                };
 
+                function bindLeadModalBackdropHandlers() {
+                    const editLeadModal = document.getElementById("editLeadModal");
+                    if (editLeadModal && editLeadModal.dataset.backdropBound !== "true") {
+                        editLeadModal.dataset.backdropBound = "true";
+                        editLeadModal.addEventListener("click", function (event) {
+                            if (event.target === this) closeEditLead();
+                        });
+                    }
+
+                    const leadModal = document.getElementById("leadModal");
+                    if (leadModal && leadModal.dataset.backdropBound !== "true") {
+                        leadModal.dataset.backdropBound = "true";
+                        leadModal.addEventListener("click", function (event) {
+                            if (event.target === this) closeModal();
+                        });
+                    }
                 }
-
-                const leadModal = document.getElementById("leadModal");
-                if (leadModal && leadModal.dataset.backdropBound !== "true") {
-                    leadModal.dataset.backdropBound = "true";
-                    leadModal.addEventListener("click", function (event) {
-                        if (event.target === this) closeModal();
-                    });
-                }
-
 
                 bindLeadModalBackdropHandlers();
                 document.addEventListener("altair:page-updated", bindLeadModalBackdropHandlers);
@@ -4447,7 +4473,7 @@ Want a free quote for ${company}? No pressure , Please just let us know if you a
                         <td><span class="score-pill">${escapeHtml(score)}</span></td>
                         <td class="lead-actions-cell"><div class="saved-lead-actions">
                             ${lead.email ? `<a class="icon-button email-action" href="mailto:${encodeURIComponent(lead.email)}" title="Email lead" aria-label="Email lead"><i class="fa-solid fa-envelope"></i></a>` : '<button type="button" class="icon-button email-action" disabled title="No email saved" aria-label="No email saved"><i class="fa-solid fa-envelope"></i></button>'}
-                            <button type="button" class="icon-button whatsapp-button whatsapp-action" data-phone="${attr(lead.phone)}" data-company="${attr(lead.company_name)}" data-contact-person="${attr(lead.contact_person)}" data-notes="${attr(lead.notes)}" onclick="contactLeadWhatsApp(this)" title="Contact via WhatsApp" aria-label="Contact via WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
+                            <button type="button" class="icon-button whatsapp-button whatsapp-action" data-phone="${attr(lead.phone)}" data-company="${attr(lead.company_name)}" data-contact-person="${attr(lead.contact_person)}" data-trade="${attr(lead.industry)}" data-area="${attr(lead.location)}" data-notes="${attr(lead.notes)}" onclick="window.contactLeadWhatsApp(this); return false;" title="Contact via WhatsApp" aria-label="Contact via WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
                             <button type="button" class="icon-button view-action" onclick="openEditLead(this)" title="View and edit all lead details" aria-label="View and edit lead"><i class="fa-solid fa-eye"></i></button>
                             <form method="POST" action="${deleteLeadUrlTemplate.replace(/0(?=\/?$)/, encodeURIComponent(lead.id))}" onsubmit="return confirm('Delete this lead?');"><button type="submit" class="icon-button delete-action" title="Delete lead" aria-label="Delete lead"><i class="fa-solid fa-trash"></i></button></form>
                         </div></td>

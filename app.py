@@ -443,11 +443,6 @@ def company_logo():
 
 
 
-
-
-
-
-
 # REGISTER
 @app.route(
     "/register",
