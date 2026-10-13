@@ -1055,6 +1055,185 @@
             }
 
         }
+
+
+        /* =========================================================
+           DASHBOARD-MATCHED SIDEBAR — FINAL OVERRIDES
+           Keep the Customers sidebar visually and responsively
+           identical to the Dashboard sidebar.
+        ========================================================= */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 22px 14px 24px;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06);
+            transform: none;
+            transition: none;
+        }
+
+        .company-brand {
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 4px 7px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .09);
+        }
+
+        .company-brand-name {
+            flex: 1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-title {
+            margin: 20px 10px 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.25px;
+            line-height: 1.4;
+        }
+
+        .nav-item {
+            min-height: 43px;
+            width: 100%;
+            gap: 12px;
+            margin-bottom: 3px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: rgba(255, 255, 255, .05);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16));
+            border: 1px solid rgba(0, 240, 255, .16);
+            border-left: 3px solid #00f0ff;
+            color: #fff;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
+        }
+
+        .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            min-width: 22px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .nav-item>span:last-child,
+        .logout-link>span:last-child {
+            min-width: 0;
+        }
+
+        .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #fda4af;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .logout-link:hover {
+            background: rgba(244, 63, 94, .1);
+            color: #fff;
+        }
+
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            min-width: 0;
+        }
+
+        /* Match dashboard's compact icon sidebar on phones. */
+        @media (max-width: 950px) {
+
+            .sidebar,
+            .sidebar.open {
+                transform: none !important;
+            }
+
+            .main {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+
+            .mobile-header {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 72px;
+                padding: 18px 8px;
+                align-items: stretch;
+            }
+
+            .company-brand {
+                justify-content: center;
+                padding: 0 0 16px;
+                margin-bottom: 10px;
+            }
+
+            .company-brand-name,
+            .nav-item>span:last-child,
+            .menu-title,
+            .logout-link>span:last-child {
+                display: none;
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            .nav-item,
+            .logout-link {
+                justify-content: center;
+                gap: 0;
+                padding: 11px 6px;
+                min-height: 42px;
+                border-left-width: 1px;
+            }
+
+            .nav-icon {
+                width: 24px;
+                min-width: 24px;
+                font-size: 17px;
+            }
+
+            .main {
+                margin-left: 72px;
+                width: calc(100% - 72px);
+                padding: 22px 16px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .main {
+                padding: 16px 12px;
+            }
+        }
     </style>
 
 </head>
@@ -1068,58 +1247,113 @@
  -->
 
     <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">A</div>
-            <div>
-                <div class="brand-name">Altair Business</div>
-                <div class="brand-subtitle">Business Suite</div>
+        <div class="company-brand">
+            {% if company and company.logo %}
+            <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="company-logo-placeholder" style="display:none;">
+                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+            </div>
+            {% else %}
+            <div class="company-logo-placeholder">
+                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+            </div>
+            {% endif %}
+            <div class="company-brand-name">
+                {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
             </div>
         </div>
 
-        <div class="nav-title">Main</div>
-        <a href="{{ url_for('dashboard') }}"
-            class="nav-link{% if request.endpoint == 'dashboard' %} active{% endif %}">📊 Dashboard</a>
-        <a href="{{ url_for('customer') }}" class="nav-link{% if request.endpoint == 'customer' %} active{% endif %}">👥
-            Customers</a>
-        <a href="{{ url_for('invoice') }}" class="nav-link{% if request.endpoint == 'invoice' %} active{% endif %}">🧾
-            Invoices</a>
-        <a href="{{ url_for('items') }}" class="nav-link{% if request.endpoint == 'items' %} active{% endif %}">📦
-            Inventory</a>
-        <a href="#" class="nav-link">💳 Transactions</a>
+        <div class="menu-title">Main</div>
+        <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}"
+            title="Dashboard">
+            <span class="nav-icon">📊</span><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('customer') }}" class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}"
+            title="Customers">
+            <span class="nav-icon">👥</span><span>Customers</span>
+        </a>
+        <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+            title="Invoices">
+            <span class="nav-icon">🧾</span><span>Invoices</span>
+        </a>
+        <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+            title="Inventory">
+            <span class="nav-icon">📦</span><span>Inventory</span>
+        </a>
+        <a href="#" class="nav-item" title="Transactions">
+            <span class="nav-icon">💳</span><span>Transactions</span>
+        </a>
 
-        <div class="nav-title">Business Intelligence</div>
-        <a href="{{ url_for('ai_leads') }}" class="nav-link{% if request.endpoint == 'ai_leads' %} active{% endif %}">🤖
-            AI Lead Finder</a>
-        <a href="#" class="nav-link">📈 Facebook Analytics</a>
-        <a href="#" class="nav-link">💬 WhatsApp Analytics</a>
-        <a href="#" class="nav-link">📊 Business Analytics</a>
-        <a href="#" class="nav-link">🔮 Forecasting</a>
-        <a href="#" class="nav-link">✨ Altair AI Assistant</a>
+        <div class="menu-title">Business Intelligence</div>
+        <a href="{{ url_for('ai_leads') }}" class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}"
+            title="AI Lead Finder">
+            <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
+        </a>
+        <a href="#" class="nav-item" title="Facebook Analytics">
+            <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
+        </a>
+        <a href="#" class="nav-item" title="WhatsApp Analytics">
+            <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
+        </a>
+        <a href="#" class="nav-item" title="Business Analytics">
+            <span class="nav-icon">📈</span><span>Business Analytics</span>
+        </a>
+        <a href="#" class="nav-item" title="Forecasting">
+            <span class="nav-icon">🔮</span><span>Forecasting</span>
+        </a>
+        <a href="#" class="nav-item" title="Altair AI Assistant">
+            <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
+        </a>
 
-        <div class="nav-title">Business Management</div>
-        <a href="{{ url_for('settings') }}" class="nav-link{% if request.endpoint == 'settings' %} active{% endif %}">🏢
-            Company Profile</a>
-        <a href="#" class="nav-link">👥 Employees &amp; Team</a>
-        <a href="#" class="nav-link">📄 Documents &amp; Reports</a>
-        <a href="#" class="nav-link">🔔 Notifications</a>
-        <a href="#" class="nav-link">🔗 Integrations</a>
+        <div class="menu-title">Business Management</div>
+        <a href="#" class="nav-item" title="Company Profile">
+            <span class="nav-icon">🏢</span><span>Company Profile</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='employees-team') }}" class="nav-item" title="Employees & Team">
+            <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='documents-reports') }}" class="nav-item"
+            title="Documents & Reports">
+            <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='notifications') }}" class="nav-item" title="Notifications">
+            <span class="nav-icon">🔔</span><span>Notifications</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='integrations') }}" class="nav-item" title="Integrations">
+            <span class="nav-icon">🔗</span><span>Integrations</span>
+        </a>
 
-        <div class="nav-title">Account &amp; Billing</div>
-        <a href="#" class="nav-link">💎 Subscription Plans</a>
-        <a href="#" class="nav-link">💳 Billing &amp; Payments</a>
-        <a href="#" class="nav-link">🧾 Billing History</a>
-        <a href="#" class="nav-link">📉 Usage &amp; Limits</a>
+        <div class="menu-title">Account &amp; Billing</div>
+        <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
+            title="Subscription Plans">
+            <span class="nav-icon">👑</span><span>Subscription Plans</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item" title="Billing & Payments">
+            <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
+            <span class="nav-icon">🧾</span><span>Billing History</span>
+        </a>
+        <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
+            <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
+        </a>
 
-        <div class="nav-title">Settings &amp; Support</div>
-        <a href="{{ url_for('settings') }}" class="nav-link{% if request.endpoint == 'settings' %} active{% endif %}">⚙️
-            Settings</a>
-        <a href="#" class="nav-link">🔐 Security</a>
+        <div class="menu-title">Settings &amp; Support</div>
+        <a href="{{ url_for('settings') }}" class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}"
+            title="Settings">
+            <span class="nav-icon">⚙️</span><span>Settings</span>
+        </a>
+        <a href="#" class="nav-item" title="Security">
+            <span class="nav-icon">🔐</span><span>Security</span>
+        </a>
         <a href="{{ url_for('help_support') }}"
             class="nav-item {% if request.endpoint == 'help_support' %}active{% endif %}" title="Help & Support">
             <span class="nav-icon">❓</span><span>Help &amp; Support</span>
         </a>
-        <a href="{{ url_for('logout') }}" class="nav-link{% if request.endpoint == 'logout' %} active{% endif %}">🚪
-            Logout</a>
+        <a href="{{ url_for('logout') }}" class="logout-link">
+            <span class="nav-icon">🚪</span><span>Logout</span>
+        </a>
     </aside>
 
 
@@ -2235,8 +2469,8 @@
 
                             <div class="actions">
 
-                                <button type="button" class="action-btn"
-                                    onclick='openEditRecurringModal({{ payment|tojson }})'>
+                                <button type="button" class="action-btn" data-payment="{{ payment|tojson|forceescape }}"
+                                    onclick="openEditRecurringModal(this)">
                                     Edit
                                 </button>
 
@@ -3984,9 +4218,25 @@
            EDIT RECURRING
          */
 
-        function openEditRecurringModal(payment) {
+        function openEditRecurringModal(buttonOrPayment) {
 
-            if (!payment) {
+            let payment = buttonOrPayment;
+
+            // When called from the Edit button, safely read the JSON
+            // from its data attribute instead of embedding JSON in onclick.
+            if (buttonOrPayment instanceof HTMLElement) {
+                try {
+                    payment = JSON.parse(buttonOrPayment.dataset.payment || "{}");
+                } catch (error) {
+                    console.error("Could not read recurring payment data:", error);
+                    alert("Could not load this recurring payment. Please refresh the page and try again.");
+                    return;
+                }
+            }
+
+            if (!payment || !payment.id) {
+                console.error("Recurring payment data is missing or invalid:", payment);
+                alert("Could not load this recurring payment.");
                 return;
             }
 

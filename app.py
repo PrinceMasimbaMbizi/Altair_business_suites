@@ -7,6 +7,7 @@ from datetime import datetime, date
 
 import mysql.connector
 import os
+import re
 
 
 import requests
@@ -1345,640 +1346,183 @@ def predict_next_month_revenue(monthly_revenue):
     }
 
 
-# ALTAIR PERSONAL NLP ENGINE
-ALTAIR_TRAINING_DATA = [
-
-    
-    # REVENUE
-    
-
-    (
-        "How much revenue did I make?",
-        "revenue"
-    ),
-
-    (
-        "What is my revenue?",
-        "revenue"
-    ),
-
-    (
-        "How much money did my business make?",
-        "revenue"
-    ),
-
-    (
-        "Show me my sales revenue",
-        "revenue"
-    ),
-
-    (
-        "What are my sales?",
-        "revenue"
-    ),
-
-    (
-        "How much have I earned?",
-        "revenue"
-    ),
-
-    (
-        "How is my revenue doing?",
-        "revenue"
-    ),
-
-
-    
-    # FORECAST
-    
-
-    (
-        "What will my revenue be next month?",
-        "forecast"
-    ),
-
-    (
-        "Predict my revenue",
-        "forecast"
-    ),
-
-    (
-        "How much will I make next month?",
-        "forecast"
-    ),
-
-    (
-        "What is my revenue forecast?",
-        "forecast"
-    ),
-
-    (
-        "Can you forecast my sales?",
-        "forecast"
-    ),
-
-    (
-        "What does the model predict?",
-        "forecast"
-    ),
-
-
-    
-    # EXPENSES
-    
-
-    (
-        "How much are my expenses?",
-        "expenses"
-    ),
-
-    (
-        "Show me my expenses",
-        "expenses"
-    ),
-
-    (
-        "How much money am I spending?",
-        "expenses"
-    ),
-
-    (
-        "What are my business expenses?",
-        "expenses"
-    ),
-
-    (
-        "How much have I spent?",
-        "expenses"
-    ),
-
-
-    
-    # INVOICES
-    
-
-    (
-        "How many invoices do I have?",
-        "invoices"
-    ),
-
-    (
-        "Show me my invoices",
-        "invoices"
-    ),
-
-    (
-        "How many invoices are pending?",
-        "invoices"
-    ),
-
-    (
-        "How many invoices are overdue?",
-        "invoices"
-    ),
-
-    (
-        "What invoices have been paid?",
-        "invoices"
-    ),
-
-
-    
-    # CUSTOMERS
-    
-
-    (
-        "How many customers do I have?",
-        "customers"
-    ),
-
-    (
-        "Show me my customers",
-        "customers"
-    ),
-
-    (
-        "How many customers are there?",
-        "customers"
-    ),
-
-    (
-        "Tell me about my customers",
-        "customers"
-    ),
-
-
-    
-    # LEADS
-    
-
-    (
-        "How many leads do I have?",
-        "leads"
-    ),
-
-    (
-        "Show me my leads",
-        "leads"
-    ),
-
-    (
-        "How are my leads performing?",
-        "leads"
-    ),
-
-    (
-        "What is my lead conversion rate?",
-        "leads"
-    ),
-
-    (
-        "How many leads converted?",
-        "leads"
-    ),
-
-
-    
-    # BUSINESS HEALTH
-    
-
-    (
-        "How is my business doing?",
-        "business_health"
-    ),
-
-    (
-        "How healthy is my business?",
-        "business_health"
-    ),
-
-    (
-        "What is my business health score?",
-        "business_health"
-    ),
-
-    (
-        "Is my business performing well?",
-        "business_health"
-    ),
-
-    (
-        "Give me a business overview",
-        "business_health"
-    ),
-
-
-    
-    # RECOMMENDATIONS
-    
-
-    (
-        "What should I do?",
-        "recommendations"
-    ),
-
-    (
-        "Give me business advice",
-        "recommendations"
-    ),
-
-    (
-        "What should I improve?",
-        "recommendations"
-    ),
-
-    (
-        "How can I improve my business?",
-        "recommendations"
-    ),
-
-    (
-        "What do you recommend?",
-        "recommendations"
-    ),
-
-
-    
-    # CASH FLOW
-    
-
-    (
-        "How much money is outstanding?",
-        "cash_flow"
-    ),
-
-    (
-        "How much money am I waiting for?",
-        "cash_flow"
-    ),
-
-    (
-        "What is my cash flow situation?",
-        "cash_flow"
-    ),
-
-    (
-        "How much money is pending?",
-        "cash_flow"
-    ),
-
-    (
-        "How much money is overdue?",
-        "cash_flow"
-    )
+# ================================================================
+# OTIS | SUPERVISED SKLEARN CHATBOT
+# TF-IDF text features + Logistic Regression intent classifier.
+# No OpenAI API, paid model API, or external LLM is used.
+# ================================================================
+
+OTIS_TRAINING_DATA = [
+    # Greetings
+    ("hi", "greeting"), ("hello", "greeting"), ("hey Otis", "greeting"),
+    ("good morning", "greeting"), ("good afternoon", "greeting"),
+    ("good evening", "greeting"), ("hello there", "greeting"),
+    ("hey there", "greeting"), ("how are you", "greeting"),
+    ("good day Otis", "greeting"),
+
+    # Thanks
+    ("thank you", "thanks"), ("thanks Otis", "thanks"),
+    ("thank you for the help", "thanks"), ("that helped me", "thanks"),
+    ("great thanks", "thanks"), ("I appreciate your help", "thanks"),
+    ("thanks for explaining", "thanks"), ("much appreciated", "thanks"),
+
+    # Help / capability
+    ("what can you do", "help"), ("how can you help me", "help"),
+    ("help me use this assistant", "help"), ("what can I ask you", "help"),
+    ("show me examples of questions", "help"), ("what do you understand", "help"),
+    ("how do I use Otis", "help"), ("what business questions can you answer", "help"),
+
+    # Troubleshooting
+    ("I have an error in the app", "troubleshooting"),
+    ("help me fix this error", "troubleshooting"),
+    ("the page is not working", "troubleshooting"),
+    ("something is broken in the system", "troubleshooting"),
+    ("I cannot save my invoice", "troubleshooting"),
+    ("the application crashed", "troubleshooting"),
+    ("why am I getting an error message", "troubleshooting"),
+    ("help me troubleshoot a technical problem", "troubleshooting"),
+
+    # Revenue
+    ("how much revenue did I make", "revenue"),
+    ("what is my revenue", "revenue"), ("how much money did my business make", "revenue"),
+    ("show me my sales revenue", "revenue"), ("what are my sales", "revenue"),
+    ("how much have I earned", "revenue"), ("money made by my business", "revenue"),
+    ("show my paid revenue", "revenue"), ("how much income have I collected", "revenue"),
+    ("what revenue have I received", "revenue"), ("tell me about my earnings", "revenue"),
+    ("how are my sales doing", "revenue"), ("total paid invoice amount", "revenue"),
+    ("how much have customers paid me", "revenue"), ("income from paid invoices", "revenue"),
+
+    # Forecast
+    ("what will my revenue be next month", "forecast"),
+    ("predict my revenue", "forecast"), ("how much will I make next month", "forecast"),
+    ("what is my revenue forecast", "forecast"), ("forecast my sales", "forecast"),
+    ("what does the model predict", "forecast"), ("estimate future revenue", "forecast"),
+    ("show my next month revenue prediction", "forecast"), ("predict future sales", "forecast"),
+    ("how much revenue might I earn next month", "forecast"),
+    ("give me a sales forecast", "forecast"), ("what is the expected revenue", "forecast"),
+
+    # Expenses
+    ("how much are my expenses", "expenses"), ("show me my expenses", "expenses"),
+    ("how much money am I spending", "expenses"), ("what are my business expenses", "expenses"),
+    ("how much have I spent", "expenses"), ("show total spending", "expenses"),
+    ("how much do my costs add up to", "expenses"), ("tell me about my spending", "expenses"),
+    ("what are my recorded costs", "expenses"), ("how much have I paid out", "expenses"),
+    ("show my expense total", "expenses"), ("are my expenses high", "expenses"),
+
+    # Invoices
+    ("how many invoices do I have", "invoices"), ("show me my invoices", "invoices"),
+    ("how many invoices are pending", "invoices"), ("how many invoices are overdue", "invoices"),
+    ("what invoices have been paid", "invoices"), ("tell me my invoice status", "invoices"),
+    ("show paid pending and overdue invoices", "invoices"),
+    ("how many bills have I issued", "invoices"), ("which invoices are unpaid", "invoices"),
+    ("give me an invoice summary", "invoices"), ("invoice collection status", "invoices"),
+
+    # Cash flow
+    ("how much money is outstanding", "cash_flow"),
+    ("how much money am I waiting for", "cash_flow"),
+    ("what is my cash flow situation", "cash_flow"),
+    ("how much money is pending", "cash_flow"), ("how much money is overdue", "cash_flow"),
+    ("how can I improve my cash flow", "cash_flow"),
+    ("what payments are customers yet to make", "cash_flow"),
+    ("how much have customers not paid", "cash_flow"),
+    ("show my outstanding payments", "cash_flow"), ("am I waiting for payments", "cash_flow"),
+    ("what is owed to my business", "cash_flow"), ("help me understand cashflow", "cash_flow"),
+
+    # Customers
+    ("how many customers do I have", "customers"), ("show me my customers", "customers"),
+    ("how many clients are there", "customers"), ("tell me about my customers", "customers"),
+    ("show my client base", "customers"), ("how many customer records exist", "customers"),
+    ("give me a customer summary", "customers"), ("customer information overview", "customers"),
+    ("how many clients have I registered", "customers"),
+
+    # Leads
+    ("how many leads do I have", "leads"), ("show me my leads", "leads"),
+    ("how are my leads performing", "leads"), ("how many prospects are recorded", "leads"),
+    ("show potential customers", "leads"), ("give me a lead summary", "leads"),
+    ("how many new leads do I have", "leads"), ("how many leads converted", "leads"),
+    ("what is my lead conversion rate", "leads"), ("show my prospect pipeline", "leads"),
+
+    # Lead conversion analysis
+    ("why are my leads not converting", "lead_conversion_analysis"),
+    ("why do leads not become customers", "lead_conversion_analysis"),
+    ("how can I convert more leads", "lead_conversion_analysis"),
+    ("analyse my lead conversion", "lead_conversion_analysis"),
+    ("analyze my sales funnel", "lead_conversion_analysis"),
+    ("why are prospects not buying", "lead_conversion_analysis"),
+    ("how do I improve lead conversion", "lead_conversion_analysis"),
+    ("what is stopping leads from converting", "lead_conversion_analysis"),
+    ("review my lead follow up", "lead_conversion_analysis"),
+
+    # Profitability (reported separately from cash flow)
+    ("what is my profit this month", "profitability"),
+    ("how much profit did I make this month", "profitability"),
+    ("show me my profit", "profitability"),
+    ("am I making a profit", "profitability"),
+    ("what is my net profit", "profitability"),
+    ("compare my income and expenses", "profitability"),
+    ("did my business make a profit", "profitability"),
+    ("how much money did I keep after expenses", "profitability"),
+    ("what are my profits this month", "profitability"),
+    ("calculate my profit for this month", "profitability"),
+    ("profit and loss summary", "profitability"),
+    ("is my business profitable", "profitability"),
+
+    # Business health
+    ("how is my business doing", "business_health"),
+    ("how is my business performing", "business_health"),
+    ("how healthy is my business", "business_health"),
+    ("what is my business health score", "business_health"),
+    ("is my business performing well", "business_health"),
+    ("give me a business overview", "business_health"),
+    ("analyse my overall business performance", "business_health"),
+    ("analyze the health of my company", "business_health"),
+    ("how well is my business doing", "business_health"),
+    ("review my business performance", "business_health"),
+
+    # Recommendations
+    ("what should I do to improve my business", "recommendations"),
+    ("give me business advice", "recommendations"),
+    ("what should I improve", "recommendations"),
+    ("what do you recommend", "recommendations"),
+    ("how can I grow my business", "recommendations"),
+    ("which areas need attention", "recommendations"),
+    ("how can I increase profits", "recommendations"),
+    ("how can I reduce business costs", "recommendations"),
+    ("what are my business priorities", "recommendations"),
+    ("give me practical next steps", "recommendations"),
+    ("how can I increase sales", "recommendations"),
+    ("what are the biggest risks in my business", "recommendations"),
 ]
 
+OTIS_QUESTIONS = [question for question, intent in OTIS_TRAINING_DATA]
+OTIS_INTENTS = [intent for question, intent in OTIS_TRAINING_DATA]
+
+otis_nlp_model = Pipeline([
+    ("tfidf", TfidfVectorizer(
+        lowercase=True,
+        strip_accents="unicode",
+        ngram_range=(1, 2),
+        sublinear_tf=True,
+        min_df=1,
+    )),
+    ("classifier", LogisticRegression(
+        max_iter=2000,
+        class_weight="balanced",
+        C=4.0,
+        random_state=42,
+    )),
+])
+
+otis_nlp_model.fit(OTIS_QUESTIONS, OTIS_INTENTS)
+
+# Backward-compatible name in case other app sections reference this variable.
+altair_nlp_model = otis_nlp_model
+
+print("OTIS SUPERVISED SKLEARN CHATBOT TRAINED")
+print("Training examples:", len(OTIS_QUESTIONS))
+print("Recognised intents:", len(set(OTIS_INTENTS)))
 
 
-# CREATE TRAINING ARRAYS
-
-
-ALTAIR_QUESTIONS = [
-    item[0]
-    for item in ALTAIR_TRAINING_DATA
-]
-
-ALTAIR_INTENTS = [
-    item[1]
-    for item in ALTAIR_TRAINING_DATA
-]
-
-
-
-# ALTAIR NLP MODEL
-
-
-altair_nlp_model = Pipeline(
-    [
-        (
-            "tfidf",
-            TfidfVectorizer(
-                lowercase=True,
-                ngram_range=(1, 2),
-                sublinear_tf=True
-            )
-        ),
-
-        (
-            "classifier",
-            LogisticRegression(
-                max_iter=1000
-            )
-        )
-    ]
-)
-
-
-
-# TRAIN MODEL
-
-
-altair_nlp_model.fit(
-    ALTAIR_QUESTIONS,
-    ALTAIR_INTENTS
-)
-
-
-print(
-    "ALTAIR NLP MODEL TRAINED"
-)
-
-print(
-    "Training examples:",
-    len(ALTAIR_QUESTIONS)
-)
-
-
-
-
-# ALTAIR AI - IMPROVED QUESTION UNDERSTANDING
-
-
-import re
-
-
-def understand_altair_question(question):
-
-    if not isinstance(question, str) or not question.strip():
-
-        return {
-            "intent": "unknown",
-            "confidence": 0
-        }
-
-    
-    # NORMALISE THE QUESTION
-    
-
-    question = question.lower().strip()
-
-    question = re.sub(
-        r"[^a-z0-9\s]",
-        " ",
-        question
-    )
-
-    question = re.sub(
-        r"\s+",
-        " ",
-        question
-    ).strip()
-
-    
-    # HELPER: MATCH BUSINESS PHRASES
-    
-
-    def contains_any(*phrases):
-
-        return any(
-            phrase in question
-            for phrase in phrases
-        )
-
-    
-    # 1. BUSINESS IMPROVEMENT AND RECOMMENDATIONS    
-
-    if contains_any(
-        "improve my business",
-        "improve my cash flow",
-        "improve cash flow",
-        "increase my profits",
-        "increase profits",
-        "reduce my expenses",
-        "reduce expenses",
-        "reduce costs",
-        "grow my business",
-        "grow the business",
-        "what should i focus on",
-        "what should i do",
-        "what should i improve",
-        "what do you recommend",
-        "give me business advice",
-        "areas need attention",
-        "areas of my business need attention",
-        "which areas need attention",
-        "areas to improve",
-        "business priorities",
-        "how can i improve",
-        "how do i improve",
-        "how can i increase sales",
-        "how do i increase sales"
-    ):
-
-        return {
-            "intent": "recommendations",
-            "confidence": 99.0
-        }
-
-    
-    # 2. OVERALL BUSINESS HEALTH
-    
-
-    if contains_any(
-        "how is my business performing",
-        "how is my business doing",
-        "how is the business performing",
-        "how is the business doing",
-        "business performance",
-        "business health",
-        "how healthy is my business",
-        "is my business performing well",
-        "is my business doing well",
-        "business overview",
-        "overall business performance",
-        "analyse my business",
-        "analyze my business",
-        "how well is my business doing",
-        "how well is my business performing"
-    ):
-
-        return {
-            "intent": "business_health",
-            "confidence": 99.0
-        }
-
-    
-    # 3. CASH FLOW
-    
-
-    if contains_any(
-        "cash flow",
-        "cashflow",
-        "outstanding invoices",
-        "money outstanding",
-        "money am i waiting for",
-        "unpaid invoices",
-        "money owed to me",
-        "amount owed to me",
-        "pending payments",
-        "overdue payments",
-        "receivables",
-        "how much money is pending",
-        "how much money is overdue"
-    ):
-
-        return {
-            "intent": "cash_flow",
-            "confidence": 99.0
-        }
-
-    
-    # 4. REVENUE
-    
-
-    if contains_any(
-        "revenue",
-        "sales revenue",
-        "money did my business make",
-        "how much have i earned",
-        "how much did i earn",
-        "how much have we earned",
-        "income generated",
-        "money made",
-        "total sales",
-        "sales performance"
-    ):
-
-        return {
-            "intent": "revenue",
-            "confidence": 99.0
-        }
-
-    
-    # 5. EXPENSES
-    
-
-    if contains_any(
-        "expenses",
-        "business spending",
-        "money am i spending",
-        "money have i spent",
-        "how much did i spend",
-        "total spending",
-        "operating costs",
-        "business costs"
-    ):
-
-        return {
-            "intent": "expenses",
-            "confidence": 99.0
-        }
-
-    
-    # 6. FORECASTING
-    
-
-    if contains_any(
-        "forecast",
-        "forecasting",
-        "predict my revenue",
-        "predict my sales",
-        "next month revenue",
-        "next month's revenue",
-        "future revenue",
-        "future sales",
-        "revenue prediction",
-        "sales prediction"
-    ):
-
-        return {
-            "intent": "forecast",
-            "confidence": 99.0
-        }
-
-    
-    # 7. INVOICES
-    
-
-    if contains_any(
-        "invoices",
-        "invoice",
-        "invoice status",
-        "paid invoices",
-        "pending invoices",
-        "overdue invoices"
-    ):
-
-        return {
-            "intent": "invoices",
-            "confidence": 99.0
-        }
-
-    
-    # 8. CUSTOMERS
-    
-
-    if contains_any(
-        "customers",
-        "customer",
-        "client list",
-        "how many clients",
-        "my clients"
-    ):
-
-        return {
-            "intent": "customers",
-            "confidence": 99.0
-        }
-
-    
-    # 9. LEADS
-    
-
-    if contains_any(
-        "leads",
-        "lead conversion",
-        "potential customers",
-        "prospects",
-        "lead performance"
-    ):
-
-        return {
-            "intent": "leads",
-            "confidence": 99.0
-        }
-
-    
-    # 10. EXISTING MACHINE-LEARNING MODEL
-    
-    # If no rule matches, let the existing NLP model decide.
-    
-
-    try:
-
-        probabilities = (
-            altair_nlp_model
-            .predict_proba([question])[0]
-        )
-
-        classes = altair_nlp_model.classes_
-
-        best_index = probabilities.argmax()
-
-        intent = classes[best_index]
-
-        confidence = float(
-            probabilities[best_index] * 100
-        )
-
-        return {
-            "intent": intent,
-            "confidence": round(confidence, 2)
-        }
-
-    except Exception as e:
-
-        print(
-            "ALTAIR QUESTION UNDERSTANDING ERROR:",
-            e
-        )
-
-        return {
-            "intent": "unknown",
-            "confidence": 0
-        }
-
-# ALTAIR AI 
 def get_business_ai_data(user_id):
 
     db = None
@@ -2280,6 +1824,35 @@ def get_business_ai_data(user_id):
             cursor.fetchone() or {}
         )
 
+        # Current-month figures used by Otis's profitability answers.
+        # These use the dates and statuses recorded in the user's own account.
+        cursor.execute("""
+            SELECT
+                COALESCE(SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END), 0) AS paid_revenue
+            FROM invoices
+            WHERE user_id = %s
+              AND YEAR(invoice_date) = YEAR(CURRENT_DATE())
+              AND MONTH(invoice_date) = MONTH(CURRENT_DATE())
+        """, (user_id,))
+        current_month_revenue = cursor.fetchone() or {}
+
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM expenses
+            WHERE user_id = %s
+              AND YEAR(expense_date) = YEAR(CURRENT_DATE())
+              AND MONTH(expense_date) = MONTH(CURRENT_DATE())
+        """, (user_id,))
+        current_month_expenses = cursor.fetchone() or {}
+
+        month_revenue = float(current_month_revenue.get("paid_revenue", 0) or 0)
+        month_expenses = float(current_month_expenses.get("total", 0) or 0)
+        data["current_month_financials"] = {
+            "paid_revenue": round(month_revenue, 2),
+            "expenses": round(month_expenses, 2),
+            "recorded_difference": round(month_revenue - month_expenses, 2),
+        }
+
    
         # INVESTMENTS
 
@@ -2375,176 +1948,6 @@ def get_business_ai_data(user_id):
         if db:
             db.close()
 
-
-
-
-# ALTAIR AI - BUSINESS ADVISOR
-
-
-def generate_business_advice(business_data):
-
-    invoices = business_data.get(
-        "invoices",
-        {}
-    )
-
-    leads = business_data.get(
-        "leads",
-        {}
-    )
-
-    expenses = business_data.get(
-        "expenses",
-        {}
-    )
-
-    recurring = business_data.get(
-        "recurring",
-        {}
-    )
-
-    forecast = business_data.get(
-        "forecast",
-        {}
-    )
-
-    paid_revenue = float(
-        invoices.get(
-            "paid_amount",
-            0
-        ) or 0
-    )
-
-    overdue_amount = float(
-        invoices.get(
-            "overdue_amount",
-            0
-        ) or 0
-    )
-
-    pending_amount = float(
-        invoices.get(
-            "pending_amount",
-            0
-        ) or 0
-    )
-
-    expense_total = float(
-        expenses.get(
-            "total",
-            0
-        ) or 0
-    )
-
-    monthly_recurring = float(
-        recurring.get(
-            "monthly_cost",
-            0
-        ) or 0
-    )
-
-    total_leads = int(
-        leads.get(
-            "total",
-            0
-        ) or 0
-    )
-
-    converted_leads = int(
-        leads.get(
-            "converted",
-            0
-        ) or 0
-    )
-
-    
-    # CONVERSION RATE
-    
-
-    if total_leads > 0:
-
-        conversion_rate = (
-            converted_leads /
-            total_leads
-        ) * 100
-
-    else:
-
-        conversion_rate = 0
-
-    
-    # CASH PRESSURE
-    
-
-    cash_pressure = (
-        overdue_amount +
-        pending_amount
-    )
-
-    
-    # BASIC BUSINESS HEALTH SCORE
-    
-
-    health_score = 70
-
-    if overdue_amount > 0:
-        health_score -= 10
-
-    if conversion_rate < 10:
-        health_score -= 10
-
-    if monthly_recurring > paid_revenue:
-        health_score -= 20
-
-    if health_score < 0:
-        health_score = 0
-
-    if health_score > 100:
-        health_score = 100
-
-    return {
-        "health_score": health_score,
-
-        "paid_revenue": round(
-            paid_revenue,
-            2
-        ),
-
-        "overdue_amount": round(
-            overdue_amount,
-            2
-        ),
-
-        "pending_amount": round(
-            pending_amount,
-            2
-        ),
-
-        "expenses": round(
-            expense_total,
-            2
-        ),
-
-        "monthly_recurring": round(
-            monthly_recurring,
-            2
-        ),
-
-        "lead_conversion": round(
-            conversion_rate,
-            1
-        ),
-
-        "revenue_prediction": forecast.get(
-            "prediction",
-            0
-        ),
-
-        "prediction_confidence": forecast.get(
-            "confidence",
-            0
-        )
-    }    
 
 
 
@@ -3092,7 +2495,7 @@ def altair_response_engine(intent, business_data, analysis):
             )
 
         return (
-            "Here are Altair's recommendations based on your "
+            "Here are Otis's recommendations based on your "
             "currently recorded business data:\n\n"
             + "\n\n".join(
                 f"{index}. {item}"
@@ -3143,107 +2546,33 @@ def _altair_normalise_text(value):
 
 
 def understand_altair_question(question):
-    """Rule-first intent recognition with the existing ML model as backup."""
+    """
+    Predict the user's intent with the supervised scikit-learn classifier.
+    Low-confidence predictions are rejected rather than treated as facts.
+    """
     if not isinstance(question, str) or not question.strip():
         return {"intent": "unknown", "confidence": 0.0}
 
-    q = _altair_normalise_text(question)
-    words = set(q.split())
+    cleaned = _altair_normalise_text(question)
+    if not cleaned:
+        return {"intent": "unknown", "confidence": 0.0}
 
-    # Exact conversational turns must be checked before the classifier.
-    greetings = {
-        "hi", "hello", "hey", "hey altair", "hi altair", "hello altair",
-        "good morning", "good afternoon", "good evening", "good day",
-        "howdy", "yo", "hey there", "hello there"
-    }
-    if q in greetings:
-        return {"intent": "greeting", "confidence": 100.0}
-
-    thanks = {"thanks", "thank you", "thanks altair", "thank you altair", "much appreciated", "cheers"}
-    if q in thanks or q.startswith("thank you for"):
-        return {"intent": "thanks", "confidence": 100.0}
-
-    if q in {"help", "what can you do", "what can you help me with", "how do i use you", "show me what you can do"}:
-        return {"intent": "help", "confidence": 100.0}
-
-    # A user reporting an error needs guided troubleshooting, not a made-up diagnosis.
-    if any(phrase in q for phrase in (
-        "i got an error", "i am getting an error", "im getting an error",
-        "error message", "something is not working", "something isn't working",
-        "not working", "it is broken", "its broken", "i have a problem",
-        "i have an issue", "why did this fail", "why is this failing",
-        "why is this not working", "why does this keep failing"
-    )) or ("error" in words and any(w in words for w in ("app", "page", "system", "invoice", "login", "database", "server"))):
-        return {"intent": "troubleshooting", "confidence": 98.0}
-
-    # Lead-conversion questions get a dedicated explanation of the sales funnel.
-    if any(phrase in q for phrase in (
-        "why are my leads not converting", "why my leads are not converting",
-        "why arent my leads converting", "why are leads not converting",
-        "why do leads not convert", "why are few leads converting",
-        "why do few leads become customers", "why are leads not becoming customers",
-        "why are leads not becoming paying customers", "leads become paying customers",
-        "lead conversion", "conversion rate", "sales funnel", "lead follow up",
-        "lead follow-up", "how do i convert leads", "how can i convert leads",
-        "how can i get more customers from leads", "leads not converting"
-    )):
-        return {"intent": "lead_conversion_analysis", "confidence": 99.0}
-
-    if any(phrase in q for phrase in (
-        "how is my business performing", "how is my business doing",
-        "business performance", "business health", "how healthy is my business",
-        "is my business doing well", "business overview", "overall performance",
-        "analyse my business", "analyze my business", "how well is my business doing",
-        "score my business", "business score", "health score"
-    )):
-        return {"intent": "business_health", "confidence": 99.0}
-
-    if any(phrase in q for phrase in (
-        "what should i focus on", "what should i do", "what should i improve",
-        "what do you recommend", "give me business advice", "areas need attention",
-        "areas of my business need attention", "which areas need attention",
-        "areas to improve", "business priorities", "how can i improve",
-        "how do i improve", "how can i increase sales", "how do i increase sales",
-        "main business problem", "main problems", "what is wrong with my business",
-        "what's wrong with my business", "business weaknesses", "business problems",
-        "how can i grow", "grow my business", "improve my business",
-        "improve my cash flow", "increase my profits", "reduce my expenses",
-        "reduce costs", "improve profitability", "improve sales"
-    )):
-        return {"intent": "recommendations", "confidence": 99.0}
-
-    if any(phrase in q for phrase in ("cash flow", "cashflow", "outstanding invoices", "money outstanding", "unpaid invoices", "money owed to me", "pending payments", "overdue payments", "receivables", "how much money is overdue")):
-        return {"intent": "cash_flow", "confidence": 98.0}
-    if any(phrase in q for phrase in ("revenue", "sales revenue", "how much have i earned", "how much did i earn", "income generated", "money made", "total sales", "sales performance", "how much money did my business make")):
-        return {"intent": "revenue", "confidence": 98.0}
-    if any(phrase in q for phrase in ("expenses", "business spending", "how much am i spending", "how much have i spent", "how much did i spend", "total spending", "operating costs", "business costs", "money going out")):
-        return {"intent": "expenses", "confidence": 98.0}
-    if any(phrase in q for phrase in ("forecast", "forecasting", "predict my revenue", "predict my sales", "next month revenue", "future revenue", "future sales", "revenue prediction", "sales prediction")):
-        return {"intent": "forecast", "confidence": 98.0}
-    if any(phrase in q for phrase in ("invoice", "invoices", "invoice status", "paid invoices", "pending invoices", "overdue invoices")):
-        return {"intent": "invoices", "confidence": 98.0}
-    if any(phrase in q for phrase in ("customers", "customer", "client list", "how many clients", "my clients", "customer retention")):
-        return {"intent": "customers", "confidence": 98.0}
-    if any(phrase in q for phrase in ("leads", "potential customers", "prospects", "lead performance", "how many leads")):
-        return {"intent": "leads", "confidence": 98.0}
-
-    # The original small ML model is a backup only. Avoid pretending that a
-    # low-confidence guess is a reliable understanding of the question.
     try:
-        probabilities = altair_nlp_model.predict_proba([q])[0]
-        classes = altair_nlp_model.classes_
+        probabilities = otis_nlp_model.predict_proba([cleaned])[0]
+        classes = otis_nlp_model.classes_
         best_index = int(probabilities.argmax())
-        confidence = float(probabilities[best_index] * 100)
         intent = str(classes[best_index])
-        if confidence >= 48 and intent in {
-            "revenue", "forecast", "expenses", "invoices", "customers",
-            "leads", "business_health", "recommendations", "cash_flow"
-        }:
-            return {"intent": intent, "confidence": round(confidence, 2)}
-    except Exception as exc:
-        print("ALTAIR QUESTION UNDERSTANDING ERROR:", exc)
+        confidence = float(probabilities[best_index] * 100)
 
-    return {"intent": "unknown", "confidence": 0.0}
+        # This is a practical rejection threshold, not a calibrated probability.
+        # A prediction below it is treated as unknown to reduce wrong answers.
+        if confidence < 32.0:
+            return {"intent": "unknown", "confidence": round(confidence, 2)}
+
+        return {"intent": intent, "confidence": round(confidence, 2)}
+    except Exception as exc:
+        app.logger.exception("OTIS INTENT CLASSIFICATION ERROR: %s", exc)
+        return {"intent": "unknown", "confidence": 0.0}
 
 
 def generate_business_advice(business_data):
@@ -3387,7 +2716,7 @@ def altair_response_engine(intent, business_data, analysis):
 
     if intent == "help":
         return (
-            "I'm Altair, your business assistant. I can analyse the records saved in your account, "
+            "I'm Otis, your business advisor. I can analyse the records saved in your account, "
             "explain trends, highlight risks, and suggest practical next steps.\n\n"
             "Try asking:\n"
             "• How is my business performing?\n"
@@ -3469,7 +2798,7 @@ def altair_response_engine(intent, business_data, analysis):
         issue_lines = [f"• {item.get('area', 'Business')}: {item.get('finding', '')} Next step: {item.get('action', '')}" for item in issues[:4]]
         return (
             "BUSINESS HEALTH CHECK\n\n"
-            f"Altair business-health indicator: {score}/100\n"
+            f"Otis business-health indicator: {score}/100\n"
             f"Overall reading: Your recorded figures show {description}.\n\n"
             "Score breakdown (each component is weighted):\n" + "\n".join(component_lines) +
             "\n\nRecorded figures:\n"
@@ -3482,6 +2811,24 @@ def altair_response_engine(intent, business_data, analysis):
             "\n\nThis is an internal operational indicator based on the records available to Altair, not a formal accounting, credit, or investment assessment. Missing or incomplete records can change the score."
         )
 
+    if intent == "profitability":
+        monthly = data.get("current_month_financials") or {}
+        month_revenue = val(monthly, "paid_revenue")
+        month_expenses = val(monthly, "expenses")
+        difference = val(monthly, "recorded_difference")
+        label = "positive recorded difference" if difference > 0 else (
+            "negative recorded difference" if difference < 0 else "break-even recorded difference"
+        )
+        return (
+            "CURRENT-MONTH PROFITABILITY SNAPSHOT\\n\\n"
+            f"Paid invoice revenue recorded this month: {money(month_revenue)}\\n"
+            f"Expenses recorded this month: {money(month_expenses)}\\n"
+            f"Revenue minus recorded expenses: {money(difference)}\\n\\n"
+            f"The current records show a {label}. This is a simple operational estimate, "
+            "not a formal accounting profit figure: it excludes any income, costs, taxes, "
+            "or adjustments that have not been entered in Altair."
+        )
+
     if intent == "recommendations":
         issues = analysis.get("priority_issues") or []
         lines = []
@@ -3489,13 +2836,153 @@ def altair_response_engine(intent, business_data, analysis):
             lines.append(f"{len(lines)+1}. {item.get('area', 'Priority')} — {item.get('finding', '')} Action: {item.get('action', '')}")
         if not lines:
             lines = ["Keep your invoices, expenses, lead statuses, and customer records up to date; revisit these indicators regularly."]
-        return "ALTAIR BUSINESS PRIORITIES\n\n" + "\n\n".join(lines) + "\n\nThese priorities are based on the data currently recorded in your account."
+        return "OTIS BUSINESS PRIORITIES\n\n" + "\n\n".join(lines) + "\n\nThese priorities are based on the data currently recorded in your account."
 
     # Existing established intents keep their previous answer logic.
     return altair_response_engine_legacy(intent, business_data, analysis)
 
 
 # ALTAIR AI CHAT API
+
+# ================================================================
+# OTIS APPLICATION KNOWLEDGE + SAFE RECORD SEARCH
+# ================================================================
+OTIS_APP_KNOWLEDGE = {
+    "dashboard": ("Dashboard", "/", "Shows a business overview, performance indicators, forecast information, recent activity, and Otis advice when data is available."),
+    "customer": ("Customers", "/customer", "View and manage customer names, emails, phone numbers, company details, addresses, status, notes, and available customer history."),
+    "invoice": ("Invoices", "/invoice", "Create and review invoices with invoice number, customer, item description, dates, amount, status, and notes. Otis can summarise paid, pending, and overdue amounts."),
+    "money management": ("Money Management", "/items", "Review recorded expenses, investments, and recurring payments, including categories, amounts, and payment schedules."),
+    "inventory": ("Inventory", "/items", "Inventory records can include item name, SKU, category, type, description, supplier, quantity, low-stock level, cost price, selling price, and status."),
+    "lead": ("AI Lead Finder", "/ai-leads", "Manage potential customers and saved lead details such as company, industry, location, website, email, phone, contact person, source, status, score, and notes."),
+    "company profile": ("Company Profile", "/company-setup", "Manage company name, industry, specialisation, description, services/products, contact details, website, address, city, country, and logo."),
+    "help support": ("Help & Support", "/help-support", "Submit a support request. For technical troubleshooting, provide the exact error and the page/action that caused it. Never share passwords or API keys."),
+    "settings": ("Settings", "/settings", "Manage available preferences, including invoice payment terms and payment details where configured."),
+    "otis": ("Otis Business Advisor", "/", "Otis can summarise recorded revenue, expenses, invoices, customers, leads, cash flow, forecasts, and business indicators. Its answers depend on the saved data and implemented features; it must not invent missing facts."),
+}
+
+def _otis_norm(value):
+    value = str(value or "").lower()
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9@._+\-\s]", " ", value)).strip()
+
+def _otis_knowledge_answer(message):
+    q = _otis_norm(message)
+    general_product_question = any(x in q for x in (
+        "what can altair", "what can this app", "what features",
+        "what is altair business suite", "what can otis do",
+        "how do i use altair", "how do i use this app",
+        "how does altair work", "show me the app", "help me navigate",
+        "where can i find", "which page", "what page",
+        "how do i access", "how do i open", "how do i use",
+        "how to use", "where is the", "tell me about the ", "explain the "
+    ))
+    if general_product_question:
+        return (
+            "I can help you navigate Altair Business Suite and find saved records.\n\n"
+            "MAIN AREAS:\n"
+            "• Dashboard — business overview and recent activity (/)\n"
+            "• Customers — customer records (/customer)\n"
+            "• Invoices — billing and payment status (/invoice)\n"
+            "• Money Management — expenses, investments, recurring payments (/items)\n"
+            "• Inventory — stock and product records (Inventory area)\n"
+            "• AI Lead Finder — prospects and lead statuses (/ai-leads)\n"
+            "• Company Profile — company details (/company-setup)\n"
+            "• Help & Support — support requests (/help-support)\n"
+            "• Settings — available preferences (/settings)\n\n"
+            "Ask me to find a specific invoice, customer, lead, inventory item, expense, investment, or recurring payment."
+        )
+    # Ordinary questions about money or records should reach the live data engine.
+    documentation_cues = (
+        "page", "feature", "section", "tab", "where", "how do i",
+        "how to", "what is the", "what does the", "explain the",
+        "tell me about the", "help me use", "open the"
+    )
+    if not any(cue in q for cue in documentation_cues):
+        return None
+    for key in sorted(OTIS_APP_KNOWLEDGE, key=len, reverse=True):
+        if key in q:
+            title, path, description = OTIS_APP_KNOWLEDGE[key]
+            return f"{title}\n\n{description}\n\nOpen this area: {path}\n\nYou can also ask: 'Find {key} [name or number]'."
+    return None
+
+def _otis_is_record_search(message):
+    q = _otis_norm(message)
+    # Page/navigation questions belong to the documentation helper, not database search.
+    if any(word in q for word in (" page", " feature", " section", " tab", "navigate", "menu")):
+        return False
+    return any(v in q for v in (
+        "find ", "search ", "look for ", "look up ", "locate ",
+        "show me the record for ", "where is my "
+    ))
+
+def _otis_search_records(user_id, message):
+    """Search the signed-in user's saved records; all SQL uses parameters."""
+    q = _otis_norm(message)
+    for phrase in (
+        "please", "can you", "could you", "find", "search", "look for",
+        "look up", "locate", "show me", "the record for", "where is",
+        "my", "the", "invoice", "invoices", "customer", "customers",
+        "client", "clients", "lead", "leads", "prospect", "prospects",
+        "inventory", "stock", "item", "items", "expense", "expenses",
+        "investment", "investments", "recurring payment", "recurring payments",
+        "payment", "payments", "for", "named", "called", "number"
+    ):
+        q = re.sub(r"\b" + re.escape(phrase) + r"\b", " ", q)
+    q = re.sub(r"\s+", " ", q).strip(" .?!")
+    if not q:
+        return "What should I look for? Include a name, invoice number, company, email, item name, or SKU. Example: 'Find invoice INV-1004'."
+
+    term = f"%{q}%"
+    specs = [
+        ("Invoice", """SELECT invoice_number AS name, CONCAT(COALESCE(customer_name,''),' ',COALESCE(customer_email,''),' ',COALESCE(item_name,'')) AS detail, status, amount, invoice_date AS record_date FROM invoices WHERE user_id=%s AND (invoice_number LIKE %s OR customer_name LIKE %s OR customer_email LIKE %s OR item_name LIKE %s OR status LIKE %s) ORDER BY invoice_date DESC LIMIT 5""", 5),
+        ("Customer", """SELECT name, CONCAT(COALESCE(email,''),' ',COALESCE(phone,''),' ',COALESCE(company_name,''),' ',COALESCE(city,''),' ',COALESCE(country,'')) AS detail, status, total_spent AS amount, created_at AS record_date FROM customers WHERE user_id=%s AND (name LIKE %s OR email LIKE %s OR phone LIKE %s OR company_name LIKE %s OR city LIKE %s OR country LIKE %s) ORDER BY id DESC LIMIT 5""", 6),
+        ("Lead", """SELECT company_name AS name, CONCAT(COALESCE(contact_person,''),' ',COALESCE(email,''),' ',COALESCE(phone,''),' ',COALESCE(location,''),' ',COALESCE(industry,'')) AS detail, lead_status AS status, lead_score AS amount, NULL AS record_date FROM leads WHERE user_id=%s AND (company_name LIKE %s OR contact_person LIKE %s OR email LIKE %s OR phone LIKE %s OR location LIKE %s OR industry LIKE %s) ORDER BY id DESC LIMIT 5""", 6),
+        ("Inventory item", """SELECT item_name AS name, CONCAT(COALESCE(sku,''),' ',COALESCE(category,''),' ',COALESCE(supplier,''),' ',COALESCE(description,'')) AS detail, status, quantity AS amount, NULL AS record_date FROM inventory WHERE user_id=%s AND (item_name LIKE %s OR sku LIKE %s OR category LIKE %s OR supplier LIKE %s OR description LIKE %s) ORDER BY id DESC LIMIT 5""", 5),
+        ("Expense", """SELECT expense_name AS name, CONCAT(COALESCE(category,''),' ',COALESCE(description,'')) AS detail, payment_method AS status, amount, expense_date AS record_date FROM expenses WHERE user_id=%s AND (expense_name LIKE %s OR category LIKE %s OR description LIKE %s) ORDER BY expense_date DESC LIMIT 5""", 3),
+        ("Investment", """SELECT investment_name AS name, CONCAT(COALESCE(category,''),' ',COALESCE(description,'')) AS detail, status, amount, investment_date AS record_date FROM investments WHERE user_id=%s AND (investment_name LIKE %s OR category LIKE %s OR description LIKE %s) ORDER BY investment_date DESC LIMIT 5""", 3),
+        ("Recurring payment", """SELECT payment_name AS name, CONCAT(COALESCE(category,''),' ',COALESCE(frequency,''),' ',COALESCE(description,'')) AS detail, status, amount, next_payment_date AS record_date FROM recurring_payments WHERE user_id=%s AND (payment_name LIKE %s OR category LIKE %s OR frequency LIKE %s OR description LIKE %s) ORDER BY next_payment_date ASC LIMIT 5""", 4),
+    ]
+    db = cursor = None
+    results = []
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        for label, sql, field_count in specs:
+            cursor.execute(sql, tuple([user_id] + [term] * field_count))
+            for row in cursor.fetchall() or []:
+                results.append((label, row))
+                if len(results) >= 12:
+                    break
+            if len(results) >= 12:
+                break
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    if not results:
+        return f"I couldn't find a saved record matching '{q}'. Try a shorter name, invoice number, email, company name, or SKU. I only search records already saved in your account."
+    output = [f"Saved records matching '{q}':"]
+    for label, row in results:
+        detail = str(row.get("detail") or "").strip()
+        status = str(row.get("status") or "").strip()
+        amount = row.get("amount")
+        dt = row.get("record_date")
+        extra = f", status: {status}" if status else ""
+        if amount is not None and label in {"Invoice", "Expense", "Investment", "Recurring payment"}:
+            try:
+                extra += f", amount: {float(amount):,.2f}"
+            except (TypeError, ValueError):
+                pass
+        if dt:
+            extra += f", date: {dt}"
+        if detail:
+            extra += f", details: {detail[:120]}"
+        output.append(f"• {label}: {row.get('name') or 'Unnamed'}{extra}")
+    output.append("\nSearch was limited to records belonging to your signed-in account.")
+    return "\n".join(output)
+
+
+
 @app.route("/api/ai/chat", methods=["POST"])
 def altair_ai_chat():
     if "user_id" not in session:
@@ -3509,6 +2996,14 @@ def altair_ai_chat():
             return jsonify({"success": False, "message": "Please enter a question."}), 400
         if len(message) > 3000:
             return jsonify({"success": False, "message": "Please keep your message under 3,000 characters."}), 400
+
+        if _otis_is_record_search(message):
+            reply = _otis_search_records(user_id, message)
+            return jsonify({"success": True, "reply": reply, "intent": "record_search", "confidence": 100.0})
+
+        knowledge_reply = _otis_knowledge_answer(message)
+        if knowledge_reply:
+            return jsonify({"success": True, "reply": knowledge_reply, "intent": "app_knowledge", "confidence": 100.0})
 
         # Handle simple conversation without requiring a database query.
         understanding = understand_altair_question(message)
@@ -3525,7 +3020,7 @@ def altair_ai_chat():
                 time_greeting = "Good evening"
             return jsonify({
                 "success": True,
-                "reply": f"{time_greeting}! 👋 I'm Altair, your business assistant. I can help you understand business health, revenue, cash flow, expenses, invoices, customers, lead conversion, and practical next steps. What would you like to look at?",
+                "reply": f"{time_greeting}! 👋 I'm Otis, your business advisor. I can help you understand business health, revenue, cash flow, expenses, invoices, customers, lead conversion, and practical next steps. What would you like to look at?",
                 "intent": intent,
                 "confidence": confidence,
             })
@@ -3576,7 +3071,7 @@ def altair_ai_chat():
         return jsonify({"success": False, "message": "Your account does not have an accessible company profile. Please check your company setup."}), 403
     except Exception as exc:
         print("ALTAIR AI CHAT ERROR:", exc)
-        return jsonify({"success": False, "message": "Altair AI could not process your question right now. Please try again; if it continues, share the server error log without passwords or API keys."}), 500
+        return jsonify({"success": False, "message": "Otis could not process your question right now. Please try again; if it continues, share the server error log without passwords or API keys."}), 500
 
 
 
