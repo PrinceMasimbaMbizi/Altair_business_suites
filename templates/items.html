@@ -1234,6 +1234,598 @@
                 padding: 16px 12px;
             }
         }
+
+        /* =========================================================
+           DASHBOARD DESIGN MATCH — INVENTORY & MONEY MANAGEMENT
+           Shared shell, spacing, typography, light cards and controls
+           follow dashboard.html while preserving inventory behavior.
+        ========================================================= */
+
+        :root {
+            --page-bg: #f5f6fa;
+            --surface: #ffffff;
+            --text-main: #171722;
+            --text-muted: #777789;
+            --border-soft: #eeeef3;
+            --accent-purple: #7c3aed;
+            --accent-blue: #4f46e5;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            background: var(--page-bg) !important;
+            color: var(--text-main) !important;
+        }
+
+        body {
+            font-family: "Inter", sans-serif !important;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 250px !important;
+            height: 100vh !important;
+            background: #11111c !important;
+            color: #fff !important;
+            padding: 22px 14px 24px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            border-right: 1px solid rgba(255, 255, 255, .06) !important;
+            border-bottom: 0 !important;
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 2px !important;
+            z-index: 1000 !important;
+        }
+
+        .company-brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 11px !important;
+            min-height: 54px !important;
+            margin: 0 0 20px !important;
+            padding: 4px 7px 16px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .09) !important;
+        }
+
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            border-radius: 12px !important;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .company-logo-image {
+            display: block;
+            background: #242435;
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
+        }
+
+        .company-logo-placeholder {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: linear-gradient(135deg, #00f0ff, #ff00d4) !important;
+            color: #fff !important;
+            font-size: 18px !important;
+            font-weight: 800 !important;
+        }
+
+        .company-brand-name {
+            color: #fff !important;
+            flex: 1;
+            min-width: 0;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            line-height: 1.45;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+        }
+
+        .menu-title {
+            color: #77778a !important;
+            margin: 20px 10px 8px !important;
+            font-size: 10px !important;
+            font-weight: 800 !important;
+            letter-spacing: 1.25px !important;
+            line-height: 1.4;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+            min-height: 43px !important;
+            gap: 12px !important;
+            margin: 0 0 3px !important;
+            padding: 10px 12px !important;
+            border: 1px solid transparent !important;
+            border-left: 3px solid transparent !important;
+            border-radius: 10px !important;
+            background: transparent;
+            color: #aaaabb !important;
+            text-decoration: none !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            line-height: 1.35;
+            white-space: normal !important;
+            transition: .2s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06) !important;
+            border-color: rgba(255, 255, 255, .05) !important;
+            color: #fff !important;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16)) !important;
+            border: 1px solid rgba(0, 240, 255, .16) !important;
+            border-left: 3px solid #00f0ff !important;
+            color: #fff !important;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035);
+        }
+
+        .nav-icon {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 22px !important;
+            min-width: 22px !important;
+            font-size: 16px !important;
+            line-height: 1;
+        }
+
+        .nav-item>span:last-child,
+        .logout-link>span:last-child {
+            min-width: 0;
+        }
+
+        .logout-link {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 42px !important;
+            margin: 18px 0 0 !important;
+            padding: 10px 12px !important;
+            border-radius: 10px !important;
+            color: #fda4af !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+        }
+
+        .logout-link:hover {
+            background: rgba(244, 63, 94, .1) !important;
+            color: #fff !important;
+        }
+
+        .main {
+            margin-left: 250px !important;
+            width: calc(100% - 250px) !important;
+            min-width: 0 !important;
+            min-height: 100vh !important;
+            height: 100vh;
+            padding: 28px 35px !important;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #f5f6fa !important;
+            color: #171722 !important;
+        }
+
+        .topbar {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 20px !important;
+            flex-wrap: wrap;
+            margin-bottom: 30px !important;
+        }
+
+        .title-area {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .page-title {
+            color: #171722 !important;
+            font-size: 25px !important;
+            font-weight: 800 !important;
+            line-height: 1.25;
+            letter-spacing: -.5px;
+            margin-bottom: 5px !important;
+        }
+
+        .page-subtitle {
+            color: #777789 !important;
+            font-size: 13px !important;
+            line-height: 1.6;
+        }
+
+        .company-area {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            max-width: 320px;
+            padding: 6px 12px 6px 6px;
+            border-radius: 12px;
+            background: #fff !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+            flex-shrink: 0;
+        }
+
+        .company-area .company-logo,
+        .company-area .company-logo-placeholder {
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            min-height: 38px !important;
+            border-radius: 10px !important;
+        }
+
+        .company-name {
+            color: #171722 !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+
+        .user-name {
+            color: #888 !important;
+            font-size: 10px !important;
+        }
+
+        .flash {
+            background: #fff !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 12px !important;
+            padding: 13px 17px !important;
+            color: #171722 !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .03);
+        }
+
+        .flash.success {
+            border-color: #86efac !important;
+            color: #15803d !important;
+        }
+
+        .flash.error {
+            border-color: #fca5a5 !important;
+            color: #b91c1c !important;
+        }
+
+        .flash.warning {
+            border-color: #fcd34d !important;
+            color: #b45309 !important;
+        }
+
+        .inventory-tabs {
+            background: #fff !important;
+            border: 1px solid #eeeef3 !important;
+            border-radius: 14px !important;
+            padding: 7px !important;
+            gap: 7px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .035);
+        }
+
+        .inventory-tab {
+            color: #777789 !important;
+            border: 1px solid transparent !important;
+            border-radius: 9px !important;
+            font-family: "Inter", sans-serif !important;
+        }
+
+        .inventory-tab:hover {
+            background: #f5f3ff !important;
+            color: #4f46e5 !important;
+        }
+
+        .inventory-tab.active {
+            background: linear-gradient(135deg, #f0ebff, #eefaff) !important;
+            color: #5b21b6 !important;
+            border: 1px solid #ddd6fe !important;
+        }
+
+        .stat-card,
+        .money-card,
+        .recurring-card,
+        .table-container {
+            background: #fff !important;
+            border: 1px solid #eeeef3 !important;
+            border-radius: 16px !important;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .04) !important;
+        }
+
+        .stat-card,
+        .money-card,
+        .recurring-card {
+            padding: 20px !important;
+        }
+
+        .stat-card:hover,
+        .money-card:hover,
+        .recurring-card:hover {
+            border-color: #ddd6fe !important;
+            transform: translateY(-2px);
+        }
+
+        .stat-label,
+        .money-card-label,
+        .section-description,
+        .detail-label {
+            color: #777789 !important;
+        }
+
+        .stat-value,
+        .money-card-value,
+        .section-heading,
+        .recurring-name,
+        .detail-value {
+            color: #171722 !important;
+        }
+
+        .section-heading {
+            font-size: 20px !important;
+            font-weight: 700;
+        }
+
+        .table-container {
+            overflow-x: auto !important;
+        }
+
+        table {
+            background: #fff !important;
+        }
+
+        th {
+            background: #fafaff !important;
+            color: #777789 !important;
+            border-bottom: 1px solid #eeeef3 !important;
+        }
+
+        td {
+            color: #444455 !important;
+            border-bottom: 1px solid #f0f0f5 !important;
+        }
+
+        tbody tr:hover {
+            background: #faf9ff !important;
+        }
+
+        .item-name {
+            color: #171722 !important;
+        }
+
+        .sku {
+            color: #88889a !important;
+        }
+
+        .search-box input,
+        input,
+        select,
+        textarea {
+            background: #fff !important;
+            color: #171722 !important;
+            border: 1px solid #e1e1eb !important;
+            border-radius: 10px !important;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9999aa !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, .08) !important;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+            color: #fff !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, .12);
+        }
+
+        .btn-secondary,
+        .cancel-btn {
+            background: #f3f4f6 !important;
+            border: 1px solid #e5e7eb !important;
+            color: #444455 !important;
+        }
+
+        .action-btn {
+            background: #f8f7ff !important;
+            border: 1px solid #e5e1f5 !important;
+            color: #5b21b6 !important;
+        }
+
+        .action-btn:hover {
+            background: #f0ebff !important;
+            border-color: #8b5cf6 !important;
+            color: #4c1d95 !important;
+        }
+
+        .delete-btn:hover {
+            border-color: #ef4444 !important;
+            color: #dc2626 !important;
+            background: #fff1f2 !important;
+        }
+
+        .empty {
+            color: #777789 !important;
+        }
+
+        .empty-title {
+            color: #171722 !important;
+        }
+
+        .modal-content {
+            background: #fff !important;
+            color: #171722 !important;
+            border: 1px solid #e5e7eb !important;
+            box-shadow: 0 25px 80px rgba(17, 17, 28, .2) !important;
+        }
+
+        .modal-header h2 {
+            color: #171722 !important;
+        }
+
+        .modal-header p,
+        label {
+            color: #777789 !important;
+        }
+
+        .close {
+            color: #777789 !important;
+        }
+
+        .close:hover {
+            color: #171722 !important;
+        }
+
+        .info-box {
+            background: #f0faff !important;
+            border-color: #c9f4fa !important;
+            color: #5c6475 !important;
+        }
+
+        .info-box strong {
+            color: #4f46e5 !important;
+        }
+
+        @media (max-width: 700px) {
+            .sidebar {
+                width: 72px !important;
+                padding: 18px 8px !important;
+                align-items: stretch !important;
+            }
+
+            .company-brand {
+                justify-content: center !important;
+                padding: 0 0 16px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .company-brand-name,
+            .nav-item>span:last-child,
+            .menu-title,
+            .logout-link>span:last-child {
+                display: none !important;
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+            }
+
+            .nav-item,
+            .logout-link {
+                justify-content: center !important;
+                gap: 0 !important;
+                padding: 11px 6px !important;
+                min-height: 42px !important;
+                border-left-width: 1px !important;
+            }
+
+            .nav-icon {
+                width: 24px !important;
+                min-width: 24px !important;
+                font-size: 17px !important;
+            }
+
+            .main {
+                margin-left: 72px !important;
+                width: calc(100% - 72px) !important;
+                padding: 22px 16px !important;
+            }
+
+            .topbar {
+                align-items: flex-start !important;
+                gap: 12px !important;
+            }
+
+            .company-area {
+                max-width: 100%;
+            }
+
+            .stats,
+            .money-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            .inventory-tabs {
+                flex-direction: column !important;
+            }
+
+            .inventory-tab {
+                width: 100% !important;
+                text-align: left !important;
+            }
+
+            .toolbar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .search-box,
+            .toolbar .btn,
+            .section-header .btn {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .main {
+                padding: 16px 12px !important;
+            }
+
+            .page-title {
+                font-size: 19px !important;
+            }
+
+            .page-subtitle {
+                font-size: 11px !important;
+            }
+
+            .stats,
+            .money-stats {
+                grid-template-columns: 1fr !important;
+            }
+
+            .company-area {
+                padding: 5px;
+            }
+
+            .company-area>div:last-child {
+                min-width: 0;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+
+            .modal-footer button {
+                width: 100%;
+            }
+        }
     </style>
 
 </head>
@@ -1720,7 +2312,8 @@
 
                                 <div class="actions">
 
-                                    <button type="button" class="action-btn" onclick='openEditModal({{ item|tojson }})'>
+                                    <button type="button" class="action-btn edit-item-btn"
+                                        data-item='{{ item|tojson|forceescape }}'>
                                         Edit
                                     </button>
 
@@ -4108,6 +4701,20 @@
             openModal("editModal");
 
         }
+
+        // Safely read the item JSON from the button's data attribute.
+        document.addEventListener("click", function (event) {
+            const button = event.target.closest(".edit-item-btn");
+            if (!button) return;
+
+            try {
+                const item = JSON.parse(button.dataset.item || "{}");
+                openEditModal(item);
+            } catch (error) {
+                console.error("Could not read inventory item:", error);
+                alert("This item could not be opened for editing. Please refresh the page and try again.");
+            }
+        });
 
 
         function closeEditModal() {

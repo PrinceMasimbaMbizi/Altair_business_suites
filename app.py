@@ -5028,7 +5028,7 @@ def view_invoice(invoice_id):
         
 
         return render_template(
-            "view_invoice.html",
+            "invoice_view.html",
 
             invoice=invoice_data,
 
