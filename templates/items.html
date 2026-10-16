@@ -1839,18 +1839,22 @@
  -->
 
     <aside class="sidebar">
+
         <div class="company-brand">
-            {% if company and company.logo %}
-            <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="company-logo-placeholder" style="display:none;">
-                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+            <div class="company-logo-wrapper">
+                {% if company and company.logo %}
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company.company_name else 'A' }}
+                </div>
+                {% else %}
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="company-logo-placeholder">
-                {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
-            </div>
-            {% endif %}
+
             <div class="company-brand-name">
                 {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
             </div>
