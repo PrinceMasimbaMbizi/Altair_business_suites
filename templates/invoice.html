@@ -2057,7 +2057,6 @@
                                 <th style="padding:12px 10px;">Date</th>
                                 <th style="padding:12px 10px;">Valid Until</th>
                                 <th style="padding:12px 10px;">Total</th>
-                                <th style="padding:12px 10px;">Status</th>
                                 <th style="padding:12px 10px;">Actions</th>
                             </tr>
                         </thead>
@@ -2076,16 +2075,6 @@
                                 <td style="padding:14px 10px;">{{ quote.valid_until or '—' }}</td>
                                 <td style="padding:14px 10px;font-weight:700;">{{ quote.total|money }}</td>
                                 <td style="padding:14px 10px;">
-                                    <form method="POST"
-                                        action="{{ url_for('update_quotation_status', quotation_id=quote.id) }}"
-                                        style="display:flex;align-items:center;gap:6px;">
-                                        <select name="status" aria-label="Quotation status"
-                                            style="max-width:130px;padding:8px;border:1px solid rgba(120,120,150,.3);border-radius:8px;">
-                                            {% for option in ['Draft', 'Sent', 'Accepted', 'Rejected', 'Expired'] %}
-                                            <option value="{{ option }}" {% if quote.status==option %}selected{% endif
-                                                %}>{{ option }}</option>
-                                            {% endfor %}
-                                        </select>
 
                                 </td>
                                 <td style="padding:14px 10px;min-width:290px;">
