@@ -2090,6 +2090,36 @@
                                             style="padding:8px 10px;">Save</button>
                                     </form>
                                 </td>
+                                <td style="padding:14px 10px;min-width:290px;">
+                                    <div class="actions"
+                                        style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                        <a class="action" href="/quotations/{{ quote.id }}"
+                                            title="View this quotation">👁 View</a>
+
+                                        <a class="action" href="/quotations/{{ quote.id }}/download"
+                                            title="Download this quotation as PDF">⬇ Download</a>
+
+                                        <button type="button" class="action" onclick="shareQuotationWhatsApp(this)"
+                                            data-number="{{ quote.quotation_number|default('', true)|e }}"
+                                            data-customer="{{ quote.customer_name|default('', true)|e }}"
+                                            data-total="{{ quote.total|default(0, true)|e }}"
+                                            data-valid="{{ quote.valid_until|default('', true)|e }}"
+                                            data-phone="{{ quote.customer_phone|default('', true)|e }}"
+                                            data-url="{{ request.host_url.rstrip('/') }}/quotations/{{ quote.id }}">
+                                            🟢 WhatsApp
+                                        </button>
+
+                                        <button type="button" class="action" onclick="shareQuotationEmail(this)"
+                                            data-number="{{ quote.quotation_number|default('', true)|e }}"
+                                            data-customer="{{ quote.customer_name|default('', true)|e }}"
+                                            data-total="{{ quote.total|default(0, true)|e }}"
+                                            data-valid="{{ quote.valid_until|default('', true)|e }}"
+                                            data-email="{{ quote.customer_email|default('', true)|e }}"
+                                            data-url="{{ request.host_url.rstrip('/') }}/quotations/{{ quote.id }}">
+                                            ✉ Email
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -3271,6 +3301,37 @@
 
         }
 
+
+        function shareQuotationWhatsApp(button) {
+            const d = button.dataset;
+            const message =
+                `Hello ${d.customer || "there"},\\n\\n` +
+                `Please find quotation ${d.number || ""} from our business.\\n` +
+                `Total: R${d.total || "0.00"}\\n` +
+                (d.valid ? `Valid until: ${d.valid}\\n` : "") +
+                `\\nView quotation: ${d.url}\\n\\nThank you.`;
+            const phone = (d.phone || "").replace(/[^0-9]/g, "");
+            const whatsappUrl = phone
+                ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+                : `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        }
+
+        function shareQuotationEmail(button) {
+            const d = button.dataset;
+            const subject = `Quotation ${d.number || ""}`;
+            const body =
+                `Hello ${d.customer || "there"},\\n\\n` +
+                `Please find the details for quotation ${d.number || ""}.\\n` +
+                `Total: R${d.total || "0.00"}\\n` +
+                (d.valid ? `Valid until: ${d.valid}\\n` : "") +
+                `\\nView quotation: ${d.url}\\n\\nThank you.`;
+            const emailUrl =
+                `mailto:${encodeURIComponent(d.email || "")}` +
+                `?subject=${encodeURIComponent(subject)}` +
+                `&body=${encodeURIComponent(body)}`;
+            window.location.href = emailUrl;
+        }
 
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") closeQuotationModal();
