@@ -5145,8 +5145,10 @@ def create_quotation():
                 terms or None, notes or None
             )
         )
+        quotation_id = cursor.lastrowid
         db.commit()
         flash(f"Quotation {quotation_number} created successfully.", "success")
+        return redirect(url_for("view_quotation", quotation_id=quotation_id))
 
     except mysql.connector.IntegrityError:
         if db:
@@ -5165,6 +5167,51 @@ def create_quotation():
             db.close()
 
     return redirect(url_for("invoice"))
+
+
+@app.route("/quotations/<int:quotation_id>", methods=["GET"])
+def view_quotation(quotation_id):
+    """Display one quotation belonging to the currently authenticated user."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT * FROM companies WHERE user_id = %s LIMIT 1",
+            (session["user_id"],)
+        )
+        company = cursor.fetchone()
+
+        cursor.execute(
+            "SELECT * FROM quotations WHERE id = %s AND user_id = %s LIMIT 1",
+            (quotation_id, session["user_id"])
+        )
+        quotation = cursor.fetchone()
+
+        if not quotation:
+            flash("Quotation not found in your account.", "error")
+            return redirect(url_for("invoice"))
+
+        return render_template(
+            "view_quotation.html",
+            company=company,
+            quotation=quotation,
+            user_name=session.get("user_name", "User")
+        )
+    except Exception:
+        app.logger.exception("VIEW QUOTATION ERROR")
+        flash("Could not open this quotation. Please try again.", "error")
+        return redirect(url_for("invoice"))
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 
 @app.route("/quotations/<int:quotation_id>/status", methods=["POST"])

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ quotation.quotation_number }} | Altair Business Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: #f5f6fa;
+      color: #171722;
+      font-family: Inter, sans-serif;
+      padding: 28px
+    }
+
+    .page {
+      max-width: 1000px;
+      margin: 0 auto
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font: 700 12px Inter, sans-serif;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .primary {
+      color: #fff;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5)
+    }
+
+    .secondary {
+      background: #fff;
+      border: 1px solid #e2e2e9;
+      color: #555566
+    }
+
+    .paper {
+      background: #fff;
+      border-radius: 18px;
+      padding: clamp(22px, 5vw, 52px);
+      box-shadow: 0 8px 28px rgba(20, 20, 40, .06)
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      border-bottom: 1px solid #ececf3;
+      padding-bottom: 28px;
+      margin-bottom: 28px
+    }
+
+    .brand {
+      display: flex;
+      gap: 13px;
+      align-items: center
+    }
+
+    .brand img,
+    .placeholder {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 13px
+    }
+
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      font-weight: 800;
+      font-size: 22px
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      margin: 0 0 5px
+    }
+
+    .brand p,
+    .small {
+      color: #777789;
+      font-size: 12px;
+      line-height: 1.7;
+      margin: 0;
+      overflow-wrap: anywhere
+    }
+
+    .quote-title {
+      text-align: right
+    }
+
+    .quote-title h2 {
+      font-size: 28px;
+      margin: 0 0 8px
+    }
+
+    .quote-number {
+      color: #6d4be8;
+      font-weight: 800;
+      font-size: 13px
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 30px
+    }
+
+    .detail h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #888899;
+      margin: 0 0 12px
+    }
+
+    .detail strong {
+      font-size: 14px;
+      display: block;
+      margin-bottom: 5px
+    }
+
+    .detail p {
+      font-size: 12px;
+      color: #656579;
+      line-height: 1.8;
+      margin: 0;
+      overflow-wrap: anywhere
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 0 28px
+    }
+
+    .pill {
+      padding: 8px 11px;
+      border-radius: 9px;
+      background: #f5f3ff;
+      color: #5b36c9;
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    .line-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px
+    }
+
+    .line-table th {
+      text-align: left;
+      background: #f8f8fc;
+      color: #777789;
+      font-size: 10px;
+      padding: 14px 12px
+    }
+
+    .line-table td {
+      padding: 17px 12px;
+      border-bottom: 1px solid #eeeef4;
+      font-size: 12px;
+      vertical-align: top
+    }
+
+    .right {
+      text-align: right;
+      white-space: nowrap
+    }
+
+    .totals {
+      width: min(100%, 360px);
+      margin-left: auto
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 8px 0;
+      color: #656579;
+      font-size: 12px
+    }
+
+    .total-row.final {
+      border-top: 1px solid #e7e7ef;
+      margin-top: 8px;
+      padding-top: 16px;
+      color: #171722;
+      font-weight: 800;
+      font-size: 18px
+    }
+
+    .notes {
+      margin-top: 30px;
+      padding-top: 22px;
+      border-top: 1px solid #ececf3
+    }
+
+    .notes h3 {
+      font-size: 12px;
+      margin: 0 0 8px
+    }
+
+    .notes p {
+      white-space: pre-wrap;
+      font-size: 12px;
+      color: #656579;
+      line-height: 1.8;
+      margin: 0 0 18px;
+      overflow-wrap: anywhere
+    }
+
+    .footer {
+      text-align: center;
+      color: #9999a7;
+      font-size: 10px;
+      margin-top: 35px
+    }
+
+    @media(max-width:650px) {
+      body {
+        padding: 12px
+      }
+
+      .header {
+        flex-direction: column
+      }
+
+      .quote-title {
+        text-align: left
+      }
+
+      .details {
+        grid-template-columns: 1fr;
+        gap: 20px
+      }
+
+      .paper {
+        padding: 20px
+      }
+
+      .line-table {
+        min-width: 600px
+      }
+
+      .table-scroll {
+        overflow-x: auto
+      }
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: #fff
+      }
+
+      .actions {
+        display: none
+      }
+
+      .paper {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0
+      }
+
+      .page {
+        max-width: none
+      }
+
+      .footer {
+        margin-top: 24px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="actions">
+      <a href="{{ url_for('invoice') }}" class="btn secondary">← Back to Invoices &amp; Quotations</a>
+      <button type="button" class="btn primary" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <article class="paper">
+      <header class="header">
+        <div class="brand">
+          {% if company and company.logo %}
+          <img src="{{ url_for('company_logo') }}" alt="Company logo"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="placeholder" style="display:none">{{ company.company_name[0]|upper if company.company_name else
+            'A' }}</div>
+          {% else %}
+          <div class="placeholder">{{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+          </div>
+          {% endif %}
+          <div>
+            <h1>{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}</h1>
+            {% if company %}
+            <p>{% if company.address %}{{ company.address }}{% endif %}{% if company.city %}{% if company.address %}, {%
+              endif %}{{ company.city }}{% endif %}{% if company.country %}{% if company.address or company.city %}, {%
+              endif %}{{ company.country }}{% endif %}</p>
+            {% if company.email %}<p>{{ company.email }}</p>{% endif %}
+            {% if company.phone %}<p>{{ company.phone }}</p>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+        <div class="quote-title">
+          <h2>QUOTATION</h2>
+          <div class="quote-number">{{ quotation.quotation_number }}</div>
+          <p class="small" style="margin-top:8px">Status: {{ quotation.status }}</p>
+        </div>
+      </header>
+
+      <section class="details">
+        <div class="detail">
+          <h3>Prepared For</h3>
+          <strong>{{ quotation.customer_name }}</strong>
+          {% if quotation.customer_email %}<p>{{ quotation.customer_email }}</p>{% endif %}
+          {% if quotation.customer_phone %}<p>{{ quotation.customer_phone }}</p>{% endif %}
+        </div>
+        <div class="detail">
+          <h3>Quotation Details</h3>
+          <p><strong style="display:inline;font-size:12px">Quotation Date:</strong> {{
+            quotation.quotation_date.strftime('%d %b %Y') if quotation.quotation_date else '—' }}</p>
+          <p><strong style="display:inline;font-size:12px">Valid Until:</strong> {{ quotation.valid_until.strftime('%d
+            %b %Y') if quotation.valid_until else '—' }}</p>
+        </div>
+      </section>
+
+      <div class="meta">
+        <span class="pill">Price estimate</span>
+        <span class="pill">Currency: ZAR (R)</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="line-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="right">Quantity</th>
+              <th class="right">Unit Price</th>
+              <th class="right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ quotation.description }}</td>
+              <td class="right">{{ quotation.quantity }}</td>
+              <td class="right">R{{ '%.2f'|format(quotation.unit_price|float) }}</td>
+              <td class="right">R{{ '%.2f'|format(quotation.subtotal|float) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <section class="totals">
+        <div class="total-row"><span>Subtotal</span><strong>R{{ '%.2f'|format(quotation.subtotal|float) }}</strong>
+        </div>
+        <div class="total-row"><span>Discount ({{ quotation.discount_percent }}%)</span><strong>− R{{
+            '%.2f'|format(quotation.discount_amount|float) }}</strong></div>
+        <div class="total-row"><span>Tax ({{ quotation.tax_percent }}%)</span><strong>R{{
+            '%.2f'|format(quotation.tax_amount|float) }}</strong></div>
+        <div class="total-row final"><span>Total</span><strong>R{{ '%.2f'|format(quotation.total|float) }}</strong>
+        </div>
+      </section>
+
+      {% if quotation.terms or quotation.notes %}
+      <section class="notes">
+        {% if quotation.terms %}<h3>Terms &amp; Conditions</h3>
+        <p>{{ quotation.terms }}</p>{% endif %}
+        {% if quotation.notes %}<h3>Notes</h3>
+        <p>{{ quotation.notes }}</p>{% endif %}
+      </section>
+      {% endif %}
+      <div class="footer">This quotation is an estimate of the proposed products or services and is subject to the terms
+        stated above.</div>
+    </article>
+  </main>
+</body>
+
+</html>
