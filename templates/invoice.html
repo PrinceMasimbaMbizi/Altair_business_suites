@@ -1776,30 +1776,6 @@
             }
 
         }
-
-        .quotation-list .quotation-row-actions .action {
-            transition: transform .18s ease, box-shadow .18s ease;
-        }
-
-        .quotation-list .quotation-row-actions .action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 12px rgba(35, 25, 70, .08);
-        }
-
-        .quotation-list tbody tr:hover {
-            background: #fbfaff;
-        }
-
-        @media (max-width: 700px) {
-            .quotation-list {
-                padding: 17px !important;
-                border-radius: 16px !important;
-            }
-
-            .quotation-list>div:first-child {
-                align-items: flex-start !important;
-            }
-        }
     </style>
 
 </head>
@@ -2059,17 +2035,13 @@
             </section>
 
             <section class="quotation-list"
-                style="margin:24px 0 30px;padding:26px;border:1px solid #e9e5f7;border-radius:22px;background:linear-gradient(145deg,#ffffff 0%,#fcfbff 100%);box-shadow:0 14px 38px rgba(38,24,76,.07);">
+                style="margin:24px 0 30px;padding:24px;border:1px solid rgba(124,58,237,.22);border-radius:18px;background:var(--card-bg, #fff);box-shadow:0 10px 30px rgba(20,20,40,.05);">
                 <div
                     style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
                     <div>
-                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
-                            <span
-                                style="width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#ede9fe,#e0f2fe);font-size:21px;">📄</span>
-                            <h2 style="margin:0;font-size:21px;letter-spacing:-.5px;">Quotations</h2>
-                        </div>
-                        <p style="margin:0;color:#85839a;font-size:13px;line-height:1.6;">Track estimates, update
-                            status, and share professional quotations with customers.</p>
+                        <h2 style="margin:0 0 6px;font-size:20px;">Quotations</h2>
+                        <p style="margin:0;color:var(--muted, #7b8194);font-size:13px;">Your saved customer estimates
+                            and their current status.</p>
                     </div>
                     <button type="button" class="btn btn-quotation" onclick="openQuotationModal()">+ Create
                         Quotation</button>
@@ -2077,67 +2049,74 @@
 
                 {% if quotations %}
                 <div style="width:100%;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:900px;">
+                    <table style="width:100%;border-collapse:collapse;min-width:760px;">
                         <thead>
-                            <tr style="text-align:left;background:#f7f6fc;">
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Quotation</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Customer</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Date</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Valid Until</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Total</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Status</th>
-                                <th
-                                    style="padding:15px 13px;color:#77738e;font-size:10px;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #ebe8f4;">
-                                    Actions</th>
+                            <tr style="text-align:left;border-bottom:1px solid rgba(120,120,150,.18);">
+                                <th style="padding:12px 10px;">Quotation</th>
+                                <th style="padding:12px 10px;">Customer</th>
+                                <th style="padding:12px 10px;">Date</th>
+                                <th style="padding:12px 10px;">Valid Until</th>
+                                <th style="padding:12px 10px;">Total</th>
+                                <th style="padding:12px 10px;">Status</th>
+                                <th style="padding:12px 10px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for quote in quotations %}
-                            <tr style="border-bottom:1px solid #efedf5;transition:background .18s;">
-                                <td
-                                    style="padding:17px 13px;font-weight:800;color:#5b3cc4;border-bottom:1px solid #f0eef6;white-space:nowrap;">
-                                    {{ quote.quotation_number }}<br><small
-                                        style="display:inline-block;margin-top:6px;padding:4px 7px;border-radius:6px;background:#f1edff;color:#7254c8;font-size:9px;font-weight:700;">PRICE
-                                        ESTIMATE</small></td>
-                                <td style="padding:17px 13px;border-bottom:1px solid #f0eef6;">
+                            <tr style="border-bottom:1px solid rgba(120,120,150,.12);">
+                                <td style="padding:14px 10px;font-weight:700;">{{ quote.quotation_number }}</td>
+                                <td style="padding:14px 10px;">
                                     <strong>{{ quote.customer_name }}</strong>
                                     {% if quote.customer_email %}<br><small style="color:var(--muted, #7b8194);">{{
                                         quote.customer_email }}</small>{% endif %}
                                     {% if quote.description %}<br><small style="color:var(--muted, #7b8194);">{{
                                         quote.description }}</small>{% endif %}
                                 </td>
-                                <td style="padding:17px 13px;border-bottom:1px solid #f0eef6;">{{ quote.quotation_date
-                                    }}</td>
-                                <td style="padding:17px 13px;border-bottom:1px solid #f0eef6;">{{ quote.valid_until or
-                                    '—' }}</td>
-                                <td
-                                    style="padding:17px 13px;font-weight:800;color:#242038;border-bottom:1px solid #f0eef6;white-space:nowrap;font-size:13px;">
-                                    {{ quote.total|money }}</td>
-                                <td style="padding:17px 13px;border-bottom:1px solid #f0eef6;">
+                                <td style="padding:14px 10px;">{{ quote.quotation_date }}</td>
+                                <td style="padding:14px 10px;">{{ quote.valid_until or '—' }}</td>
+                                <td style="padding:14px 10px;font-weight:700;">{{ quote.total|money }}</td>
+                                <td style="padding:14px 10px;">
                                     <form method="POST"
                                         action="{{ url_for('update_quotation_status', quotation_id=quote.id) }}"
                                         style="display:flex;align-items:center;gap:6px;">
                                         <select name="status" aria-label="Quotation status"
-                                            onchange="this.form.submit()"
-                                            style="max-width:130px;padding:9px 11px;border:1px solid #e4e1f0;border-radius:10px;background:#faf9ff;color:#51466f;font:600 12px Inter,sans-serif;outline:none;cursor:pointer;">
+                                            style="max-width:130px;padding:8px;border:1px solid rgba(120,120,150,.3);border-radius:8px;">
                                             {% for option in ['Draft', 'Sent', 'Accepted', 'Rejected', 'Expired'] %}
                                             <option value="{{ option }}" {% if quote.status==option %}selected{% endif
                                                 %}>{{ option }}</option>
                                             {% endfor %}
                                         </select>
-                                    </form>
+
+                                </td>
+                                <td style="padding:14px 10px;min-width:290px;">
+                                    <div class="actions"
+                                        style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                        <a class="action" href="/quotations/{{ quote.id }}"
+                                            title="View this quotation">👁 View</a>
+
+                                        <a class="action" href="/quotations/{{ quote.id }}/download"
+                                            title="Download this quotation as PDF">⬇ Download</a>
+
+                                        <button type="button" class="action" onclick="shareQuotationWhatsApp(this)"
+                                            data-number="{{ quote.quotation_number|default('', true)|e }}"
+                                            data-customer="{{ quote.customer_name|default('', true)|e }}"
+                                            data-total="{{ quote.total|default(0, true)|e }}"
+                                            data-valid="{{ quote.valid_until|default('', true)|e }}"
+                                            data-phone="{{ quote.customer_phone|default('', true)|e }}"
+                                            data-url="{{ request.host_url.rstrip('/') }}/quotations/{{ quote.id }}">
+                                            🟢 WhatsApp
+                                        </button>
+
+                                        <button type="button" class="action" onclick="shareQuotationEmail(this)"
+                                            data-number="{{ quote.quotation_number|default('', true)|e }}"
+                                            data-customer="{{ quote.customer_name|default('', true)|e }}"
+                                            data-total="{{ quote.total|default(0, true)|e }}"
+                                            data-valid="{{ quote.valid_until|default('', true)|e }}"
+                                            data-email="{{ quote.customer_email|default('', true)|e }}"
+                                            data-url="{{ request.host_url.rstrip('/') }}/quotations/{{ quote.id }}">
+                                            ✉ Email
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -3320,6 +3299,37 @@
 
         }
 
+
+        function shareQuotationWhatsApp(button) {
+            const d = button.dataset;
+            const message =
+                `Hello ${d.customer || "there"},\\n\\n` +
+                `Please find quotation ${d.number || ""} from our business.\\n` +
+                `Total: R${d.total || "0.00"}\\n` +
+                (d.valid ? `Valid until: ${d.valid}\\n` : "") +
+                `\\nView quotation: ${d.url}\\n\\nThank you.`;
+            const phone = (d.phone || "").replace(/[^0-9]/g, "");
+            const whatsappUrl = phone
+                ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+                : `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        }
+
+        function shareQuotationEmail(button) {
+            const d = button.dataset;
+            const subject = `Quotation ${d.number || ""}`;
+            const body =
+                `Hello ${d.customer || "there"},\\n\\n` +
+                `Please find the details for quotation ${d.number || ""}.\\n` +
+                `Total: R${d.total || "0.00"}\\n` +
+                (d.valid ? `Valid until: ${d.valid}\\n` : "") +
+                `\\nView quotation: ${d.url}\\n\\nThank you.`;
+            const emailUrl =
+                `mailto:${encodeURIComponent(d.email || "")}` +
+                `?subject=${encodeURIComponent(subject)}` +
+                `&body=${encodeURIComponent(body)}`;
+            window.location.href = emailUrl;
+        }
 
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") closeQuotationModal();
