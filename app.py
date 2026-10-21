@@ -54,10 +54,8 @@ if not app.secret_key:
     )
 
 
-# ================================================================
+
 # ALTAIR UI: INLINE TOAST NOTIFICATIONS + LOADING INDICATOR
-# All UI assets are embedded here so no additional static files are needed.
-# ================================================================
 ALTAIR_UI_CSS = r"""#altair-toast-container{position:fixed;top:22px;right:22px;z-index:2147483000;display:flex;flex-direction:column;gap:11px;width:min(390px,calc(100vw - 28px));pointer-events:none}
 .altair-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;padding:15px 16px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(17,17,28,.96);color:#f7f8ff;box-shadow:0 18px 55px rgba(0,0,0,.28);backdrop-filter:blur(18px);font:500 14px/1.45 Inter,system-ui,sans-serif;animation:altairToastIn .28s ease both;overflow:hidden}
 .altair-toast::before{content:"";width:4px;align-self:stretch;flex:0 0 4px;border-radius:5px;background:#00f0ff}.altair-toast.success::before{background:#22c55e}.altair-toast.error::before{background:#fb7185}.altair-toast.warning::before{background:#fbbf24}.altair-toast .altair-toast-icon{font-size:19px;line-height:1.2}.altair-toast .altair-toast-message{flex:1;overflow-wrap:anywhere}.altair-toast .altair-toast-close{border:0;background:transparent;color:#aab0c7;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 4px}.altair-toast.hide{animation:altairToastOut .22s ease forwards}
@@ -1348,11 +1346,11 @@ def predict_next_month_revenue(monthly_revenue):
     }
 
 
-# ================================================================
+
 # OTIS | SUPERVISED SKLEARN CHATBOT
 # TF-IDF text features + Logistic Regression intent classifier.
 # No OpenAI API, paid model API, or external LLM is used.
-# ================================================================
+
 
 OTIS_TRAINING_DATA = [
     # Greetings
@@ -2846,9 +2844,9 @@ def altair_response_engine(intent, business_data, analysis):
 
 # ALTAIR AI CHAT API
 
-# ================================================================
+
 # OTIS APPLICATION KNOWLEDGE + SAFE RECORD SEARCH
-# ================================================================
+
 OTIS_APP_KNOWLEDGE = {
     "dashboard": ("Dashboard", "/", "Shows a business overview, performance indicators, forecast information, recent activity, and Otis advice when data is available."),
     "customer": ("Customers", "/customer", "View and manage customer names, emails, phone numbers, company details, addresses, status, notes, and available customer history."),
@@ -4511,6 +4509,51 @@ def invoice():
         company = cursor.fetchone()
 
         
+        # CREATE QUOTATIONS TABLE IF IT DOES NOT EXIST.
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS quotations (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                quotation_number VARCHAR(50) NOT NULL,
+                customer_name VARCHAR(255) NOT NULL,
+                customer_email VARCHAR(254) NULL,
+                customer_phone VARCHAR(50) NULL,
+                description TEXT NOT NULL,
+                quantity DECIMAL(12, 2) NOT NULL DEFAULT 1.00,
+                unit_price DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                discount_percent DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                tax_percent DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                subtotal DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                discount_amount DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                tax_amount DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                total DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                quotation_date DATE NOT NULL,
+                valid_until DATE NULL,
+                terms TEXT NULL,
+                notes TEXT NULL,
+                status VARCHAR(30) NOT NULL DEFAULT 'Draft',
+                converted_invoice_id BIGINT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_quotation_user_number (user_id, quotation_number),
+                INDEX idx_quotations_user_status (user_id, status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """
+        )
+
+        # GET THIS USER'S QUOTATIONS ONLY.
+        cursor.execute(
+            """
+            SELECT *
+            FROM quotations
+            WHERE user_id = %s
+            ORDER BY id DESC
+            """,
+            (user_id,)
+        )
+        quotations = cursor.fetchall()
+
         # GET USER'S INVOICES
         
 
@@ -4625,6 +4668,8 @@ def invoice():
             company=company,
 
             invoices=invoices,
+
+            quotations=quotations,
 
             total_invoices=stats["total_invoices"] or 0,
 
@@ -4951,6 +4996,218 @@ def create_invoice():
         if db:
             db.close()
 
+    return redirect(url_for("invoice"))
+
+
+
+
+
+# ============================================================
+# QUOTATIONS
+# ============================================================
+
+@app.route("/quotations/create", methods=["POST"])
+def create_quotation():
+    """Create a quotation for the authenticated user's own account."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    customer_name = request.form.get("customer_name", "").strip()
+    customer_email = request.form.get("customer_email", "").strip()
+    customer_phone = request.form.get("customer_phone", "").strip()
+    description = (
+        request.form.get("description", "").strip()
+        or request.form.get("item_name", "").strip()
+    )
+    terms = request.form.get("terms", "").strip()
+    notes = request.form.get("notes", "").strip()
+    quotation_date_raw = request.form.get("quotation_date", "").strip()
+    valid_until_raw = request.form.get("valid_until", "").strip()
+
+    def read_decimal(field, default="0"):
+        raw = request.form.get(field, default).strip()
+        value = float(raw)
+        if not math.isfinite(value):
+            raise ValueError
+        return value
+
+    if not customer_name:
+        flash("Customer name is required to create a quotation.", "error")
+        return redirect(url_for("invoice"))
+
+    if not description:
+        flash("Please enter the quotation description.", "error")
+        return redirect(url_for("invoice"))
+
+    if len(customer_name) > 255 or len(customer_email) > 254 or len(customer_phone) > 50:
+        flash("One of the customer fields is too long.", "error")
+        return redirect(url_for("invoice"))
+
+    try:
+        quantity = read_decimal("quantity", "1")
+        unit_price = read_decimal("unit_price", "0")
+        discount_percent = read_decimal("discount_percent", "0")
+        tax_percent = read_decimal("tax_percent", "0")
+
+        if quantity <= 0 or unit_price < 0:
+            raise ValueError
+        if not 0 <= discount_percent <= 100 or not 0 <= tax_percent <= 100:
+            raise ValueError
+
+        q_date = date.fromisoformat(quotation_date_raw) if quotation_date_raw else date.today()
+        valid_until = date.fromisoformat(valid_until_raw) if valid_until_raw else None
+        if valid_until and valid_until < q_date:
+            raise ValueError
+    except (ValueError, TypeError, OverflowError):
+        flash("Check quantity, price, discount, tax and quotation dates.", "error")
+        return redirect(url_for("invoice"))
+
+    subtotal = round(quantity * unit_price, 2)
+    discount_amount = round(subtotal * discount_percent / 100, 2)
+    taxable_amount = max(0, subtotal - discount_amount)
+    tax_amount = round(taxable_amount * tax_percent / 100, 2)
+    total = round(taxable_amount + tax_amount, 2)
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        # Keep table setup available for deployments that visit this endpoint first.
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS quotations (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                quotation_number VARCHAR(50) NOT NULL,
+                customer_name VARCHAR(255) NOT NULL,
+                customer_email VARCHAR(254) NULL,
+                customer_phone VARCHAR(50) NULL,
+                description TEXT NOT NULL,
+                quantity DECIMAL(12, 2) NOT NULL DEFAULT 1.00,
+                unit_price DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                discount_percent DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                tax_percent DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+                subtotal DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                discount_amount DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                tax_amount DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                total DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+                quotation_date DATE NOT NULL,
+                valid_until DATE NULL,
+                terms TEXT NULL,
+                notes TEXT NULL,
+                status VARCHAR(30) NOT NULL DEFAULT 'Draft',
+                converted_invoice_id BIGINT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_quotation_user_number (user_id, quotation_number),
+                INDEX idx_quotations_user_status (user_id, status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """
+        )
+
+        # Find the next quotation number within this user's account.
+        cursor.execute(
+            "SELECT quotation_number FROM quotations WHERE user_id = %s",
+            (user_id,)
+        )
+        rows = cursor.fetchall()
+        highest_number = 1000
+        for row in rows:
+            value = row[0]
+            if value and value.startswith("QUO-"):
+                try:
+                    highest_number = max(highest_number, int(value[4:]))
+                except (ValueError, TypeError):
+                    pass
+        quotation_number = f"QUO-{highest_number + 1}"
+
+        cursor.execute(
+            """
+            INSERT INTO quotations (
+                user_id, quotation_number, customer_name, customer_email,
+                customer_phone, description, quantity, unit_price,
+                discount_percent, tax_percent, subtotal, discount_amount,
+                tax_amount, total, quotation_date, valid_until, terms, notes, status
+            )
+            VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Draft'
+            )
+            """,
+            (
+                user_id, quotation_number, customer_name,
+                customer_email or None, customer_phone or None, description,
+                quantity, unit_price, discount_percent, tax_percent, subtotal,
+                discount_amount, tax_amount, total, q_date, valid_until,
+                terms or None, notes or None
+            )
+        )
+        db.commit()
+        flash(f"Quotation {quotation_number} created successfully.", "success")
+
+    except mysql.connector.IntegrityError:
+        if db:
+            db.rollback()
+        app.logger.exception("CREATE QUOTATION INTEGRITY ERROR")
+        flash("A quotation number conflict occurred. Please try again.", "error")
+    except Exception:
+        if db:
+            db.rollback()
+        app.logger.exception("CREATE QUOTATION ERROR")
+        flash("Could not create the quotation. Please try again.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    return redirect(url_for("invoice"))
+
+
+@app.route("/quotations/<int:quotation_id>/status", methods=["POST"])
+def update_quotation_status(quotation_id):
+    """Update status only when the quotation belongs to the logged-in user."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    allowed_statuses = {"Draft", "Sent", "Accepted", "Rejected", "Expired"}
+    status = request.form.get("status", "").strip()
+    if status not in allowed_statuses:
+        flash("Please select a valid quotation status.", "error")
+        return redirect(url_for("invoice"))
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            UPDATE quotations
+            SET status = %s
+            WHERE id = %s AND user_id = %s
+            """,
+            (status, quotation_id, session["user_id"])
+        )
+        if cursor.rowcount == 0:
+            db.rollback()
+            flash("Quotation not found in your account.", "error")
+        else:
+            db.commit()
+            flash("Quotation status updated.", "success")
+    except Exception:
+        if db:
+            db.rollback()
+        app.logger.exception("UPDATE QUOTATION STATUS ERROR")
+        flash("Could not update quotation status.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
     return redirect(url_for("invoice"))
 
 

@@ -56,6 +56,109 @@
 
 
 
+        /* SALES & BILLING ENHANCEMENTS */
+        .btn-quotation {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(124, 58, 237, .22);
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            padding: 12px 17px;
+            border-radius: 11px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(79, 70, 229, .18);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .btn-quotation:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(79, 70, 229, .26);
+        }
+
+        .sales-notice {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 16px 18px;
+            margin: 0 0 22px;
+            border: 1px solid rgba(124, 58, 237, .16);
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, .07), rgba(0, 240, 255, .045));
+            color: #45445a;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .sales-notice strong {
+            color: #29243d;
+        }
+
+        .sales-notice .notice-icon {
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .modal-box .form-help {
+            margin-top: 6px;
+            color: #77778a;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .quote-line-preview {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            padding: 15px;
+            border: 1px solid #e8e7f2;
+            border-radius: 12px;
+            background: #f8f7fc;
+        }
+
+        .quote-line-preview span {
+            display: block;
+            color: #77778a;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .quote-line-preview strong {
+            color: #171722;
+            font-size: 16px;
+        }
+
+        .quote-feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quote-feature-list span {
+            background: #fff;
+            border: 1px solid #e8e7f2;
+            border-radius: 99px;
+            padding: 5px 9px;
+            font-size: 11px;
+            color: #5c5871;
+        }
+
+        @media (max-width: 650px) {
+            .btn-quotation {
+                width: 100%;
+            }
+
+            .quote-line-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* APP */
 
         .app {
@@ -1885,6 +1988,10 @@
                     + Create Invoice
                 </button>
 
+                <button type="button" class="btn btn-quotation" onclick="openQuotationModal()">
+                    + Create Quotation
+                </button>
+
 
             </div>
 
@@ -1913,6 +2020,92 @@
             {% endwith %}
 
 
+
+            <section class="sales-notice" aria-label="Sales and billing centre">
+                <div class="notice-icon">🧾</div>
+                <div>
+                    <strong>Sales &amp; Billing Centre</strong><br>
+                    Manage customer invoices and prepare price quotations before billing customers.
+                    Saved quotations are listed below, with their totals, validity dates and status.
+                    <div class="quote-feature-list">
+                        <span>Quotations</span><span>Invoices</span><span>Payment tracking</span><span>Customer
+                            billing</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="quotation-list"
+                style="margin:24px 0 30px;padding:24px;border:1px solid rgba(124,58,237,.22);border-radius:18px;background:var(--card-bg, #fff);box-shadow:0 10px 30px rgba(20,20,40,.05);">
+                <div
+                    style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
+                    <div>
+                        <h2 style="margin:0 0 6px;font-size:20px;">Quotations</h2>
+                        <p style="margin:0;color:var(--muted, #7b8194);font-size:13px;">Your saved customer estimates
+                            and their current status.</p>
+                    </div>
+                    <button type="button" class="btn btn-quotation" onclick="openQuotationModal()">+ Create
+                        Quotation</button>
+                </div>
+
+                {% if quotations %}
+                <div style="width:100%;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;min-width:760px;">
+                        <thead>
+                            <tr style="text-align:left;border-bottom:1px solid rgba(120,120,150,.18);">
+                                <th style="padding:12px 10px;">Quotation</th>
+                                <th style="padding:12px 10px;">Customer</th>
+                                <th style="padding:12px 10px;">Date</th>
+                                <th style="padding:12px 10px;">Valid Until</th>
+                                <th style="padding:12px 10px;">Total</th>
+                                <th style="padding:12px 10px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quote in quotations %}
+                            <tr style="border-bottom:1px solid rgba(120,120,150,.12);">
+                                <td style="padding:14px 10px;font-weight:700;">{{ quote.quotation_number }}</td>
+                                <td style="padding:14px 10px;">
+                                    <strong>{{ quote.customer_name }}</strong>
+                                    {% if quote.customer_email %}<br><small style="color:var(--muted, #7b8194);">{{
+                                        quote.customer_email }}</small>{% endif %}
+                                    {% if quote.description %}<br><small style="color:var(--muted, #7b8194);">{{
+                                        quote.description }}</small>{% endif %}
+                                </td>
+                                <td style="padding:14px 10px;">{{ quote.quotation_date }}</td>
+                                <td style="padding:14px 10px;">{{ quote.valid_until or '—' }}</td>
+                                <td style="padding:14px 10px;font-weight:700;">{{ quote.total|money }}</td>
+                                <td style="padding:14px 10px;">
+                                    <form method="POST"
+                                        action="{{ url_for('update_quotation_status', quotation_id=quote.id) }}"
+                                        style="display:flex;align-items:center;gap:6px;">
+                                        <select name="status" aria-label="Quotation status"
+                                            style="max-width:130px;padding:8px;border:1px solid rgba(120,120,150,.3);border-radius:8px;">
+                                            {% for option in ['Draft', 'Sent', 'Accepted', 'Rejected', 'Expired'] %}
+                                            <option value="{{ option }}" {% if quote.status==option %}selected{% endif
+                                                %}>{{ option }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-secondary"
+                                            style="padding:8px 10px;">Save</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div
+                    style="padding:24px 16px;text-align:center;border:1px dashed rgba(120,120,150,.3);border-radius:14px;">
+                    <div style="font-size:30px;margin-bottom:8px;">📝</div>
+                    <strong>No quotations yet</strong>
+                    <p style="margin:6px 0 14px;color:var(--muted, #7b8194);font-size:13px;">Create a quotation to give
+                        a customer an estimate before invoicing them.</p>
+                    <button type="button" class="btn btn-quotation" onclick="openQuotationModal()">Create your first
+                        quotation</button>
+                </div>
+                {% endif %}
+            </section>
 
             <!-- 
              INVOICE STATISTICS
@@ -2556,6 +2749,13 @@
 
 
 
+                <!-- QUOTATIONS -->
+                <a href="javascript:void(0)" onclick="openQuotationModal()" class="quick-card">
+                    <div class="quick-icon">📄</div>
+                    <strong>Create Quotation</strong>
+                    <p>Prepare an estimate for a customer before creating an invoice.</p>
+                </a>
+
                 <!-- TEMPLATES -->
 
                 <a href="javascript:void(0)" onclick="alert('Invoice templates will be available here.')"
@@ -2616,6 +2816,103 @@
     </div>
 
 
+
+    <!-- CREATE QUOTATION MODAL -->
+    <div id="quotationModal" class="modal" aria-hidden="true">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h2>Create Quotation</h2>
+                    <p>Prepare a price estimate for a customer before issuing an invoice.</p>
+                </div>
+                <button type="button" class="close" onclick="closeQuotationModal()"
+                    aria-label="Close quotation form">&times;</button>
+            </div>
+
+            <form method="POST" action="/quotations/create" id="quotationForm">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Customer Name *</label>
+                        <input type="text" name="customer_name" placeholder="Enter customer name" required
+                            maxlength="150">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Customer Email</label>
+                        <input type="email" name="customer_email" placeholder="customer@example.com" maxlength="254">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Customer Phone</label>
+                        <input type="text" name="customer_phone" placeholder="+27..." maxlength="40">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Product / Service *</label>
+                        <textarea name="description" placeholder="Describe the work, product or service..." required
+                            maxlength="3000"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantity *</label>
+                        <input type="number" name="quantity" id="quotationQuantity" min="1" step="1" value="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unit Price *</label>
+                        <input type="number" name="unit_price" id="quotationUnitPrice" min="0" step="0.01"
+                            placeholder="0.00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Discount (%)</label>
+                        <input type="number" name="discount_percent" id="quotationDiscount" min="0" max="100"
+                            step="0.01" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tax (%)</label>
+                        <input type="number" name="tax_percent" id="quotationTax" min="0" max="100" step="0.01"
+                            value="0">
+                        <div class="form-help">Use the rate applicable to your business and jurisdiction.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quotation Date *</label>
+                        <input type="date" name="quotation_date" id="quotationDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valid Until *</label>
+                        <input type="date" name="valid_until" id="quotationValidUntil" required>
+                    </div>
+
+                    <div class="quote-line-preview">
+                        <div><span>Subtotal</span><strong id="quotationSubtotalPreview">0.00</strong></div>
+                        <div><span>Discount</span><strong id="quotationDiscountPreview">0.00</strong></div>
+                        <div><span>Estimated Total</span><strong id="quotationTotalPreview">0.00</strong></div>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Terms &amp; Conditions</label>
+                        <textarea name="terms" placeholder="e.g. This quotation is valid until the date shown above."
+                            maxlength="3000"></textarea>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Notes</label>
+                        <textarea name="notes" placeholder="Additional information for the customer..."
+                            maxlength="3000"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeQuotationModal()">Cancel</button>
+                    <button type="submit" class="btn btn-quotation">Save Quotation</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- 
      CREATE INVOICE MODAL
@@ -2766,6 +3063,59 @@
         /* 
            CREATE MODAL
          */
+
+        function openQuotationModal() {
+            const modal = document.getElementById("quotationModal");
+            if (!modal) return;
+            modal.classList.add("active");
+            modal.style.display = "flex";
+            modal.setAttribute("aria-hidden", "false");
+
+            const today = new Date();
+            const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+            const dateField = document.getElementById("quotationDate");
+            const validField = document.getElementById("quotationValidUntil");
+            if (dateField && !dateField.value) dateField.value = localToday;
+            if (validField && !validField.value) {
+                const expiry = new Date(today);
+                expiry.setDate(expiry.getDate() + 14);
+                validField.value = new Date(expiry.getTime() - expiry.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+            }
+            calculateQuotationTotal();
+        }
+
+        function closeQuotationModal() {
+            const modal = document.getElementById("quotationModal");
+            if (!modal) return;
+            modal.classList.remove("active");
+            modal.style.display = "none";
+            modal.setAttribute("aria-hidden", "true");
+        }
+
+        function calculateQuotationTotal() {
+            const quantity = Math.max(0, Number(document.getElementById("quotationQuantity")?.value || 0));
+            const unitPrice = Math.max(0, Number(document.getElementById("quotationUnitPrice")?.value || 0));
+            const discountPercent = Math.min(100, Math.max(0, Number(document.getElementById("quotationDiscount")?.value || 0)));
+            const taxPercent = Math.min(100, Math.max(0, Number(document.getElementById("quotationTax")?.value || 0)));
+            const subtotal = quantity * unitPrice;
+            const discount = subtotal * discountPercent / 100;
+            const taxable = Math.max(0, subtotal - discount);
+            const tax = taxable * taxPercent / 100;
+            const total = taxable + tax;
+            const money = value => value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const subtotalEl = document.getElementById("quotationSubtotalPreview");
+            const discountEl = document.getElementById("quotationDiscountPreview");
+            const totalEl = document.getElementById("quotationTotalPreview");
+            if (subtotalEl) subtotalEl.textContent = money(subtotal);
+            if (discountEl) discountEl.textContent = money(discount);
+            if (totalEl) totalEl.textContent = money(total);
+        }
+
+        ["quotationQuantity", "quotationUnitPrice", "quotationDiscount", "quotationTax"].forEach(id => {
+            document.addEventListener("input", event => {
+                if (event.target && event.target.id === id) calculateQuotationTotal();
+            });
+        });
 
         function openCreateModal() {
 
@@ -2920,6 +3270,14 @@
 
         }
 
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") closeQuotationModal();
+        });
+
+        document.getElementById("quotationModal")?.addEventListener("click", function (event) {
+            if (event.target === this) closeQuotationModal();
+        });
 
     </script>
 

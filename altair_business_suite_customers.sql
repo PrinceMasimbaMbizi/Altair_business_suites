@@ -1,7 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: altair_business_suite
--- ------------------------------------------------------
 -- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -15,9 +14,8 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
+
 -- Table structure for table `customers`
---
 
 DROP TABLE IF EXISTS `customers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -42,10 +40,8 @@ CREATE TABLE `customers` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `customers`
---
 
+-- Dumping data for table `customers`
 LOCK TABLES `customers` WRITE;
 /*!40000 ALTER TABLE `customers` DISABLE KEYS */;
 INSERT INTO `customers` VALUES (1,2,'Laura Gorerino','gorerionolaura@gmail.com','','Polony FC','99 bellairs fourways','Johanessburg','South Africa','Pending','They sell polony','2026-09-13 07:16:12',0.00),(2,2,'Prince Masimba','masimbaprince0212@gmail.com','+27743311202','Skies Altair Technologies','Dark Moon','Shimla','India','Active','You are a great customer','2026-09-14 05:44:08',0.00);
