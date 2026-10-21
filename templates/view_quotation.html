@@ -5,11 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ quotation.quotation_number }} | Altair Business Suite</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -53,6 +52,12 @@
     .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 14px rgba(0, 0, 0, .09);
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: wait;
+      transform: none;
     }
 
     .btn svg {
@@ -292,7 +297,32 @@
       text-align: center;
     }
 
-    @media (max-width: 650px) {
+    .notice {
+      display: none;
+      margin: 0 0 16px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .notice.success {
+      color: #166534;
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+    }
+
+    .notice.error {
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+    }
+
+    @media (max-width:650px) {
       body {
         padding: 12px;
       }
@@ -346,7 +376,8 @@
         print-color-adjust: exact;
       }
 
-      .actions {
+      .actions,
+      .notice {
         display: none !important;
       }
 
@@ -391,7 +422,7 @@
 
 <body>
   <main class="page">
-
+    <div id="actionNotice" class="notice" role="status" aria-live="polite"></div>
     <div class="actions">
       <a href="{{ url_for('invoice') }}" class="btn secondary" aria-label="Back to invoices" title="Back to invoices">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -400,8 +431,7 @@
           <path d="M9 12h12"></path>
         </svg>
       </a>
-
-      <button type="button" class="btn primary" id="downloadPdfBtn" aria-label="Save as PDF" title="Save as PDF">
+      <button type="button" class="btn primary" id="downloadPdfBtn" aria-label="Download PDF" title="Download PDF">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -409,7 +439,6 @@
           <path d="M12 15V3"></path>
         </svg>
       </button>
-
       <button type="button" class="btn email-btn" id="emailQuotationBtn" aria-label="Email quotation"
         title="Email quotation">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -418,7 +447,6 @@
           <path d="m3 7 9 6 9-6"></path>
         </svg>
       </button>
-
       <button type="button" class="btn whatsapp-btn" id="whatsappQuotationBtn" aria-label="Share on WhatsApp"
         title="Share on WhatsApp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -436,45 +464,28 @@
       data-phone="{{ quotation.customer_phone or '' }}" data-total="{{ quotation.total }}"
       data-company="{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}"
       data-country="{{ company.country if company and company.country else '' }}">
-
       <header class="header">
         <div class="brand">
-
           {% if company and company.logo %}
           <img src="{{ url_for('company_logo') }}" alt="Company logo"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-
-          <div class="placeholder" style="display:none">
-            {{ company.company_name[0]|upper if company.company_name else 'A' }}
-          </div>
+          <div class="placeholder" style="display:none">{{ company.company_name[0]|upper if company.company_name else
+            'A' }}</div>
           {% else %}
-          <div class="placeholder">
-            {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+          <div class="placeholder">{{ company.company_name[0]|upper if company and company.company_name else 'A' }}
           </div>
           {% endif %}
-
           <div>
             <h1>{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}</h1>
-
             {% if company %}
-            <p>
-              {% if company.address %}{{ company.address }}{% endif %}
-              {% if company.city %}{% if company.address %}, {% endif %}{{ company.city }}{% endif %}
-              {% if company.country %}{% if company.address or company.city %}, {% endif %}{{ company.country }}{% endif
-              %}
-            </p>
-
-            {% if company.email %}
-            <p>{{ company.email }}</p>
-            {% endif %}
-
-            {% if company.phone %}
-            <p>{{ company.phone }}</p>
-            {% endif %}
+            <p>{% if company.address %}{{ company.address }}{% endif %}{% if company.city %}{% if company.address %}, {%
+              endif %}{{ company.city }}{% endif %}{% if company.country %}{% if company.address or company.city %}, {%
+              endif %}{{ company.country }}{% endif %}</p>
+            {% if company.email %}<p>{{ company.email }}</p>{% endif %}
+            {% if company.phone %}<p>{{ company.phone }}</p>{% endif %}
             {% endif %}
           </div>
         </div>
-
         <div class="quote-title">
           <h2>QUOTATION</h2>
           <div class="quote-number">{{ quotation.quotation_number }}</div>
@@ -486,35 +497,19 @@
         <div class="detail">
           <h3>Prepared For</h3>
           <strong>{{ quotation.customer_name }}</strong>
-
-          {% if quotation.customer_email %}
-          <p>{{ quotation.customer_email }}</p>
-          {% endif %}
-
-          {% if quotation.customer_phone %}
-          <p>{{ quotation.customer_phone }}</p>
-          {% endif %}
+          {% if quotation.customer_email %}<p>{{ quotation.customer_email }}</p>{% endif %}
+          {% if quotation.customer_phone %}<p>{{ quotation.customer_phone }}</p>{% endif %}
         </div>
-
         <div class="detail">
           <h3>Quotation Details</h3>
-
-          <p>
-            <strong style="display:inline;font-size:12px">Quotation Date:</strong>
-            {{ quotation.quotation_date.strftime('%d %b %Y') if quotation.quotation_date else '—' }}
-          </p>
-
-          <p>
-            <strong style="display:inline;font-size:12px">Valid Until:</strong>
-            {{ quotation.valid_until.strftime('%d %b %Y') if quotation.valid_until else '—' }}
-          </p>
+          <p><strong style="display:inline;font-size:12px">Quotation Date:</strong> {{
+            quotation.quotation_date.strftime('%d %b %Y') if quotation.quotation_date else '—' }}</p>
+          <p><strong style="display:inline;font-size:12px">Valid Until:</strong> {{ quotation.valid_until.strftime('%d
+            %b %Y') if quotation.valid_until else '—' }}</p>
         </div>
       </section>
 
-      <div class="meta">
-        <span class="pill">Price estimate</span>
-        <span class="pill">Currency: ZAR (R)</span>
-      </div>
+      <div class="meta"><span class="pill">Price estimate</span><span class="pill">Currency: ZAR (R)</span></div>
 
       <div class="table-scroll">
         <table class="line-table">
@@ -526,7 +521,6 @@
               <th class="right">Amount</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <td>{{ quotation.description }}</td>
@@ -539,48 +533,26 @@
       </div>
 
       <section class="totals">
-        <div class="total-row">
-          <span>Subtotal</span>
-          <strong>R{{ '%.2f'|format(quotation.subtotal|float) }}</strong>
+        <div class="total-row"><span>Subtotal</span><strong>R{{ '%.2f'|format(quotation.subtotal|float) }}</strong>
         </div>
-
-        <div class="total-row">
-          <span>Discount ({{ quotation.discount_percent }}%)</span>
-          <strong>− R{{ '%.2f'|format(quotation.discount_amount|float) }}</strong>
-        </div>
-
-        <div class="total-row">
-          <span>Tax ({{ quotation.tax_percent }}%)</span>
-          <strong>R{{ '%.2f'|format(quotation.tax_amount|float) }}</strong>
-        </div>
-
-        <div class="total-row final">
-          <span>Total</span>
-          <strong>R{{ '%.2f'|format(quotation.total|float) }}</strong>
+        <div class="total-row"><span>Discount ({{ quotation.discount_percent }}%)</span><strong>− R{{
+            '%.2f'|format(quotation.discount_amount|float) }}</strong></div>
+        <div class="total-row"><span>Tax ({{ quotation.tax_percent }}%)</span><strong>R{{
+            '%.2f'|format(quotation.tax_amount|float) }}</strong></div>
+        <div class="total-row final"><span>Total</span><strong>R{{ '%.2f'|format(quotation.total|float) }}</strong>
         </div>
       </section>
 
       {% if quotation.terms or quotation.notes %}
       <section class="notes">
-
-        {% if quotation.terms %}
-        <h3>Terms &amp; Conditions</h3>
-        <p>{{ quotation.terms }}</p>
-        {% endif %}
-
-        {% if quotation.notes %}
-        <h3>Notes</h3>
-        <p>{{ quotation.notes }}</p>
-        {% endif %}
-
+        {% if quotation.terms %}<h3>Terms &amp; Conditions</h3>
+        <p>{{ quotation.terms }}</p>{% endif %}
+        {% if quotation.notes %}<h3>Notes</h3>
+        <p>{{ quotation.notes }}</p>{% endif %}
       </section>
       {% endif %}
-
-      <div class="footer">
-        This quotation is an estimate of the proposed products or services
-        and is subject to the terms stated above.
-      </div>
-
+      <div class="footer">This quotation is an estimate of the proposed products or services and is subject to the terms
+        stated above.</div>
     </article>
   </main>
 
@@ -588,10 +560,10 @@
     "use strict";
 
     const quotationElement = document.getElementById("quotationPaper");
-
+    const noticeElement = document.getElementById("actionNotice");
     const quotationData = {
-      number: quotationElement.dataset.number || "",
-      customer: quotationElement.dataset.customer || "",
+      number: quotationElement.dataset.number || "quotation",
+      customer: quotationElement.dataset.customer || "Customer",
       email: quotationElement.dataset.email || "",
       phone: quotationElement.dataset.phone || "",
       total: Number(quotationElement.dataset.total || 0),
@@ -599,44 +571,81 @@
       country: quotationElement.dataset.country || ""
     };
 
-    document.getElementById("downloadPdfBtn").addEventListener("click", function () {
-      window.print();
+    function showNotice(message, type) {
+      noticeElement.textContent = message;
+      noticeElement.className = "notice show " + type;
+    }
+
+    function safeFileName(value) {
+      return String(value).replace(/[^a-z0-9_-]/gi, "_");
+    }
+
+    document.getElementById("downloadPdfBtn").addEventListener("click", async function () {
+      const button = this;
+      if (typeof window.html2pdf !== "function") {
+        showNotice("The PDF tool did not load. Check your internet connection and reload the page.", "error");
+        return;
+      }
+
+      const logo = quotationElement.querySelector(".brand img");
+      if (logo && !logo.complete) {
+        await new Promise(resolve => {
+          logo.addEventListener("load", resolve, { once: true });
+          logo.addEventListener("error", resolve, { once: true });
+        });
+      }
+
+      button.disabled = true;
+      showNotice("Preparing your PDF download…", "success");
+
+      try {
+        await window.html2pdf().set({
+          margin: [10, 10, 10, 10],
+          filename: "Quotation-" + safeFileName(quotationData.number) + ".pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: 0 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] }
+        }).from(quotationElement).save();
+        showNotice("Quotation PDF downloaded successfully.", "success");
+      } catch (error) {
+        console.error("PDF download failed:", error);
+        showNotice("PDF download failed. Please reload the page and try again.", "error");
+      } finally {
+        button.disabled = false;
+      }
     });
 
     document.getElementById("emailQuotationBtn").addEventListener("click", function () {
       if (!quotationData.email.trim()) {
-        alert("No customer email address is available for this quotation.");
+        showNotice("This quotation has no customer email address. Add an email address and try again.", "error");
         return;
       }
 
       const subject = "Quotation " + quotationData.number + " - " + quotationData.company;
-
       const body =
         "Dear " + quotationData.customer + ",\n\n" +
         "Please find your quotation details below.\n\n" +
         "Quotation Number: " + quotationData.number + "\n" +
         "Total Amount: R" + quotationData.total.toFixed(2) + "\n\n" +
-        "Please contact us if you have any questions.\n\n" +
         "Kind regards,\n" + quotationData.company;
 
-      const mailto = "mailto:" + encodeURIComponent(quotationData.email) +
+      const mailto = "mailto:" + quotationData.email.trim() +
         "?subject=" + encodeURIComponent(subject) +
         "&body=" + encodeURIComponent(body);
 
+      showNotice("Your email application will open with a prepared message. Attach the downloaded PDF before sending. This button does not send email automatically.", "success");
       window.location.href = mailto;
     });
 
     document.getElementById("whatsappQuotationBtn").addEventListener("click", function () {
       if (!quotationData.phone.trim()) {
-        alert("No customer phone number is available for this quotation.");
+        showNotice("This quotation has no customer phone number. Add a phone number and try again.", "error");
         return;
       }
 
       let phone = quotationData.phone.replace(/\D/g, "");
-
-      if (phone.startsWith("00")) {
-        phone = phone.substring(2);
-      }
+      if (phone.startsWith("00")) phone = phone.substring(2);
 
       if (phone.startsWith("0") && phone.length === 10) {
         if (/south africa/i.test(quotationData.country)) {
@@ -644,13 +653,13 @@
         } else if (/zimbabwe/i.test(quotationData.country)) {
           phone = "263" + phone.substring(1);
         } else {
-          alert("Please enter the customer's full international phone number, including the country code.");
+          showNotice("Enter the customer's full international phone number, including country code, such as +27 or +263.", "error");
           return;
         }
       }
 
       if (phone.length < 8 || phone.length > 15) {
-        alert("Please check the customer's phone number and country code.");
+        showNotice("Please check the customer's phone number and international country code.", "error");
         return;
       }
 
@@ -662,11 +671,15 @@
         "Please let us know if you have any questions. Thank you!";
 
       const whatsappUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+      const popup = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      if (!popup) {
+        window.location.href = whatsappUrl;
+      } else {
+        showNotice("WhatsApp opened with a prepared message. Press Send in WhatsApp. To include the PDF, download it first and attach it in the chat.", "success");
+      }
     });
   </script>
-
 </body>
 
 </html>
