@@ -2526,13 +2526,13 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-# ============================================================
+
 # ALTAIR AI ASSISTANT 2.0
 # Conversation handling, stronger intent recognition, and
 # transparent business-health / lead-conversion analysis.
 # Keep this section after the original engines so these improved
 # functions are the active versions used by the existing routes.
-# ============================================================
+
 
 # Preserve the existing tested response engine for its established
 # revenue, expense, cash-flow, invoice, customer, and forecast answers.
@@ -5002,9 +5002,9 @@ def create_invoice():
 
 
 
-# ============================================================
+
 # QUOTATIONS
-# ============================================================
+
 
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
@@ -10208,10 +10208,8 @@ def save_google_lead():
         }), 500
     
 
-# ============================================================
-# BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
-# ============================================================
 
+# BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
     """Display analytics based on the logged-in user's own business records."""
@@ -10442,11 +10440,8 @@ def business_analytics():
     )
 
 
-# ============================================================
+
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
-# ============================================================
-
-
 def ensure_manual_transactions_table(cursor):
     """Create the manual ledger table if it does not already exist."""
     cursor.execute("""

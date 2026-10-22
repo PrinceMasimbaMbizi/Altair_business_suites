@@ -606,9 +606,9 @@
                 title="Business Analytics">
                 <span class="nav-icon">📈</span><span>Business Analytics</span>
             </a>
-           <a href="{{ url_for('forecasting') }}"
-                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}"
-                title="Forecasting"><span class="nav-icon">🔮</span><span>Forecasting</span>
+            <a href="{{ url_for('forecasting') }}"
+                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting"><span
+                    class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
             <a href="#" class="nav-item" title="Altair AI Assistant">
                 <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
@@ -794,28 +794,152 @@
                 from the estimated-profit figure above.</p>
         </main>
     </div>
+
+    <div id="chartData" data-labels='{{ chart_labels_json }}' data-revenue='{{ revenue_chart_json }}'
+        data-expenses='{{ expenses_chart_json }}' data-expense-labels='{{ expense_labels_json }}'
+        data-expense-amounts='{{ expense_amounts_json }}' hidden>
+    </div>
+
     <script>
-        const chartLabels = {{ chart_labels| safe }};
-        const revenueValues = {{ revenue_chart| safe }};
-        const expenseValues = {{ expenses_chart| safe }};
-        const chartFont = { family: 'Inter, Arial, sans-serif' };
-        new Chart(document.getElementById('trendChart'), {
-            type: 'line',
-            data: {
-                labels: chartLabels, datasets: [
-                    { label: 'Revenue received', data: revenueValues, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.10)', fill: true, tension: .35, borderWidth: 2.5 },
-                    { label: 'Expenses', data: expenseValues, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.08)', fill: true, tension: .35, borderWidth: 2.5 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: chartFont } } }, scales: { y: { beginAtZero: true, ticks: { callback: (v) => Number(v).toLocaleString() } }, x: { grid: { display: false } } } }
-        });
-        const expenseLabels = {{ expense_breakdown| map(attribute = 'category') | list | tojson }};
-        const expenseAmounts = {{ expense_breakdown| map(attribute = 'amount') | list | tojson }};
-        new Chart(document.getElementById('expenseChart'), {
-            type: 'doughnut', data: { labels: expenseLabels, datasets: [{ data: expenseAmounts, backgroundColor: ['#7c3aed', '#06b6d4', '#f97316', '#10b981', '#ec4899', '#6366f1', '#f59e0b'], borderWidth: 2, borderColor: '#fff' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: chartFont } } } }
-        });
+        // Chart data prepared by Flask using json.dumps()
+        const chartDataElement = document.getElementById('chartData');
+
+        const chartLabels = JSON.parse(chartDataElement.dataset.labels || '[]');
+        const revenueValues = JSON.parse(chartDataElement.dataset.revenue || '[]');
+        const expenseValues = JSON.parse(chartDataElement.dataset.expenses || '[]');
+
+        const expenseLabels = JSON.parse(chartDataElement.dataset.expenseLabels || '[]');
+        const expenseAmounts = JSON.parse(chartDataElement.dataset.expenseAmounts || '[]');
+
+
+        // REVENUE VS EXPENSES CHART      
+
+        const trendCanvas = document.getElementById('trendChart');
+
+        if (trendCanvas) {
+            new Chart(trendCanvas, {
+                type: 'line',
+
+                data: {
+                    labels: chartLabels,
+
+                    datasets: [
+                        {
+                            label: 'Revenue received',
+                            data: revenueValues,
+                            borderColor: '#7c3aed',
+                            backgroundColor: 'rgba(124, 58, 237, 0.10)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5
+                        },
+                        {
+                            label: 'Expenses',
+                            data: expenseValues,
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.08)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: chartFont
+                            }
+                        }
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                callback: function (value) {
+                                    return Number(value).toLocaleString();
+                                }
+                            }
+                        },
+
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // EXPENSE BREAKDOWN CHART
+
+
+        const expenseCanvas = document.getElementById('expenseChart');
+
+        if (expenseCanvas) {
+            new Chart(expenseCanvas, {
+                type: 'doughnut',
+
+                data: {
+                    labels: expenseLabels,
+
+                    datasets: [
+                        {
+                            data: expenseAmounts,
+
+                            backgroundColor: [
+                                '#7c3aed',
+                                '#06b6d4',
+                                '#f97316',
+                                '#10b981',
+                                '#ec4899',
+                                '#6366f1',
+                                '#f59e0b'
+                            ],
+
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: chartFont
+                            }
+                        }
+                    }
+                }
+            });
+        }
     </script>
+
 </body>
 
 </html>
