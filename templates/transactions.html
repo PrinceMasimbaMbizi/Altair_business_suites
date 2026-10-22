@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | Altair Business Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0c16;
+            --panel: #121421;
+            --panel2: #171a2b;
+            --line: rgba(255, 255, 255, .09);
+            --text: #f4f6ff;
+            --muted: #9ca3bd;
+            --cyan: #00e5ff;
+            --purple: #8b5cf6;
+            --green: #22c55e;
+            --red: #fb7185;
+            --amber: #fbbf24
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(ellipse at top right, rgba(92, 45, 145, .15), transparent 35%), var(--bg);
+            color: var(--text);
+            font-family: Inter, system-ui, sans-serif;
+            font-size: 14px
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit
+        }
+
+        .layout {
+            min-height: 100vh;
+            display: flex
+        }
+
+        .sidebar {
+            width: 245px;
+            background: #0e101b;
+            border-right: 1px solid var(--line);
+            padding: 24px 15px;
+            position: fixed;
+            inset: 0 auto 0 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 5
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 0 10px 28px;
+            font-weight: 800;
+            font-size: 17px
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            color: #080a14;
+            font-size: 18px
+        }
+
+        .brand small {
+            display: block;
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 10px;
+            letter-spacing: 1.6px;
+            margin-top: 4px
+        }
+
+        .nav-label {
+            color: #69708b;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            padding: 10px 12px
+        }
+
+        .nav {
+            display: grid;
+            gap: 5px
+        }
+
+        .nav a {
+            padding: 12px;
+            border-radius: 11px;
+            color: #aeb4cc;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            transition: .2s
+        }
+
+        .nav a:hover,
+        .nav a.active {
+            background: linear-gradient(100deg, rgba(0, 229, 255, .13), rgba(139, 92, 246, .12));
+            color: #fff
+        }
+
+        .nav a.active {
+            border: 1px solid rgba(0, 229, 255, .16)
+        }
+
+        .nav-icon {
+            width: 22px;
+            text-align: center;
+            font-size: 16px
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--line);
+            padding-top: 16px
+        }
+
+        .main {
+            margin-left: 245px;
+            width: calc(100% - 245px);
+            padding: 30px;
+            max-width: 1800px
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px
+        }
+
+        .eyebrow {
+            color: var(--cyan);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            margin-bottom: 8px
+        }
+
+        h1 {
+            font-size: clamp(25px, 3vw, 34px);
+            letter-spacing: -1.2px;
+            margin: 0 0 8px
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.6
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 11px;
+            padding: 12px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: .2s
+        }
+
+        .btn-primary {
+            background: linear-gradient(100deg, var(--cyan), #9d7bff);
+            color: #080b18;
+            box-shadow: 0 8px 24px rgba(0, 229, 255, .12)
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.07)
+        }
+
+        .btn-ghost {
+            background: #202337;
+            color: #e9ebfa;
+            border: 1px solid var(--line)
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .card,
+        .panel {
+            background: linear-gradient(145deg, rgba(23, 26, 43, .96), rgba(16, 18, 31, .96));
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, .12)
+        }
+
+        .card {
+            padding: 21px
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--muted);
+            font-weight: 600;
+            gap: 10px
+        }
+
+        .card-icon {
+            width: 37px;
+            height: 37px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: rgba(0, 229, 255, .1);
+            color: var(--cyan);
+            font-size: 17px
+        }
+
+        .card-value {
+            font-size: clamp(21px, 2.2vw, 29px);
+            font-weight: 800;
+            letter-spacing: -.7px;
+            margin: 17px 0 5px;
+            overflow-wrap: anywhere
+        }
+
+        .card-note {
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .positive {
+            color: var(--green)
+        }
+
+        .negative {
+            color: var(--red)
+        }
+
+        .panel {
+            overflow: hidden;
+            margin-bottom: 22px
+        }
+
+        .panel-head {
+            padding: 21px 22px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap
+        }
+
+        .panel-head h2 {
+            font-size: 16px;
+            margin: 0 0 6px
+        }
+
+        .panel-head p {
+            color: var(--muted);
+            margin: 0;
+            font-size: 12px
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr repeat(4, minmax(120px, 1fr)) auto;
+            gap: 10px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .field {
+            min-width: 0
+        }
+
+        .field label {
+            display: block;
+            color: #aeb4cc;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 7px
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 10px;
+            background: #0e1120;
+            color: var(--text);
+            padding: 11px 12px;
+            outline: none;
+            min-width: 0
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(0, 229, 255, .08)
+        }
+
+        .table-wrap {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 880px
+        }
+
+        th {
+            text-align: left;
+            padding: 14px 18px;
+            color: #858da9;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, .018);
+            white-space: nowrap
+        }
+
+        td {
+            padding: 16px 18px;
+            border-top: 1px solid rgba(255, 255, 255, .055);
+            vertical-align: middle
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, .018)
+        }
+
+        .tx-title {
+            font-weight: 700;
+            margin-bottom: 5px
+        }
+
+        .tx-sub {
+            font-size: 11px;
+            color: var(--muted);
+            max-width: 260px;
+            overflow-wrap: anywhere
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 9px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 800;
+            white-space: nowrap;
+            background: rgba(255, 255, 255, .07);
+            color: #d3d7e9
+        }
+
+        .pill.income {
+            background: rgba(34, 197, 94, .12);
+            color: #6ee7a0
+        }
+
+        .pill.expense {
+            background: rgba(251, 113, 133, .12);
+            color: #fda4af
+        }
+
+        .pill.investment {
+            background: rgba(139, 92, 246, .15);
+            color: #c4b5fd
+        }
+
+        .pill.pending {
+            background: rgba(251, 191, 36, .12);
+            color: #fcd34d
+        }
+
+        .pill.paid,
+        .pill.completed {
+            background: rgba(34, 197, 94, .12);
+            color: #6ee7a0
+        }
+
+        .pill.overdue,
+        .pill.cancelled {
+            background: rgba(251, 113, 133, .12);
+            color: #fda4af
+        }
+
+        .amount {
+            font-weight: 800;
+            white-space: nowrap
+        }
+
+        .amount.plus {
+            color: #6ee7a0
+        }
+
+        .amount.minus {
+            color: #fda4af
+        }
+
+        .source {
+            font-size: 10px;
+            color: #a5acc6
+        }
+
+        .icon-btn {
+            border: 1px solid var(--line);
+            background: #1c2033;
+            color: #fda4af;
+            border-radius: 8px;
+            padding: 7px 10px;
+            cursor: pointer
+        }
+
+        .empty {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--muted)
+        }
+
+        .empty strong {
+            display: block;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 7px
+        }
+
+        .notice {
+            padding: 12px 15px;
+            border-radius: 11px;
+            margin-bottom: 12px;
+            border: 1px solid var(--line);
+            background: #15182a
+        }
+
+        .notice.success {
+            color: #86efac
+        }
+
+        .notice.error {
+            color: #fda4af
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 4, 12, .78);
+            backdrop-filter: blur(8px);
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px
+        }
+
+        .modal.show {
+            display: flex
+        }
+
+        .modal-box {
+            width: min(680px, 100%);
+            max-height: 92vh;
+            overflow: auto;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: #121524;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .45)
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 21px 24px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .modal-head h2 {
+            margin: 0;
+            font-size: 19px
+        }
+
+        .close {
+            background: transparent;
+            border: 0;
+            color: #aab0c7;
+            font-size: 25px;
+            cursor: pointer
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 22px
+        }
+
+        .form-grid .full {
+            grid-column: 1/-1
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 0 22px 22px
+        }
+
+        .mobile-menu {
+            display: none
+        }
+
+        .footer-note {
+            color: #727b98;
+            font-size: 11px;
+            padding: 4px 0 18px;
+            line-height: 1.6
+        }
+
+        @media(max-width:1200px) {
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .filters {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .filters .search-field {
+                grid-column: span 2
+            }
+        }
+
+        @media(max-width:760px) {
+            .sidebar {
+                width: 76px;
+                padding: 18px 9px
+            }
+
+            .brand {
+                padding: 0 9px 25px
+            }
+
+            .brand-copy,
+            .nav-label,
+            .nav-text {
+                display: none
+            }
+
+            .brand-icon {
+                width: 43px;
+                height: 43px
+            }
+
+            .nav a {
+                justify-content: center;
+                padding: 13px 8px
+            }
+
+            .nav-icon {
+                font-size: 19px
+            }
+
+            .main {
+                margin-left: 76px;
+                width: calc(100% - 76px);
+                padding: 22px 15px
+            }
+
+            .topbar {
+                align-items: flex-start
+            }
+
+            .topbar .btn {
+                padding: 11px;
+                font-size: 12px
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+                padding: 15px
+            }
+
+            .filters .search-field {
+                grid-column: 1/-1
+            }
+
+            .panel-head {
+                padding: 18px
+            }
+
+            .cards {
+                gap: 10px
+            }
+
+            .card {
+                padding: 15px
+            }
+
+            .card-value {
+                font-size: 22px
+            }
+
+            .card-head {
+                font-size: 11px
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+
+            .form-grid .full {
+                grid-column: auto
+            }
+        }
+
+        @media(max-width:460px) {
+            .cards {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .card {
+                padding: 12px
+            }
+
+            .card-value {
+                font-size: 19px
+            }
+
+            .card-icon {
+                width: 30px;
+                height: 30px
+            }
+
+            .topbar {
+                gap: 8px
+            }
+
+            .topbar .btn {
+                font-size: 0;
+                min-width: 43px
+            }
+
+            .topbar .btn span {
+                font-size: 19px
+            }
+
+            .filters {
+                grid-template-columns: 1fr
+            }
+
+            .filters .search-field {
+                grid-column: auto
+            }
+
+            .main {
+                padding: 18px 10px
+            }
+
+            .panel-head {
+                align-items: flex-start
+            }
+        }
+
+        /* Dashboard-matched sidebar: keep this panel consistent with dashboard.html */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #11111c;
+            color: #fff;
+            padding: 22px 14px 24px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: auto;
+            bottom: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            box-shadow: 8px 0 28px rgba(17, 17, 28, .06)
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 5px
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #11111c
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #35354b;
+            border-radius: 10px
+        }
+
+        .company-brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            min-height: 54px;
+            margin: 0 0 20px;
+            padding: 4px 7px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .09);
+            min-width: 0
+        }
+
+        .company-logo-image,
+        .company-logo-placeholder {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            border-radius: 12px;
+            object-fit: cover
+        }
+
+        .company-logo-image {
+            display: block;
+            background: #242435;
+            border: 1px solid rgba(255, 255, 255, .12);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .25)
+        }
+
+        .company-logo-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00f0ff, #ff00d4);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            box-shadow: 0 0 15px rgba(0, 240, 255, .15)
+        }
+
+        .company-brand-name {
+            flex: 1;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+            min-width: 0;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .menu-title {
+            margin: 20px 10px 8px;
+            color: #85859f;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.25px;
+            line-height: 1.4;
+            text-transform: uppercase
+        }
+
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            min-height: 43px;
+            width: 100%;
+            gap: 12px;
+            margin: 0 0 3px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            color: #b9b9cd;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.35;
+            white-space: normal;
+            background: transparent;
+            transition: background .2s, border-color .2s
+        }
+
+        .sidebar .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: rgba(255, 255, 255, .05);
+            color: #fff
+        }
+
+        .sidebar .nav-item.active {
+            background: linear-gradient(100deg, rgba(0, 240, 255, .14), rgba(157, 78, 221, .16));
+            border: 1px solid rgba(0, 240, 255, .16);
+            border-left: 3px solid #00f0ff;
+            color: #fff;
+            box-shadow: inset 0 0 18px rgba(0, 240, 255, .035)
+        }
+
+        .sidebar .nav-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            min-width: 22px;
+            font-size: 16px;
+            line-height: 1
+        }
+
+        .sidebar .nav-item>span:last-child,
+        .sidebar .logout-link>span:last-child {
+            min-width: 0
+        }
+
+        .sidebar .logout-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #fda4af;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .sidebar .logout-link:hover {
+            background: rgba(244, 63, 94, .1);
+            color: #fff
+        }
+
+        .main {
+            min-width: 0;
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px clamp(18px, 3vw, 38px);
+            max-width: none
+        }
+
+        @media(max-width:700px) {
+            .sidebar {
+                width: 72px;
+                padding: 18px 8px;
+                align-items: stretch
+            }
+
+            .company-brand {
+                justify-content: center;
+                padding: 0 0 16px;
+                margin-bottom: 10px
+            }
+
+            .company-brand-name,
+            .sidebar .nav-item>span:last-child,
+            .menu-title,
+            .sidebar .logout-link>span:last-child {
+                display: none
+            }
+
+            .sidebar .nav-item,
+            .sidebar .logout-link {
+                justify-content: center;
+                gap: 0;
+                padding: 11px 6px;
+                min-height: 42px;
+                border-left-width: 1px
+            }
+
+            .sidebar .nav-icon {
+                width: 24px;
+                min-width: 24px;
+                font-size: 17px
+            }
+
+            .company-logo-image,
+            .company-logo-placeholder {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                min-height: 40px
+            }
+
+            .main {
+                margin-left: 72px;
+                width: calc(100% - 72px);
+                padding: 22px 15px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="company-brand">
+                {% if company and company.logo %}
+                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="company-logo-placeholder" style="display:none;">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% else %}
+                <div class="company-logo-placeholder">
+                    {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
+                </div>
+                {% endif %}
+                <div class="company-brand-name">
+                    {{ company.company_name if company and company.company_name else 'Altair Business Suite' }}
+                </div>
+            </div>
+
+            <div class="menu-title">Main</div>
+            <a href="{{ url_for('dashboard') }}"
+                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
+                <span class="nav-icon">📊</span><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('customer') }}"
+                class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">
+                <span class="nav-icon">👥</span><span>Customers</span>
+            </a>
+            <a href="{{ url_for('invoice') }}" class="nav-item {% if request.endpoint == 'invoice' %}active{% endif %}"
+                title="Invoices">
+                <span class="nav-icon">🧾</span><span>Invoices</span>
+            </a>
+            <a href="{{ url_for('items') }}" class="nav-item {% if request.endpoint == 'items' %}active{% endif %}"
+                title="Inventory">
+                <span class="nav-icon">📦</span><span>Inventory</span>
+            </a>
+            <a href="{{ url_for('transactions') }}"
+                class="nav-item {% if request.endpoint == 'transactions' %}active{% endif %}" title="Transactions">
+                <span class="nav-icon">💳</span><span>Transactions</span>
+            </a>
+
+            <div class="menu-title">Business Intelligence</div>
+            <a href="{{ url_for('ai_leads') }}"
+                class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">
+                <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
+            </a>
+            <a href="#" class="nav-item" title="Facebook Analytics">
+                <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="WhatsApp Analytics">
+                <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Business Analytics">
+                <span class="nav-icon">📈</span><span>Business Analytics</span>
+            </a>
+            <a href="#" class="nav-item" title="Forecasting">
+                <span class="nav-icon">🔮</span><span>Forecasting</span>
+            </a>
+            <a href="#" class="nav-item" title="Altair AI Assistant">
+                <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
+            </a>
+
+            <div class="menu-title">Business Management</div>
+            <a href="#" class="nav-item" title="Company Profile">
+                <span class="nav-icon">🏢</span><span>Company Profile</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='employees-team') }}" class="nav-item" title="Employees & Team">
+                <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='documents-reports') }}" class="nav-item"
+                title="Documents & Reports">
+                <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='notifications') }}" class="nav-item" title="Notifications">
+                <span class="nav-icon">🔔</span><span>Notifications</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='integrations') }}" class="nav-item" title="Integrations">
+                <span class="nav-icon">🔗</span><span>Integrations</span>
+            </a>
+
+            <div class="menu-title">Account &amp; Billing</div>
+            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
+                title="Subscription Plans">
+                <span class="nav-icon">👑</span><span>Subscription Plans</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item"
+                title="Billing & Payments">
+                <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
+                <span class="nav-icon">🧾</span><span>Billing History</span>
+            </a>
+            <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
+                <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
+            </a>
+
+            <div class="menu-title">Settings &amp; Support</div>
+            <a href="{{ url_for('settings') }}"
+                class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">
+                <span class="nav-icon">⚙️</span><span>Settings</span>
+            </a>
+            <a href="#" class="nav-item" title="Security">
+                <span class="nav-icon">🔐</span><span>Security</span>
+            </a>
+            <a href="{{ url_for('help_support') }}"
+                class="nav-item {% if request.endpoint == 'help_support' %}active{% endif %}" title="Help & Support">
+                <span class="nav-icon">❓</span><span>Help &amp; Support</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="logout-link">
+                <span class="nav-icon">🚪</span><span>Logout</span>
+            </a>
+        </aside>
+
+        <main class="main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for category, message in messages %}<div class="notice {{ category }}">{{ message }}
+            </div>{% endfor %}{% endif %}
+            {% endwith %}
+            <header class="topbar">
+                <div>
+                    <div class="eyebrow">Finance workspace</div>
+                    <h1>Transactions</h1>
+                    <p class="subtitle">Track your cash flow in one place — manual entries, invoices, and expenses.</p>
+                </div>
+                <button class="btn btn-primary" type="button" onclick="openModal()"><span>＋</span> Add
+                    Transaction</button>
+            </header>
+
+            <section class="cards">
+                <article class="card">
+                    <div class="card-head">Income received <span class="card-icon">↗</span></div>
+                    <div class="card-value positive">{{ total_income|money }}</div>
+                    <div class="card-note">Paid invoices + completed manual income</div>
+                </article>
+                <article class="card">
+                    <div class="card-head">Expenses <span class="card-icon"
+                            style="color:#fda4af;background:rgba(251,113,133,.1)">↘</span></div>
+                    <div class="card-value">{{ total_expenses|money }}</div>
+                    <div class="card-note">Completed expenses and investments</div>
+                </article>
+                <article class="card">
+                    <div class="card-head">Net cash flow <span class="card-icon"
+                            style="color:#c4b5fd;background:rgba(139,92,246,.12)">⇄</span></div>
+                    <div class="card-value {{ 'positive' if net_cash_flow >= 0 else 'negative' }}">{{
+                        net_cash_flow|money }}</div>
+                    <div class="card-note">Income received minus outflows</div>
+                </article>
+                <article class="card">
+                    <div class="card-head">Pending amount <span class="card-icon"
+                            style="color:#fcd34d;background:rgba(251,191,36,.1)">◷</span></div>
+                    <div class="card-value">{{ pending_amount|money }}</div>
+                    <div class="card-note">Pending and overdue records</div>
+                </article>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Transaction ledger</h2>
+                        <p>Showing {{ transactions|length }} matching records. Invoice and expense records are managed
+                            in their original pages.</p>
+                    </div><button class="btn btn-ghost" type="button" onclick="window.print()">⤓ Print / Save
+                        PDF</button>
+                </div>
+                <form class="filters" method="GET" action="{{ url_for('transactions') }}">
+                    <div class="field search-field"><label>Search</label><input type="search" name="q"
+                            value="{{ search_text }}" placeholder="Name, category, reference..."></div>
+                    <div class="field"><label>Type</label><select name="type">
+                            <option value="all" {{ 'selected' if filter_type=='all' else '' }}>All types</option>
+                            <option value="income" {{ 'selected' if filter_type=='income' else '' }}>Income</option>
+                            <option value="expense" {{ 'selected' if filter_type=='expense' else '' }}>Expense</option>
+                            <option value="investment" {{ 'selected' if filter_type=='investment' else '' }}>Investment
+                            </option>
+                        </select></div>
+                    <div class="field"><label>Status</label><select name="status">
+                            <option value="all" {{ 'selected' if filter_status=='all' else '' }}>All statuses</option>
+                            <option value="completed" {{ 'selected' if filter_status=='completed' else '' }}>Completed
+                            </option>
+                            <option value="paid" {{ 'selected' if filter_status=='paid' else '' }}>Paid</option>
+                            <option value="pending" {{ 'selected' if filter_status=='pending' else '' }}>Pending
+                            </option>
+                            <option value="overdue" {{ 'selected' if filter_status=='overdue' else '' }}>Overdue
+                            </option>
+                            <option value="cancelled" {{ 'selected' if filter_status=='cancelled' else '' }}>Cancelled
+                            </option>
+                        </select></div>
+                    <div class="field"><label>From date</label><input type="date" name="start_date"
+                            value="{{ start_date }}"></div>
+                    <div class="field"><label>To date</label><input type="date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <div style="display:flex;align-items:end;gap:7px"><button class="btn btn-primary"
+                            type="submit">Filter</button><a class="btn btn-ghost"
+                            href="{{ url_for('transactions') }}">Reset</a></div>
+                </form>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction</th>
+                                <th>Type</th>
+                                <th>Source</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <td>{{ tx.date or '—' }}</td>
+                                <td>
+                                    <div class="tx-title">{{ tx.title }}</div>
+                                    <div class="tx-sub">{{ tx.category }}{% if tx.reference %} · {{ tx.reference }}{%
+                                        endif %}{% if tx.notes %}<br>{{ tx.notes }}{% endif %}</div>
+                                </td>
+                                <td><span class="pill {{ tx.type|lower }}">{{ tx.type }}</span></td>
+                                <td><span class="source">{{ tx.source }}</span></td>
+                                <td><span class="pill {{ tx.status|lower }}">{{ tx.status }}</span></td>
+                                <td class="amount {{ 'plus' if tx.type|lower == 'income' else 'minus' }}">{{ '+' if
+                                    tx.type|lower == 'income' else '−' }}{{ tx.amount|money }}</td>
+                                <td>{% if tx.can_delete %}<form method="POST"
+                                        action="{{ url_for('delete_manual_transaction', transaction_id=tx.source_id) }}"
+                                        onsubmit="return confirm('Delete this manual transaction? This cannot be undone.');">
+                                        <button class="icon-btn" type="submit"
+                                            title="Delete manual transaction">Delete</button>
+                                    </form>{% else %}<span class="source">Managed in {{ tx.source|lower }} page</span>{%
+                                    endif %}</td>
+                            </tr>
+                            {% else %}<tr>
+                                <td colspan="7">
+                                    <div class="empty"><strong>No transactions found</strong>Try changing the filters or
+                                        add your first manual transaction.<br><br><button class="btn btn-primary"
+                                            type="button" onclick="openModal()">＋ Add Transaction</button></div>
+                                </td>
+                            </tr>{% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <p class="footer-note">Note: an invoice is counted as income received only when its status is Paid. Invoice
+                and expense entries shown here are read-only to avoid changes being out of sync with their original
+                modules. All records are scoped to your signed-in user.</p>
+        </main>
+    </div>
+
+    <div class="modal" id="transactionModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 id="modalTitle">Add a transaction</h2><button class="close" type="button" onclick="closeModal()"
+                    aria-label="Close">×</button>
+            </div>
+            <form method="POST" action="{{ url_for('add_manual_transaction') }}">
+                <div class="form-grid">
+                    <div class="field"><label for="transaction_type">Transaction type *</label><select
+                            id="transaction_type" name="transaction_type" required>
+                            <option>Income</option>
+                            <option>Expense</option>
+                            <option>Investment</option>
+                        </select></div>
+                    <div class="field"><label for="status">Status *</label><select id="status" name="status" required>
+                            <option>Completed</option>
+                            <option>Pending</option>
+                            <option>Cancelled</option>
+                        </select></div>
+                    <div class="field full"><label for="title">Transaction name / description *</label><input id="title"
+                            name="title" maxlength="255" placeholder="e.g. Website development payment" required></div>
+                    <div class="field"><label for="amount">Amount *</label><input id="amount" name="amount"
+                            type="number" min="0.01" step="0.01" placeholder="0.00" required></div>
+                    <div class="field"><label for="transaction_date">Date *</label><input id="transaction_date"
+                            name="transaction_date" type="date" required></div>
+                    <div class="field"><label for="category">Category</label><input id="category" name="category"
+                            maxlength="120" placeholder="Sales, utilities, equipment..."></div>
+                    <div class="field"><label for="payment_method">Payment method</label><select id="payment_method"
+                            name="payment_method">
+                            <option>Not specified</option>
+                            <option>Cash</option>
+                            <option>Bank transfer</option>
+                            <option>Card</option>
+                            <option>Mobile money</option>
+                            <option>PayPal</option>
+                            <option>Other</option>
+                        </select></div>
+                    <div class="field full"><label for="reference">Reference (optional)</label><input id="reference"
+                            name="reference" maxlength="150" placeholder="Receipt number, bank reference, etc."></div>
+                    <div class="field full"><label for="notes">Notes (optional)</label><textarea id="notes" name="notes"
+                            rows="3" placeholder="Additional details..."></textarea></div>
+                </div>
+                <div class="form-actions"><button class="btn btn-ghost" type="button"
+                        onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="submit">Save
+                        Transaction</button></div>
+            </form>
+        </div>
+    </div>
+    <script>
+        const modal = document.getElementById('transactionModal');
+        function openModal() { modal.classList.add('show'); document.body.style.overflow = 'hidden'; }
+        function closeModal() { modal.classList.remove('show'); document.body.style.overflow = ''; }
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        const dateField = document.getElementById('transaction_date');
+        if (dateField && !dateField.value) dateField.value = new Date().toISOString().slice(0, 10);
+    </script>
+</body>
+
+</html>

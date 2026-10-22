@@ -10208,6 +10208,267 @@ def save_google_lead():
         }), 500
     
 
+# ============================================================
+# TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
+# ============================================================
+
+
+def ensure_manual_transactions_table(cursor):
+    """Create the manual ledger table if it does not already exist."""
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS manual_transactions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            transaction_type ENUM('Income','Expense','Investment') NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            category VARCHAR(120) DEFAULT 'General',
+            amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+            transaction_date DATE NOT NULL,
+            payment_method VARCHAR(100) DEFAULT 'Not specified',
+            status ENUM('Completed','Pending','Cancelled') NOT NULL DEFAULT 'Completed',
+            reference VARCHAR(150) DEFAULT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_manual_transactions_user_date (user_id, transaction_date),
+            INDEX idx_manual_transactions_user_type (user_id, transaction_type)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+
+
+@app.route("/transactions", methods=["GET"])
+def transactions():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    search_text = request.args.get("q", "").strip().lower()
+    filter_type = request.args.get("type", "all").strip().lower()
+    filter_status = request.args.get("status", "all").strip().lower()
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+
+    db = None
+    cursor = None
+    records = []
+    company = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        ensure_manual_transactions_table(cursor)
+        db.commit()
+
+        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
+        company = cursor.fetchone()
+
+        # Manual entries: users can add income, expenses, and investments.
+        cursor.execute("""
+            SELECT id, transaction_type, title, category, amount,
+                   transaction_date, payment_method, status, reference,
+                   notes, 'Manual' AS source
+            FROM manual_transactions
+            WHERE user_id = %s
+        """, (user_id,))
+        for row in cursor.fetchall():
+            d = row.get("transaction_date")
+            records.append({
+                "id": row["id"], "source": "Manual", "source_id": row["id"],
+                "title": row.get("title") or "Transaction",
+                "category": row.get("category") or "General",
+                "type": row.get("transaction_type") or "Expense",
+                "amount": float(row.get("amount") or 0),
+                "date": d.isoformat() if d else "",
+                "payment_method": row.get("payment_method") or "Not specified",
+                "status": row.get("status") or "Completed",
+                "reference": row.get("reference") or "",
+                "notes": row.get("notes") or "",
+                "can_delete": True
+            })
+
+        # Automatically show existing invoices. Only Paid invoices count as received income.
+        cursor.execute("""
+            SELECT id, invoice_number, customer_name, item_name, invoice_date,
+                   due_date, amount, status, created_at
+            FROM invoices
+            WHERE user_id = %s
+        """, (user_id,))
+        for row in cursor.fetchall():
+            d = row.get("invoice_date") or row.get("created_at")
+            status = str(row.get("status") or "Pending").strip().title()
+            records.append({
+                "id": f"invoice-{row['id']}", "source": "Invoice", "source_id": row["id"],
+                "title": row.get("item_name") or ("Invoice " + str(row.get("invoice_number") or row["id"])),
+                "category": "Invoice", "type": "Income",
+                "amount": float(row.get("amount") or 0),
+                "date": d.isoformat() if hasattr(d, "isoformat") else str(d or "")[:10],
+                "payment_method": "Invoice", "status": status,
+                "reference": row.get("invoice_number") or str(row["id"]),
+                "notes": "Customer: " + str(row.get("customer_name") or "Not specified"),
+                "can_delete": False
+            })
+
+        # Automatically show expenses from the existing money-management module.
+        # Recurring-payment expenses are shown here once as expense rows; no extra
+        # recurring-payment table is added, preventing duplicate cash-out entries.
+        cursor.execute("""
+            SELECT id, expense_name, category, amount, expense_date,
+                   payment_method, description, recurring_payment_id
+            FROM expenses
+            WHERE user_id = %s
+        """, (user_id,))
+        for row in cursor.fetchall():
+            d = row.get("expense_date")
+            records.append({
+                "id": f"expense-{row['id']}", "source": "Expense", "source_id": row["id"],
+                "title": row.get("expense_name") or "Expense",
+                "category": row.get("category") or "General", "type": "Expense",
+                "amount": float(row.get("amount") or 0),
+                "date": d.isoformat() if hasattr(d, "isoformat") else str(d or "")[:10],
+                "payment_method": row.get("payment_method") or "Not specified",
+                "status": "Completed", "reference": "EXP-" + str(row["id"]),
+                "notes": row.get("description") or "",
+                "can_delete": False
+            })
+
+    except Exception as e:
+        if db:
+            try: db.rollback()
+            except Exception: pass
+        print("TRANSACTIONS PAGE ERROR:", e)
+        flash("Transactions could not be loaded. Check the database schema and Render logs.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    # Apply filters to the combined ledger. Existing invoices/expenses are read-only here;
+    # edit them in their original modules so both screens stay in sync.
+    filtered = []
+    for item in records:
+        item_date = (item.get("date") or "")[:10]
+        item_type = str(item.get("type") or "").lower()
+        item_status = str(item.get("status") or "").lower()
+        if filter_type != "all" and item_type != filter_type:
+            continue
+        if filter_status != "all" and item_status != filter_status:
+            continue
+        if start_date and item_date and item_date < start_date:
+            continue
+        if end_date and item_date and item_date > end_date:
+            continue
+        haystack = " ".join(str(item.get(k) or "") for k in ("title", "category", "reference", "notes", "source", "payment_method")).lower()
+        if search_text and search_text not in haystack:
+            continue
+        filtered.append(item)
+
+    filtered.sort(key=lambda x: x.get("date") or "", reverse=True)
+
+    # KPI totals use the full ledger, not the filtered results.
+    total_income = sum(x["amount"] for x in records if x["type"].lower() == "income" and x["status"].lower() == "paid")
+    total_income += sum(x["amount"] for x in records if x["source"] == "Manual" and x["type"].lower() == "income" and x["status"].lower() == "completed")
+    total_expenses = sum(x["amount"] for x in records if x["type"].lower() in ("expense", "investment") and x["status"].lower() == "completed")
+    pending_amount = sum(x["amount"] for x in records if x["status"].lower() in ("pending", "overdue"))
+    net_cash_flow = total_income - total_expenses
+
+    return render_template(
+        "transactions.html", transactions=filtered, company=company,
+        total_income=total_income, total_expenses=total_expenses,
+        net_cash_flow=net_cash_flow, pending_amount=pending_amount,
+        search_text=search_text, filter_type=filter_type,
+        filter_status=filter_status, start_date=start_date, end_date=end_date
+    )
+
+
+@app.route("/transactions/add", methods=["POST"])
+def add_manual_transaction():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    transaction_type = request.form.get("transaction_type", "Expense").strip().title()
+    title = request.form.get("title", "").strip()
+    category = request.form.get("category", "General").strip() or "General"
+    amount_raw = request.form.get("amount", "").strip().replace(",", "")
+    transaction_date = request.form.get("transaction_date", "").strip()
+    payment_method = request.form.get("payment_method", "Not specified").strip() or "Not specified"
+    status = request.form.get("status", "Completed").strip().title()
+    reference = request.form.get("reference", "").strip() or None
+    notes = request.form.get("notes", "").strip() or None
+
+    if transaction_type not in ("Income", "Expense", "Investment"):
+        flash("Choose a valid transaction type.", "error")
+        return redirect(url_for("transactions"))
+    if status not in ("Completed", "Pending", "Cancelled"):
+        flash("Choose a valid transaction status.", "error")
+        return redirect(url_for("transactions"))
+    try:
+        amount = float(amount_raw)
+        if amount <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        flash("Enter an amount greater than zero.", "error")
+        return redirect(url_for("transactions"))
+    try:
+        date.fromisoformat(transaction_date)
+    except (TypeError, ValueError):
+        flash("Choose a valid transaction date.", "error")
+        return redirect(url_for("transactions"))
+    if not title:
+        flash("Enter a transaction name or description.", "error")
+        return redirect(url_for("transactions"))
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        ensure_manual_transactions_table(cursor)
+        cursor.execute("""
+            INSERT INTO manual_transactions
+                (user_id, transaction_type, title, category, amount,
+                 transaction_date, payment_method, status, reference, notes)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (user_id, transaction_type, title, category, amount,
+              transaction_date, payment_method, status, reference, notes))
+        db.commit()
+        flash("Transaction saved successfully.", "success")
+    except Exception as e:
+        if db:
+            db.rollback()
+        print("ADD MANUAL TRANSACTION ERROR:", e)
+        flash("Could not save the transaction. Please try again.", "error")
+    finally:
+        if cursor: cursor.close()
+        if db: db.close()
+    return redirect(url_for("transactions"))
+
+
+@app.route("/transactions/delete/<int:transaction_id>", methods=["POST"])
+def delete_manual_transaction(transaction_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        ensure_manual_transactions_table(cursor)
+        cursor.execute("DELETE FROM manual_transactions WHERE id = %s AND user_id = %s", (transaction_id, session["user_id"]))
+        db.commit()
+        if cursor.rowcount:
+            flash("Manual transaction deleted.", "success")
+        else:
+            flash("Transaction not found or you do not have permission to delete it.", "error")
+    except Exception as e:
+        if db: db.rollback()
+        print("DELETE MANUAL TRANSACTION ERROR:", e)
+        flash("Could not delete the transaction.", "error")
+    finally:
+        if cursor: cursor.close()
+        if db: db.close()
+    return redirect(url_for("transactions"))
+
+
 # RUN APP
 if __name__ == "__main__":
 
