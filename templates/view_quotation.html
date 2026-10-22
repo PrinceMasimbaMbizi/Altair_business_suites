@@ -580,41 +580,129 @@
       return String(value).replace(/[^a-z0-9_-]/gi, "_");
     }
 
+
+    // QUOTATION PDF DOWNLOAD - FIXED VERSION
     document.getElementById("downloadPdfBtn").addEventListener("click", async function () {
+
       const button = this;
-      if (typeof window.html2pdf !== "function") {
-        showNotice("The PDF tool did not load. Check your internet connection and reload the page.", "error");
+
+      if (button.disabled) {
         return;
       }
 
-      const logo = quotationElement.querySelector(".brand img");
-      if (logo && !logo.complete) {
-        await new Promise(resolve => {
-          logo.addEventListener("load", resolve, { once: true });
-          logo.addEventListener("error", resolve, { once: true });
-        });
-      }
-
       button.disabled = true;
-      showNotice("Preparing your PDF download…", "success");
+
+      const originalText = button.title;
+
+      showNotice("Preparing your quotation PDF...", "success");
 
       try {
-        await window.html2pdf().set({
-          margin: [10, 10, 10, 10],
-          filename: "Quotation-" + safeFileName(quotationData.number) + ".pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollY: 0 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ["css", "legacy"] }
-        }).from(quotationElement).save();
-        showNotice("Quotation PDF downloaded successfully.", "success");
+
+        const quotation = document.getElementById("quotationPaper");
+
+        if (!quotation) {
+          throw new Error("Quotation content could not be found.");
+        }
+
+        // Check whether the PDF library loaded.
+        if (typeof window.html2pdf !== "function") {
+
+          showNotice(
+            "The PDF library could not load. Opening the print option instead.",
+            "error"
+          );
+
+          setTimeout(function () {
+            window.print();
+          }, 500);
+
+          return;
+        }
+
+        // Wait for the company logo to finish loading.
+        const logo = quotation.querySelector(".brand img");
+
+        if (logo && !logo.complete) {
+
+          await new Promise(function (resolve) {
+
+            logo.onload = resolve;
+            logo.onerror = resolve;
+
+          });
+
+        }
+
+        // Generate and download the quotation PDF.
+        const filename =
+          "Quotation-" +
+          safeFileName(quotationData.number || "quotation") +
+          ".pdf";
+
+        await window.html2pdf()
+          .set({
+
+            margin: [10, 10, 10, 10],
+
+            filename: filename,
+
+            image: {
+              type: "jpeg",
+              quality: 0.98
+            },
+
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              allowTaint: false,
+              backgroundColor: "#ffffff",
+              scrollY: 0,
+              logging: false
+            },
+
+            jsPDF: {
+              unit: "mm",
+              format: "a4",
+              orientation: "portrait"
+            },
+
+            pagebreak: {
+              mode: ["css", "legacy"]
+            }
+
+          })
+          .from(quotation)
+          .save();
+
+        showNotice(
+          "Your quotation PDF has been generated. Check your Downloads folder.",
+          "success"
+        );
+
       } catch (error) {
-        console.error("PDF download failed:", error);
-        showNotice("PDF download failed. Please reload the page and try again.", "error");
+
+        console.error("Quotation PDF download error:", error);
+
+        showNotice(
+          "Automatic PDF download failed. Opening the print dialog so you can save the quotation as a PDF.",
+          "error"
+        );
+
+        // Fallback: let the user save the quotation through the browser.
+        setTimeout(function () {
+          window.print();
+        }, 500);
+
       } finally {
+
         button.disabled = false;
+        button.title = originalText || "Download PDF";
+
       }
+
     });
+
+
 
     document.getElementById("emailQuotationBtn").addEventListener("click", function () {
       if (!quotationData.email.trim()) {

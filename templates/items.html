@@ -1313,7 +1313,8 @@
         }
 
         .company-logo-placeholder {
-            display: flex !important;
+            /* Do not override inline display:none when the real logo loads. */
+            display: flex;
             align-items: center !important;
             justify-content: center !important;
             background: linear-gradient(135deg, #00f0ff, #ff00d4) !important;
@@ -4833,8 +4834,7 @@
 
             let payment = buttonOrPayment;
 
-            // When called from the Edit button, safely read the JSON
-            // from its data attribute instead of embedding JSON in onclick.
+
             if (buttonOrPayment instanceof HTMLElement) {
                 try {
                     payment = JSON.parse(buttonOrPayment.dataset.payment || "{}");
