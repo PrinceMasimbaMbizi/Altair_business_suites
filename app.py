@@ -8984,15 +8984,8 @@ def search_ai_leads():
         max_results = 10
 
 
-    # Keep Google request reasonable
-
-    max_results = max(
-        1,
-        min(
-            max_results,
-            10
-        )
-    )
+    # Keep public web search bounded while allowing the UI's 5/10/15/20 options.
+    max_results = max(1, min(max_results, 20))
 
 
     
@@ -9023,161 +9016,202 @@ def search_ai_leads():
         )
 
 
-    # META API ONLY: business discovery and prospect research.
-    # Meta Page Search returns public Pages, not a directory of private
-    # personal profiles. Search both businesses and potential customer
-    # categories using the same official Meta Graph API source.
-    if not META_ACCESS_TOKEN:
-        flash(
-            "Meta search is not configured. Add META_ACCESS_TOKEN to your server environment.",
-            "error"
-        )
-        return redirect(url_for("ai_leads"))
+    # MULTI-SOURCE LEAD DISCOVERY: GOOGLE PLACES + FACEBOOK PUBLIC PAGES
+    # Each source is independent. If one API is missing or fails, the other
+    # can still return leads. Google Places is the primary business directory;
+    # Brave Search discovers publicly indexed Facebook Pages as a fallback / supplement.
+    source_errors = []
+    discovered_places = []
+    seen_source_ids = set()
 
-    if not re.fullmatch(r"v[0-9]+\.[0-9]+", META_GRAPH_API_VERSION):
-        flash("META_GRAPH_API_VERSION must look like v23.0.", "error")
-        return redirect(url_for("ai_leads"))
-
-    # Build a discovery query. The service/product is what the current
-    # company sells; industry/location/keywords define the audience to find.
-    query_parts = []
+    audience_terms = []
     if industry and industry.lower() not in {"any", "all", "all industries"}:
-        query_parts.append(industry)
-    else:
-        query_parts.append("business")
-    if business_size and business_size.lower() != "any":
-        query_parts.append(business_size + " business")
+        audience_terms.append(industry)
     if keywords:
-        query_parts.append(keywords)
-    query_parts.append(location)
-    search_query = " ".join(part for part in query_parts if part).strip()
+        audience_terms.append(keywords)
+    if business_size and business_size.lower() not in {"any", "any business size"}:
+        audience_terms.append(business_size + " business")
+    audience_terms.append(location)
+    audience_query = " ".join(part for part in audience_terms if part).strip() or location
 
     print("=" * 70)
-    print("META API LEAD SEARCH")
-    print("Search query:", search_query)
+    print("ALTAIR MULTI-SOURCE LEAD SEARCH")
+    print("Audience query:", audience_query)
+    print("Offer to qualify against:", services)
     print("Prospect mode:", prospect_type)
     print("=" * 70)
 
-    # Preserve the existing result-processing pipeline below by converting
-    # Meta Page objects into the normalized fields it already understands.
-    meta_pages = []
-    source_errors = []
-    graph_url = f"https://graph.facebook.com/{META_GRAPH_API_VERSION}/pages/search"
-    meta_fields = "id,name,location,link,category,category_list,about,website,emails,phone"
-
-    # Search several related query phrases to improve coverage across industries.
-    search_queries = [search_query]
-    if services:
-        service_audience_query = " ".join(
-            part for part in [industry if industry and industry.lower() not in {"any", "all", "all industries"} else "businesses", keywords, location] if part
-        ).strip()
-        if service_audience_query and service_audience_query.casefold() != search_query.casefold():
-            search_queries.append(service_audience_query)
-
-    seen_meta_ids = set()
-    for meta_query in search_queries:
+    # SOURCE 1 — Google Places API (Text Search, current Places API v1).
+    # A missing/invalid Google key must not stop Facebook discovery.
+    google_api_key = os.environ.get("GOOGLE_PLACES_API_KEY", "").strip()
+    if google_api_key:
+        google_query = " ".join(part for part in [audience_query, "businesses"] if part).strip()
         try:
-            response = requests.get(
-                graph_url,
-                params={
-                    "q": meta_query,
-                    "fields": meta_fields,
-                    "limit": min(max_results, 10),
-                    "access_token": META_ACCESS_TOKEN,
+            response = requests.post(
+                "https://places.googleapis.com/v1/places:searchText",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Goog-Api-Key": google_api_key,
+                    "X-Goog-FieldMask": (
+                        "places.id,places.displayName,places.formattedAddress,"
+                        "places.websiteUri,places.nationalPhoneNumber,"
+                        "places.internationalPhoneNumber,places.types,"
+                        "places.businessStatus,places.googleMapsUri,places.primaryType"
+                    ),
+                },
+                json={
+                    "textQuery": google_query,
+                    "pageSize": min(max_results, 20),
+                    "languageCode": "en",
                 },
                 timeout=25,
             )
-            print("META PAGE SEARCH STATUS:", response.status_code, "QUERY:", meta_query)
-            payload = response.json() if response.content else {}
-            if response.status_code != 200 or payload.get("error"):
-                meta_error = payload.get("error", {}) if isinstance(payload, dict) else {}
-                error_message = (meta_error.get("message") or "Meta Page Search returned an error.") if isinstance(meta_error, dict) else "Meta Page Search returned an error."
-                print("META PAGE SEARCH ERROR:", error_message)
-                if "permission" in error_message.lower() or "access token" in error_message.lower() or "unsupported get" in error_message.lower():
-                    source_errors.append(
-                        "Meta Page Search was blocked by Meta permissions or token access. Check the token and whether your app has Page Public Metadata Access approval."
-                    )
-                else:
-                    source_errors.append("Meta Page Search returned an error; some results may be missing.")
-                continue
-
-            for page in payload.get("data", []) or []:
-                page_id = str(page.get("id") or "").strip()
-                if not page_id or page_id in seen_meta_ids:
-                    continue
-                seen_meta_ids.add(page_id)
-                page_location = page.get("location") or {}
-                if isinstance(page_location, dict):
-                    address_parts = [
-                        str(page_location.get(key) or "").strip()
-                        for key in ("street", "city", "state", "zip", "country")
-                    ]
-                    address = ", ".join(part for part in address_parts if part)
-                else:
-                    address = str(page_location or "")
-
-                categories = page.get("category_list") or []
-                if not isinstance(categories, list):
-                    categories = []
-                category_names = [
-                    str(item.get("name") or "").strip()
-                    for item in categories if isinstance(item, dict) and item.get("name")
-                ]
-                category = str(page.get("category") or "").strip()
-                if category and category not in category_names:
-                    category_names.insert(0, category)
-
-                emails = page.get("emails") or []
-                if isinstance(emails, str):
-                    email = emails.strip()
-                elif isinstance(emails, list):
-                    email = str(emails[0]).strip() if emails else ""
-                else:
-                    email = ""
-
-                page_url = str(page.get("link") or f"https://www.facebook.com/{page_id}").strip()
-                website = str(page.get("website") or "").strip()
-                phone = str(page.get("phone") or "").strip()
-                meta_pages.append({
-                    "id": "meta_" + page_id,
-                    "displayName": {"text": str(page.get("name") or "Facebook Page")},
-                    "formattedAddress": address,
-                    "websiteUri": website,
-                    "nationalPhoneNumber": phone,
-                    "internationalPhoneNumber": "",
-                    "types": [re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_") for name in category_names],
-                    "businessStatus": "",
-                    "googleMapsUri": page_url,
-                    "_prospect_type": "Business / Organization" if prospect_type != "people" else "Potential Customer / Public Page",
-                    "_source_type": "Meta Graph API",
-                    "_email_from_snippet": email,
-                    "_evidence_text": str(page.get("about") or ""),
-                    "_meta_page_id": page_id,
-                })
-                if len(meta_pages) >= max_results:
-                    break
-            if len(meta_pages) >= max_results:
-                break
+            print("GOOGLE PLACES SEARCH STATUS:", response.status_code, "QUERY:", google_query)
+            if response.status_code == 200:
+                payload = response.json() if response.content else {}
+                for place in payload.get("places", []) or []:
+                    place_id = str(place.get("id") or "").strip()
+                    if not place_id or place_id in seen_source_ids:
+                        continue
+                    seen_source_ids.add(place_id)
+                    normalized = dict(place)
+                    normalized["id"] = place_id
+                    normalized["_source_type"] = "Google Places"
+                    normalized["_prospect_type"] = "Business / Organization"
+                    normalized["_email_from_snippet"] = ""
+                    normalized["_evidence_text"] = ""
+                    discovered_places.append(normalized)
+                    if len([x for x in discovered_places if x.get("_source_type") == "Google Places"]) >= max_results:
+                        break
+            else:
+                print("GOOGLE PLACES ERROR BODY:", response.text[:700])
+                source_errors.append(f"Google Places search failed (HTTP {response.status_code}); Facebook search will still be attempted.")
         except requests.RequestException as exc:
-            print("META PAGE SEARCH CONNECTION ERROR:", type(exc).__name__, str(exc))
-            source_errors.append("Could not connect to Meta Graph API.")
+            print("GOOGLE PLACES CONNECTION ERROR:", type(exc).__name__, str(exc))
+            source_errors.append("Could not connect to Google Places; Facebook search will still be attempted.")
         except (ValueError, TypeError) as exc:
-            print("META PAGE SEARCH RESPONSE ERROR:", type(exc).__name__, str(exc))
-            source_errors.append("Meta returned an unreadable search response.")
+            print("GOOGLE PLACES RESPONSE ERROR:", type(exc).__name__, str(exc))
+            source_errors.append("Google Places returned an unreadable response; Facebook search will still be attempted.")
+    else:
+        source_errors.append("GOOGLE_PLACES_API_KEY is not configured, so Google Places was skipped; Facebook discovery will still be attempted.")
+
+    # SOURCE 2 — public Facebook Pages indexed by Brave Search.
+    # This is a web-index fallback/supplement, not direct Meta Graph API access.
+    brave_api_key = os.environ.get("BRAVE_SEARCH_API_KEY", "").strip()
+    facebook_pages = []
+    if brave_api_key:
+        search_queries = []
+        query_variants = [
+            f"site:facebook.com {audience_query}",
+            f"site:facebook.com/pages {audience_query}",
+        ]
+        if industry and industry.lower() not in {"any", "all", "all industries"}:
+            query_variants.append(f"site:facebook.com {industry} {location}")
+        if keywords:
+            query_variants.append(f"site:facebook.com {keywords} {location}")
+        for query_text in query_variants:
+            query_text = re.sub(r"\s+", " ", query_text).strip()
+            if query_text and query_text not in search_queries:
+                search_queries.append(query_text)
+
+        seen_page_urls = set()
+        for web_query in search_queries:
+            if len(facebook_pages) >= max_results:
+                break
+            try:
+                response = requests.get(
+                    "https://api.search.brave.com/res/v1/web/search",
+                    params={
+                        "q": web_query,
+                        "count": min(20, max(5, max_results * 2)),
+                        "safesearch": "moderate",
+                        "search_lang": "en",
+                    },
+                    headers={
+                        "Accept": "application/json",
+                        "X-Subscription-Token": brave_api_key,
+                    },
+                    timeout=20,
+                )
+                print("BRAVE FACEBOOK SEARCH STATUS:", response.status_code, "QUERY:", web_query)
+                if response.status_code != 200:
+                    print("BRAVE SEARCH ERROR BODY:", response.text[:700])
+                    if response.status_code in (401, 403):
+                        source_errors.append("Brave rejected BRAVE_SEARCH_API_KEY; Google Places results remain available.")
+                    elif response.status_code == 429:
+                        source_errors.append("Brave Search rate limit reached; Google Places results remain available.")
+                    else:
+                        source_errors.append(f"Brave Search returned HTTP {response.status_code}; Google Places results remain available.")
+                    continue
+
+                payload = response.json() if response.content else {}
+                web_block = payload.get("web", {}) if isinstance(payload, dict) else {}
+                for item in (web_block.get("results", []) if isinstance(web_block, dict) else []) or []:
+                    page_url = str(item.get("url") or "").strip()
+                    title = str(item.get("title") or "").strip()
+                    description = str(item.get("description") or "").strip()
+                    parsed_url = page_url.lower().split("?", 1)[0].rstrip("/")
+                    if "facebook.com/" not in parsed_url:
+                        continue
+                    if any(part in parsed_url for part in (
+                        "/groups/", "/events/", "/marketplace/", "/watch/",
+                        "/reel/", "/photo", "/videos/", "/story.php", "/login/"
+                    )):
+                        continue
+                    if not title or not page_url or parsed_url in seen_page_urls:
+                        continue
+                    if parsed_url in {"https://www.facebook.com", "https://facebook.com"}:
+                        continue
+                    seen_page_urls.add(parsed_url)
+                    combined_text = f"{title} {description}"
+                    phone_match = re.search(r"(?:\+?\d[\d ()().-]{6,}\d)", combined_text)
+                    email_match = re.search(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", combined_text, re.I)
+                    display_name = re.sub(r"\s*[-|:]?\s*Facebook\s*$", "", title, flags=re.I).strip() or title or "Public Facebook Page"
+                    page_id = "fbweb_" + re.sub(r"[^a-zA-Z0-9]", "", parsed_url)[-80:]
+                    if page_id in seen_source_ids:
+                        continue
+                    seen_source_ids.add(page_id)
+                    facebook_pages.append({
+                        "id": page_id,
+                        "displayName": {"text": display_name[:255]},
+                        "formattedAddress": location,
+                        "websiteUri": "",
+                        "nationalPhoneNumber": phone_match.group(0).strip() if phone_match else "",
+                        "internationalPhoneNumber": "",
+                        "types": [industry.replace(" ", "_").lower()] if industry and industry.lower() not in {"any", "all", "all industries"} else [],
+                        "businessStatus": "Public Facebook Page",
+                        "googleMapsUri": page_url,
+                        "_prospect_type": "Business / Organization" if prospect_type != "people" else "Public Page / Potential Customer",
+                        "_source_type": "Facebook public web result",
+                        "_email_from_snippet": email_match.group(0) if email_match else "",
+                        "_evidence_text": description,
+                        "_meta_page_id": "",
+                    })
+                    if len(facebook_pages) >= max_results:
+                        break
+            except requests.RequestException as exc:
+                print("BRAVE FACEBOOK SEARCH CONNECTION ERROR:", type(exc).__name__, str(exc))
+                source_errors.append("Could not connect to Brave Search; Google Places results remain available.")
+            except (ValueError, TypeError) as exc:
+                print("BRAVE FACEBOOK SEARCH RESPONSE ERROR:", type(exc).__name__, str(exc))
+                source_errors.append("Brave Search returned an unreadable response; Google Places results remain available.")
+    else:
+        source_errors.append("BRAVE_SEARCH_API_KEY is not configured, so Facebook discovery was skipped; Google Places can still work.")
+
+    # Merge both sources into one lead-scoring pipeline, with Google and Facebook
+    # results both retained. Each source can return up to max_results.
+    google_places = discovered_places + facebook_pages
+    print("MULTI-SOURCE TOTALS — Google Places:", len(discovered_places), "Facebook public Pages:", len(facebook_pages))
 
     if prospect_type in {"people", "both"}:
-        # Meta Graph API does not offer unrestricted search of private people
-        # or personal profiles. This mode therefore surfaces public Pages only.
         flash(
-            "Meta API can discover public Pages, but it cannot search private personal profiles. Results are public business/organization Pages that may be potential customers.",
+            "Facebook discovery can return publicly indexed Pages only. It cannot search private personal profiles, private groups, or hidden contact details.",
             "warning"
         )
-
     for source_error in dict.fromkeys(source_errors):
-        flash(source_error, "error")
+        flash(source_error, "warning")
 
-    # Keep the downstream pipeline's established variable names so lead
-    # scoring, duplicate checks, and the results template continue to work.
+    # Keep the existing lead-scoring / duplicate-check pipeline intact.
     google_places = meta_pages
 
     # PROCESS GOOGLE RESULTS

@@ -3140,8 +3140,9 @@
                                 <option value="both" {% if search_prospect_type|default('')=='both' %}selected{% endif
                                     %}>Both people and businesses</option>
                             </select>
-                            <small>Choose the type of prospect. Individual search uses BRAVE_SEARCH_API_KEY and returns
-                                public web results.</small>
+                            <small>Altair searches Google Places and publicly indexed Facebook Pages together. If either
+                                source is unavailable, the other can still return results. Facebook discovery requires
+                                BRAVE_SEARCH_API_KEY; Google business search requires GOOGLE_PLACES_API_KEY.</small>
                         </div>
 
 
@@ -3291,18 +3292,13 @@
                         <div>
 
                             <strong>
-                                Build a focused customer search
+                                Find potential customers across Google Places and Facebook
                             </strong>
 
                             <p>
-                                Example:
-                                <b>Accounting, tutoring, catering, repairs, or any offer</b>
-                                →
-                                <b>your target location</b>
-                                →
-                                <b>people, businesses, or both</b>
-                                →
-                                <b>optional industry and keywords</b>
+                                Example: choose your target industry and location, then add keywords. Altair combines
+                                Google Places business listings with publicly indexed Facebook Pages and scores both
+                                against the product or service you offer.
                             </p>
 
                         </div>
@@ -3371,12 +3367,13 @@
                     <div class="section-title">
 
                         <h3>
-                            🔎 Google Results
+                            🔎 Google Places + Facebook Lead Results
                         </h3>
 
                         <p>
-                            Search:
-                            {{ search_query }}
+                            Results can include Google Places business listings and publicly indexed Facebook Pages.
+                            Facebook results do not include private profiles, private groups, or hidden data.
+                            Search: {{ search_query }}
                         </p>
 
                     </div>
@@ -3513,15 +3510,18 @@
                                 <td>
 
                                     {% if lead.website %}
-
-                                    <a href="{{ lead.website }}" target="_blank" class="website-link">
+                                    <a href="{{ lead.website }}" target="_blank" rel="noopener noreferrer"
+                                        class="website-link">
                                         Website
                                     </a>
-
+                                    {% elif lead.google_maps_url and lead.source_type|default('') == 'Facebook public
+                                    web result' %}
+                                    <a href="{{ lead.google_maps_url }}" target="_blank" rel="noopener noreferrer"
+                                        class="website-link">
+                                        Facebook Page
+                                    </a>
                                     {% else %}
-
                                     —
-
                                     {% endif %}
 
                                 </td>
