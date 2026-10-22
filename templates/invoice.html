@@ -1959,12 +1959,17 @@
             <a href="#" class="nav-item" title="WhatsApp Analytics">
                 <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
             </a>
-            <a href="#" class="nav-item" title="Business Analytics">
-                <span class="nav-icon">📈</span><span>Business Analytics</span>
+
+            <a href="{{ url_for('business_analytics') }}"
+                class="nav-item {% if request.endpoint == 'business_analytics' %}active{% endif %}"
+                title="Business Analytics"><span class="nav-icon">📈</span><span>Business Analytics</span>
             </a>
-            <a href="#" class="nav-item" title="Forecasting">
-                <span class="nav-icon">🔮</span><span>Forecasting</span>
+
+           <a href="{{ url_for('forecasting') }}"
+                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}"
+                title="Forecasting"><span class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
+
             <a href="#" class="nav-item" title="Altair AI Assistant">
                 <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
             </a>

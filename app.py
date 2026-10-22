@@ -10209,6 +10209,240 @@ def save_google_lead():
     
 
 # ============================================================
+# BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
+# ============================================================
+
+@app.route("/business-analytics", methods=["GET"])
+def business_analytics():
+    """Display analytics based on the logged-in user's own business records."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+
+    # Validate supplied date filters before they are used in comparisons.
+    try:
+        if start_date:
+            date.fromisoformat(start_date)
+        if end_date:
+            date.fromisoformat(end_date)
+        if start_date and end_date and start_date > end_date:
+            raise ValueError("Start date must be before end date")
+    except ValueError:
+        flash("Please choose a valid date range.", "error")
+        return redirect(url_for("business_analytics"))
+
+    db = None
+    cursor = None
+    company = None
+    invoices = []
+    expenses = []
+    investments = []
+    customers_count = 0
+    insights = []
+    error_message = None
+
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
+        company = cursor.fetchone()
+        if not company:
+            return redirect(url_for("company_setup"))
+
+        # Fetch only records belonging to the currently authenticated user.
+        cursor.execute("""
+            SELECT id, invoice_number, customer_name, customer_email, item_name,
+                   invoice_date, due_date, amount, status, created_at
+            FROM invoices
+            WHERE user_id = %s
+            ORDER BY COALESCE(invoice_date, DATE(created_at)) ASC, id ASC
+        """, (user_id,))
+        invoices = cursor.fetchall() or []
+
+        cursor.execute("""
+            SELECT id, expense_name, category, amount, expense_date,
+                   payment_method, description
+            FROM expenses
+            WHERE user_id = %s
+            ORDER BY expense_date ASC, id ASC
+        """, (user_id,))
+        expenses = cursor.fetchall() or []
+
+        cursor.execute("""
+            SELECT id, investment_name, category, amount, investment_date,
+                   status, description
+            FROM investments
+            WHERE user_id = %s
+            ORDER BY investment_date ASC, id ASC
+        """, (user_id,))
+        investments = cursor.fetchall() or []
+
+        cursor.execute("SELECT COUNT(*) AS total FROM customers WHERE user_id = %s", (user_id,))
+        customers_count = int((cursor.fetchone() or {}).get("total") or 0)
+
+    except Exception as exc:
+        if db:
+            try:
+                db.rollback()
+            except Exception:
+                pass
+        print("BUSINESS ANALYTICS ERROR:", exc)
+        error_message = "Some analytics data could not be loaded. Check the Render logs and database table structure."
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+    def as_iso(value):
+        if not value:
+            return ""
+        if hasattr(value, "date") and not isinstance(value, date):
+            try:
+                return value.date().isoformat()
+            except Exception:
+                pass
+        if hasattr(value, "isoformat"):
+            return value.isoformat()[:10]
+        return str(value)[:10]
+
+    def within_range(value):
+        day = as_iso(value)
+        if not day:
+            return not (start_date or end_date)
+        if start_date and day < start_date:
+            return False
+        if end_date and day > end_date:
+            return False
+        return True
+
+    invoice_rows = []
+    for row in invoices:
+        record_date = row.get("invoice_date") or row.get("created_at")
+        if within_range(record_date):
+            item = dict(row)
+            item["_date"] = as_iso(record_date)
+            item["_amount"] = float(row.get("amount") or 0)
+            item["_status"] = str(row.get("status") or "Pending").strip().lower()
+            invoice_rows.append(item)
+
+    expense_rows = []
+    for row in expenses:
+        if within_range(row.get("expense_date")):
+            item = dict(row)
+            item["_date"] = as_iso(row.get("expense_date"))
+            item["_amount"] = float(row.get("amount") or 0)
+            expense_rows.append(item)
+
+    investment_rows = []
+    for row in investments:
+        if within_range(row.get("investment_date")):
+            item = dict(row)
+            item["_date"] = as_iso(row.get("investment_date"))
+            item["_amount"] = float(row.get("amount") or 0)
+            investment_rows.append(item)
+
+    paid_statuses = {"paid", "complete", "completed"}
+    pending_statuses = {"pending", "unpaid", "sent", "draft"}
+    overdue_statuses = {"overdue", "late"}
+
+    total_revenue = sum(r["_amount"] for r in invoice_rows if r["_status"] in paid_statuses)
+    outstanding_amount = sum(r["_amount"] for r in invoice_rows if r["_status"] in pending_statuses | overdue_statuses)
+    overdue_amount = sum(r["_amount"] for r in invoice_rows if r["_status"] in overdue_statuses)
+    total_expenses = sum(r["_amount"] for r in expense_rows)
+    total_investments = sum(r["_amount"] for r in investment_rows)
+    estimated_profit = total_revenue - total_expenses
+    net_cash_flow = total_revenue - total_expenses - total_investments
+    paid_invoice_count = sum(1 for r in invoice_rows if r["_status"] in paid_statuses)
+    unpaid_invoice_count = sum(1 for r in invoice_rows if r["_status"] in pending_statuses | overdue_statuses)
+
+    # Build the last six calendar months for the chart, with zeroes where no records exist.
+    today = date.today()
+    month_starts = []
+    year, month = today.year, today.month
+    for _ in range(5, -1, -1):
+        y, m = year, month - _
+        while m <= 0:
+            y -= 1
+            m += 12
+        month_starts.append(date(y, m, 1))
+    month_keys = [d.strftime("%Y-%m") for d in month_starts]
+    month_labels = [d.strftime("%b %Y") for d in month_starts]
+    revenue_by_month = {k: 0.0 for k in month_keys}
+    expenses_by_month = {k: 0.0 for k in month_keys}
+    for row in invoices:
+        raw_day = row.get("invoice_date") or row.get("created_at")
+        day = as_iso(raw_day)
+        status = str(row.get("status") or "Pending").strip().lower()
+        if day and status in paid_statuses and day[:7] in revenue_by_month:
+            revenue_by_month[day[:7]] += float(row.get("amount") or 0)
+    for row in expenses:
+        day = as_iso(row.get("expense_date"))
+        if day and day[:7] in expenses_by_month:
+            expenses_by_month[day[:7]] += float(row.get("amount") or 0)
+
+    # Top customers are ranked by paid invoices in the selected date range.
+    top_customer_totals = {}
+    for row in invoice_rows:
+        if row["_status"] in paid_statuses:
+            name = str(row.get("customer_name") or "Unspecified customer").strip()
+            top_customer_totals[name] = top_customer_totals.get(name, 0.0) + row["_amount"]
+    top_customers = [
+        {"name": name, "revenue": amount}
+        for name, amount in sorted(top_customer_totals.items(), key=lambda pair: pair[1], reverse=True)[:5]
+    ]
+
+    expense_categories = {}
+    for row in expense_rows:
+        category = str(row.get("category") or "Uncategorised")
+        expense_categories[category] = expense_categories.get(category, 0.0) + row["_amount"]
+    expense_breakdown = [
+        {"category": name, "amount": amount}
+        for name, amount in sorted(expense_categories.items(), key=lambda pair: pair[1], reverse=True)[:7]
+    ]
+
+    if total_revenue == 0 and total_expenses > 0:
+        insights.append("Expenses are recorded, but no paid invoices were found in this date range. Review outstanding invoices and confirm that payments are marked Paid only after money is received.")
+    elif total_revenue > 0 and estimated_profit < 0:
+        insights.append("Recorded expenses are higher than revenue received in this date range. Review costs and unpaid invoices.")
+    elif total_revenue > 0 and estimated_profit >= 0:
+        insights.append("Your recorded revenue is covering your recorded expenses in this date range. Continue monitoring cash flow and unpaid invoices.")
+    if overdue_amount > 0:
+        insights.append("You have overdue invoices worth {:.2f}. Consider following up with those customers.".format(overdue_amount))
+    if not insights:
+        insights.append("Add invoices, expenses and customer records to start generating business insights from your actual data.")
+
+    return render_template(
+        "business_analytics.html",
+        company=company,
+        start_date=start_date,
+        end_date=end_date,
+        total_revenue=total_revenue,
+        total_expenses=total_expenses,
+        estimated_profit=estimated_profit,
+        net_cash_flow=net_cash_flow,
+        outstanding_amount=outstanding_amount,
+        overdue_amount=overdue_amount,
+        total_investments=total_investments,
+        customers_count=customers_count,
+        invoice_count=len(invoice_rows),
+        paid_invoice_count=paid_invoice_count,
+        unpaid_invoice_count=unpaid_invoice_count,
+        top_customers=top_customers,
+        expense_breakdown=expense_breakdown,
+        insights=insights,
+        chart_labels=json.dumps(month_labels),
+        revenue_chart=json.dumps([round(revenue_by_month[k], 2) for k in month_keys]),
+        expenses_chart=json.dumps([round(expenses_by_month[k], 2) for k in month_keys]),
+        error_message=error_message,
+    )
+
+
+# ============================================================
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
 # ============================================================
 
