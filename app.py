@@ -9211,8 +9211,8 @@ def search_ai_leads():
     for source_error in dict.fromkeys(source_errors):
         flash(source_error, "warning")
 
-    # Keep the existing lead-scoring / duplicate-check pipeline intact.
-    google_places = meta_pages
+    # Keep the merged Google Places + Facebook results in the shared
+    # lead-scoring / duplicate-check pipeline. Do not overwrite this list.
 
     # PROCESS GOOGLE RESULTS
     # Fetch existing lead statuses in ONE database query rather than opening
