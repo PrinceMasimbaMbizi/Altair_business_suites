@@ -1127,6 +1127,153 @@
                 visibility 0.3s ease;
         }
 
+        .welcome-overlay.show {
+            opacity: 1;
+
+            visibility: visible;
+        }
+
+
+        /* 
+           POPUP BOX
+         */
+
+        .welcome-box {
+            width: 90%;
+
+            max-width: 420px;
+
+            padding: 35px 30px;
+
+            text-align: center;
+
+            background:
+                rgba(20, 25, 40, 0.95);
+
+            border:
+                1px solid rgba(0, 240, 255, 0.4);
+
+            border-radius: 20px;
+
+            box-shadow:
+                0 0 30px rgba(0, 240, 255, 0.2);
+
+            transform: scale(0.8);
+
+            transition:
+                transform 0.3s ease;
+
+            color: white;
+        }
+
+        .welcome-overlay.show .welcome-box {
+            transform: scale(1);
+        }
+
+
+        /* 
+           POPUP ICON
+         */
+
+        .welcome-icon {
+            width: 60px;
+            height: 60px;
+
+            margin:
+                0 auto 15px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+
+        /* 
+           POPUP TITLE
+         */
+
+        .welcome-box h2 {
+            margin-bottom: 15px;
+
+            font-size: 25px;
+        }
+
+
+        /* 
+           POPUP MESSAGE
+         */
+
+        .welcome-box p {
+            font-size: 16px;
+
+            line-height: 1.6;
+
+            margin: 8px 0;
+        }
+
+        .welcome-box strong {
+            color: #00f0ff;
+        }
+
+        .welcome-subtext {
+            color: #aaa;
+        }
+
+
+        /* 
+           POPUP BUTTON
+         */
+
+        .welcome-box button {
+            margin-top: 20px;
+
+            padding: 12px 35px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(135deg,
+                    #00f0ff,
+                    #ff00d4);
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.3s ease;
+        }
+
+        .welcome-box button:hover {
+            transform: scale(1.05);
+
+            box-shadow:
+                0 0 20px rgba(0, 240, 255, 0.5);
+        }
+
+
         /* 
    ALTAIR AI BUSINESS ADVISOR
  */
@@ -2496,7 +2643,7 @@
                 class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
                 <span class="nav-icon">📊</span><span>Dashboard</span>
             </a>
-            <a href="{{ url_for('customers') }}"
+            <a href="{{ url_for('customer') }}"
                 class="nav-item {% if request.endpoint == 'customer' %}active{% endif %}" title="Customers">
                 <span class="nav-icon">👥</span><span>Customers</span>
             </a>
@@ -2518,14 +2665,10 @@
                 class="nav-item {% if request.endpoint == 'ai_leads' %}active{% endif %}" title="AI Lead Finder">
                 <span class="nav-icon">🤖</span><span>AI Lead Finder</span>
             </a>
-            <a href="{{ url_for('facebook_analytics') }}"
-                class="nav-item {% if request.endpoint == 'facebook_analytics' %}active{% endif %}"
-                title="Facebook Analytics">
+            <a href="#" class="nav-item" title="Facebook Analytics">
                 <span class="nav-icon">🇫</span><span>Facebook Analytics</span>
             </a>
-            <a href="{{ url_for('whatsapp_analytics') }}"
-                class="nav-item {% if request.endpoint == 'whatsapp_analytics' %}active{% endif %}"
-                title="WhatsApp Analytics">
+            <a href="#" class="nav-item" title="WhatsApp Analytics">
                 <span class="nav-icon">🟢</span><span>WhatsApp Analytics</span>
             </a>
             <a href="{{ url_for('business_analytics') }}"
@@ -2533,55 +2676,44 @@
                 title="Business Analytics">
                 <span class="nav-icon">📈</span><span>Business Analytics</span>
             </a>
-            <a href="{{ url_for('forecasting') }}"
-                class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting">
+            <a href="#" class="nav-item" title="Forecasting">
                 <span class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
-            <a href="{{ url_for('altair_ai_assistant') }}"
-                class="nav-item {% if request.endpoint == 'altair_ai_assistant' %}active{% endif %}"
-                title="Altair AI Assistant">
+            <a href="#" class="nav-item" title="Altair AI Assistant">
                 <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
             </a>
 
             <div class="menu-title">Business Management</div>
-            <a href="{{ url_for('company_profile') }}"
-                class="nav-item {% if request.endpoint == 'company_profile' %}active{% endif %}"
-                title="Company Profile">
+            <a href="#" class="nav-item" title="Company Profile">
                 <span class="nav-icon">🏢</span><span>Company Profile</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='employees-team') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Employees & Team">
+            <a href="{{ url_for('coming_soon', feature='employees-team') }}" class="nav-item" title="Employees & Team">
                 <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='documents-reports') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}"
+            <a href="{{ url_for('coming_soon', feature='documents-reports') }}" class="nav-item"
                 title="Documents & Reports">
                 <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='notifications') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Notifications">
+            <a href="{{ url_for('coming_soon', feature='notifications') }}" class="nav-item" title="Notifications">
                 <span class="nav-icon">🔔</span><span>Notifications</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='integrations') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Integrations">
+            <a href="{{ url_for('coming_soon', feature='integrations') }}" class="nav-item" title="Integrations">
                 <span class="nav-icon">🔗</span><span>Integrations</span>
             </a>
 
             <div class="menu-title">Account &amp; Billing</div>
-            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Subscription Plans">
+            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
+                title="Subscription Plans">
                 <span class="nav-icon">👑</span><span>Subscription Plans</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='billing-payments') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Billing & Payments">
+            <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item"
+                title="Billing & Payments">
                 <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='billing-history') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Billing History">
+            <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
                 <span class="nav-icon">🧾</span><span>Billing History</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='usage-limits') }}"
-                class="nav-item {% if request.endpoint == 'coming_soon' %}active{% endif %}" title="Usage & Limits">
+            <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
                 <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
             </a>
 
@@ -2590,7 +2722,7 @@
                 class="nav-item {% if request.endpoint == 'settings' %}active{% endif %}" title="Settings">
                 <span class="nav-icon">⚙️</span><span>Settings</span>
             </a>
-            <a href="#" class="nav-item {% if request.endpoint == 'security' %}active{% endif %}" title="Security">
+            <a href="#" class="nav-item" title="Security">
                 <span class="nav-icon">🔐</span><span>Security</span>
             </a>
             <a href="{{ url_for('help_support') }}"
@@ -3561,6 +3693,10 @@
 
     </div>
 
+
+    <!-- 
+         JAVASCRIPT
+     -->
 
 
     <script>

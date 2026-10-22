@@ -2526,13 +2526,13 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-
+# ============================================================
 # ALTAIR AI ASSISTANT 2.0
 # Conversation handling, stronger intent recognition, and
 # transparent business-health / lead-conversion analysis.
 # Keep this section after the original engines so these improved
 # functions are the active versions used by the existing routes.
-
+# ============================================================
 
 # Preserve the existing tested response engine for its established
 # revenue, expense, cash-flow, invoice, customer, and forecast answers.
@@ -3755,6 +3755,26 @@ def coming_soon(feature):
         user_email=session.get("user_email"),
     )
 
+
+
+
+# FORECASTING ROUTE COMPATIBILITY FIX
+# Some page templates use url_for("forecasting"). Register the endpoint so
+# those templates can render while the dedicated forecasting page is pending.
+@app.route("/forecasting")
+def forecasting():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    flash("The Forecasting page is not available yet. You can continue from your dashboard.", "info")
+    return redirect(url_for("dashboard"))
+
+# CUSTOMERS ROUTE COMPATIBILITY FIX
+# Some templates still call url_for("customers"), while the main route endpoint
+# is named "customer". Keep both endpoint names working to prevent BuildError.
+@app.route("/customers", endpoint="customers")
+def customers_compatibility():
+    return redirect(url_for("customer"))
 
 
 # CUSTOMERS
@@ -5002,9 +5022,9 @@ def create_invoice():
 
 
 
-
+# ============================================================
 # QUOTATIONS
-
+# ============================================================
 
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
@@ -10208,8 +10228,10 @@ def save_google_lead():
         }), 500
     
 
-
+# ============================================================
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
+# ============================================================
+
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
     """Display analytics based on the logged-in user's own business records."""
@@ -10433,15 +10455,25 @@ def business_analytics():
         top_customers=top_customers,
         expense_breakdown=expense_breakdown,
         insights=insights,
+        # Keep the existing JSON variables for compatibility with the current template.
         chart_labels=json.dumps(month_labels),
         revenue_chart=json.dumps([round(revenue_by_month[k], 2) for k in month_keys]),
         expenses_chart=json.dumps([round(expenses_by_month[k], 2) for k in month_keys]),
+        # Explicit JSON variables for the chart-data element approach in business_analytics.html.
+        chart_labels_json=json.dumps(month_labels).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"),
+        revenue_chart_json=json.dumps([round(revenue_by_month[k], 2) for k in month_keys]),
+        expenses_chart_json=json.dumps([round(expenses_by_month[k], 2) for k in month_keys]),
+        expense_labels_json=json.dumps([item["category"] for item in expense_breakdown]).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"),
+        expense_amounts_json=json.dumps([round(float(item["amount"] or 0), 2) for item in expense_breakdown]),
         error_message=error_message,
     )
 
 
-
+# ============================================================
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
+# ============================================================
+
+
 def ensure_manual_transactions_table(cursor):
     """Create the manual ledger table if it does not already exist."""
     cursor.execute("""
