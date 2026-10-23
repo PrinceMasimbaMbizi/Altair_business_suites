@@ -2606,6 +2606,24 @@
                 font-size: 18px;
             }
         }
+
+        .finance-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 9px;
+            border: 1px solid rgba(124, 58, 237, .18);
+            border-radius: 9px;
+            background: rgba(124, 58, 237, .06);
+            color: inherit;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        #chartSummary {
+            font-size: 11px;
+            line-height: 1.7 !important;
+            overflow-wrap: anywhere;
+        }
     </style>
 
 </head>
@@ -3694,9 +3712,97 @@
     </div>
 
 
+
+    <!-- 
+         WELCOME POPUP
+     -->
+
+    <div id="welcomePopup" class="welcome-overlay">
+
+        <div class="welcome-box">
+
+
+            <div class="welcome-icon">
+                A
+            </div>
+
+
+            <h2>
+                Welcome 🎉
+            </h2>
+
+
+            <p>
+                Thank you for using
+                <strong>
+                    Altair Business Suite
+                </strong>.
+            </p>
+
+
+            <p class="welcome-subtext">
+                We're glad to have you here.
+            </p>
+
+
+            <button type="button" onclick="closeWelcomePopup()">
+                OKAY
+            </button>
+
+        </div>
+
+    </div>
+
+
+
     <!-- 
          JAVASCRIPT
      -->
+
+    <script>
+
+
+        /* 
+           WELCOME POPUP
+         */
+
+        setTimeout(function () {
+
+            const popup =
+                document.getElementById(
+                    "welcomePopup"
+                );
+
+            if (popup) {
+
+                popup.classList.add("show");
+
+            }
+
+        }, 2000);
+
+
+
+        /* 
+           CLOSE POPUP
+         */
+
+        function closeWelcomePopup() {
+
+            const popup =
+                document.getElementById(
+                    "welcomePopup"
+                );
+
+            if (popup) {
+
+                popup.classList.remove("show");
+
+            }
+
+        }
+
+    </script>
 
 
     <script>
@@ -3771,8 +3877,8 @@
                             labels: chartLabels,
                             datasets: [
                                 { label: "Revenue (paid invoices)", data: actualWithGap(revenueValues), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,.08)", borderWidth: 3, tension: .35, pointRadius: 3, spanGaps: false },
-                                { label: "Expenses", data: actualWithGap(expenseValues), borderColor: "#f97316", backgroundColor: "rgba(249,115,22,.06)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
-                                { label: "Profit (revenue − expenses)", data: actualWithGap(profitValues), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,.07)", borderWidth: 2.5, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Money out (expenses + investments)", data: actualWithGap(expenseValues), borderColor: "#f97316", backgroundColor: "rgba(249,115,22,.06)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Recorded difference (revenue − money out)", data: actualWithGap(profitValues), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,.07)", borderWidth: 2.5, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "ML revenue forecast", data: forecastSeries, borderColor: "#a855f7", backgroundColor: "rgba(168,85,247,.08)", borderWidth: 3, borderDash: [7, 5], tension: .25, pointRadius: 5, spanGaps: false }
                             ]
                         },
@@ -3795,7 +3901,18 @@
                     const latestRevenue = Number(revenueValues[revenueValues.length - 1] || 0);
                     const latestExpense = Number(expenseValues[expenseValues.length - 1] || 0);
                     const latestProfit = Number(profitValues[profitValues.length - 1] || 0);
-                    chartSummary.textContent = `Latest recorded month: revenue R${latestRevenue.toLocaleString()} · expenses R${latestExpense.toLocaleString()} · profit R${latestProfit.toLocaleString()}. Forecast is a model estimate, not guaranteed income.`;
+                    const finance = result.analysis.financial_context || {};
+                    chartSummary.innerHTML = `
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                            <span class="finance-chip">Revenue: R${latestRevenue.toLocaleString()}</span>
+                            <span class="finance-chip">Money out: R${latestExpense.toLocaleString()}</span>
+                            <span class="finance-chip">Recorded difference: R${latestProfit.toLocaleString()}</span>
+                            <span class="finance-chip">Monthly recurring: R${Number(finance.estimated_monthly_recurring_cost || 0).toLocaleString()}</span>
+                        </div>
+                        <div>Products: ${Number(finance.products || 0)} · Services: ${Number(finance.services || 0)} · Stock cost value: R${Number(finance.inventory_cost_value || 0).toLocaleString()} · Potential stock selling value: R${Number(finance.inventory_potential_sales_value || 0).toLocaleString()}</div>
+                        <div>Investments recorded: R${Number(finance.recorded_investments || 0).toLocaleString()} · Expenses recorded: R${Number(finance.recorded_expenses || 0).toLocaleString()} · Low stock: ${Number(finance.low_stock || 0)} · Out of stock: ${Number(finance.out_of_stock || 0)}</div>
+                        <div style="margin-top:5px;">The chart uses paid invoices as actual revenue and recorded expenses + investments as money out. Stock selling value is an opportunity estimate, not revenue. Recurring schedules are shown as commitments and are not double-counted as actual expenses.</div>
+                        <div style="margin-top:4px;">Forecast is a model estimate, not guaranteed income.</div>`;
                 }
 
                 // Populate invoice counters and real recent transactions.

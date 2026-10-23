@@ -1862,48 +1862,66 @@ def get_business_ai_data(user_id):
         """, (user_id,))
         current_month_expenses = cursor.fetchone() or {}
 
+        cursor.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM investments
+            WHERE user_id = %s
+              AND YEAR(investment_date) = YEAR(CURRENT_DATE())
+              AND MONTH(investment_date) = MONTH(CURRENT_DATE())
+        """, (user_id,))
+        current_month_investments = cursor.fetchone() or {}
+
         month_revenue = float(current_month_revenue.get("paid_revenue", 0) or 0)
         month_expenses = float(current_month_expenses.get("total", 0) or 0)
+        month_investments = float(current_month_investments.get("total", 0) or 0)
+        month_money_out = month_expenses + month_investments
         data["current_month_financials"] = {
             "paid_revenue": round(month_revenue, 2),
             "expenses": round(month_expenses, 2),
-            "recorded_difference": round(month_revenue - month_expenses, 2),
+            "investments": round(month_investments, 2),
+            "money_out": round(month_money_out, 2),
+            "recorded_difference": round(month_revenue - month_money_out, 2),
         }
 
-   
-        # INVESTMENTS
-
+        # INVESTMENTS: keep them separate from operating expenses, but include
+        # them in cash-outflow/profitability comparisons.
         cursor.execute("""
             SELECT
-
                 COUNT(*) AS count,
-
-                COALESCE(
-                    SUM(amount),
-                    0
-                ) AS total
-
+                COALESCE(SUM(amount), 0) AS total,
+                COALESCE(SUM(expected_return), 0) AS expected_returns
             FROM investments
-
             WHERE user_id = %s
         """, (user_id,))
+        data["investments"] = cursor.fetchone() or {}
 
-        data["investments"] = (
-            cursor.fetchone() or {}
-        )
-
-
-        # INVENTORY
-
+        # PRODUCTS & SERVICES: the real table used by /items is `inventory`.
+        # These catalogue/stock figures help Otis make better recommendations;
+        # they are not counted as sales revenue until captured in paid invoices.
         cursor.execute("""
             SELECT
-                COUNT(*) AS total_items
-            FROM items
+                COUNT(*) AS total_items,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN 1 ELSE 0 END), 0) AS total_products,
+                COALESCE(SUM(CASE WHEN item_type = 'Service' THEN 1 ELSE 0 END), 0) AS total_services,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * cost_price ELSE 0 END), 0) AS inventory_value,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * selling_price ELSE 0 END), 0) AS inventory_potential_sales_value,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * (selling_price - cost_price) ELSE 0 END), 0) AS inventory_potential_margin,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' AND quantity <= 0 THEN 1 ELSE 0 END), 0) AS out_of_stock,
+                COALESCE(SUM(CASE WHEN item_type = 'Product' AND quantity > 0 AND quantity <= low_stock_level THEN 1 ELSE 0 END), 0) AS low_stock
+            FROM inventory
             WHERE user_id = %s
         """, (user_id,))
+        data["inventory"] = cursor.fetchone() or {}
 
-        data["inventory"] = (
-            cursor.fetchone() or {}
+        # Combined money-out summary. `recurring_payments` are not added again
+        # here because processed recurring payments are already written to
+        # `expenses`; adding the schedule as well would double-count them.
+        data["money_out"] = {
+            "expenses": round(float((data.get("expenses") or {}).get("total", 0) or 0), 2),
+            "investments": round(float((data.get("investments") or {}).get("total", 0) or 0), 2),
+        }
+        data["money_out"]["total"] = round(
+            data["money_out"]["expenses"] + data["money_out"]["investments"], 2
         )
 
         
@@ -2032,6 +2050,17 @@ def altair_business_summary(
         ) or 0
     )
 
+    inventory = business_data.get("inventory") or {}
+    recurring = business_data.get("recurring") or {}
+    investments = business_data.get("investments") or {}
+    product_count = int(inventory.get("total_products", 0) or 0)
+    service_count = int(inventory.get("total_services", 0) or 0)
+    low_stock = int(inventory.get("low_stock", 0) or 0)
+    out_of_stock = int(inventory.get("out_of_stock", 0) or 0)
+    investment_total = float(investments.get("total", 0) or 0)
+    recurring_monthly = float(recurring.get("monthly_cost", 0) or 0)
+    inventory_sales_value = float(inventory.get("inventory_potential_sales_value", 0) or 0)
+
 
     
     # HEALTH DESCRIPTION
@@ -2083,8 +2112,20 @@ def altair_business_summary(
         f"total {overdue:,.2f}.\n\n"
 
         f"EXPENSES:\n"
-        f"Recorded expenses total "
-        f"{expenses:,.2f}.\n\n"
+        f"Recorded operating expenses total "
+        f"{expenses:,.2f}; recorded investments total "
+        f"{investment_total:,.2f}. Total recorded money out is "
+        f"{expenses + investment_total:,.2f}.\n"
+        f"Active recurring payments: {int(recurring.get('count', 0) or 0)}; "
+        f"estimated monthly recurring commitments: {recurring_monthly:,.2f}. "
+        f"Recurring schedules are not added again to actual expenses if already processed.\n\n"
+
+        f"PRODUCTS & SERVICES:\n"
+        f"Catalogue contains {product_count} products and {service_count} services. "
+        f"Current stock cost value is {float(inventory.get('inventory_value', 0) or 0):,.2f}; "
+        f"estimated selling value of stocked products is {inventory_sales_value:,.2f}. "
+        f"This selling value is potential, not booked revenue. "
+        f"Low-stock products: {low_stock}; out-of-stock products: {out_of_stock}.\n\n"
 
         f"SALES:\n"
         f"Lead conversion is currently "
@@ -2161,10 +2202,11 @@ def altair_response_engine(intent, business_data, analysis):
     if intent == "expenses":
 
         total_expenses = number(expenses, "total")
-
+        investment_total = number(investments, "total")
+        total_money_out = total_expenses + investment_total
         monthly_recurring = number(recurring, "monthly_cost")
 
-        if total_expenses == 0:
+        if total_money_out == 0:
 
             return (
                 "Your current business data shows no recorded "
@@ -2176,7 +2218,9 @@ def altair_response_engine(intent, business_data, analysis):
 
         return (
             "Here is your expense overview:\n\n"
-            f"Recorded expenses: {money(total_expenses)}\n"
+            f"Recorded operating expenses: {money(total_expenses)}\n"
+            f"Recorded investments: {money(investment_total)}\n"
+            f"Total recorded money out: {money(total_money_out)}\n"
             f"Estimated monthly recurring costs: "
             f"{money(monthly_recurring)}\n\n"
             "To control spending, review your largest expenses, "
@@ -2198,12 +2242,14 @@ def altair_response_engine(intent, business_data, analysis):
         overdue_amount = number(invoices, "overdue_amount")
 
         total_expenses = number(expenses, "total")
+        investment_total = number(investments, "total")
+        total_money_out = total_expenses + investment_total
 
         monthly_recurring = number(recurring, "monthly_cost")
 
         outstanding = pending_amount + overdue_amount
 
-        estimated_difference = paid_revenue - total_expenses
+        estimated_difference = paid_revenue - total_money_out
 
         return (
             "Here is your recorded cash-flow overview:\n\n"
@@ -2211,9 +2257,11 @@ def altair_response_engine(intent, business_data, analysis):
             f"Pending invoices: {money(pending_amount)}\n"
             f"Overdue invoices: {money(overdue_amount)}\n"
             f"Total outstanding invoices: {money(outstanding)}\n"
-            f"Recorded expenses: {money(total_expenses)}\n"
-            f"Monthly recurring costs: {money(monthly_recurring)}\n\n"
-            f"Paid revenue minus recorded expenses: "
+            f"Recorded operating expenses: {money(total_expenses)}\n"
+            f"Recorded investments: {money(investment_total)}\n"
+            f"Total recorded money out: {money(total_money_out)}\n"
+            f"Monthly recurring costs (already included in expenses when processed): {money(monthly_recurring)}\n\n"
+            f"Paid revenue minus recorded money out: "
             f"{money(estimated_difference)}\n\n"
             "Recommended actions:\n"
             "1. Follow up on overdue invoices.\n"
@@ -2543,13 +2591,13 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-
+# ============================================================
 # ALTAIR AI ASSISTANT 2.0
 # Conversation handling, stronger intent recognition, and
 # transparent business-health / lead-conversion analysis.
 # Keep this section after the original engines so these improved
 # functions are the active versions used by the existing routes.
-
+# ============================================================
 
 # Preserve the existing tested response engine for its established
 # revenue, expense, cash-flow, invoice, customer, and forecast answers.
@@ -2611,7 +2659,10 @@ def generate_business_advice(business_data):
     pending = num(invoices, "pending_amount")
     overdue = num(invoices, "overdue_amount")
     invoice_count = int(num(invoices, "total"))
-    expense_total = num(expenses, "total")
+    operating_expense_total = num(expenses, "total")
+    investments = data.get("investments") or {}
+    investment_total = num(investments, "total")
+    expense_total = operating_expense_total + investment_total
     monthly_cost = num(recurring, "monthly_cost")
     total_leads = int(num(leads, "total"))
     converted = int(num(leads, "converted"))
@@ -2705,7 +2756,9 @@ def generate_business_advice(business_data):
         "paid_revenue": round(paid, 2),
         "overdue_amount": round(overdue, 2),
         "pending_amount": round(pending, 2),
-        "expenses": round(expense_total, 2),
+        "expenses": round(operating_expense_total, 2),
+        "investments": round(investment_total, 2),
+        "money_out_total": round(expense_total, 2),
         "monthly_recurring": round(monthly_cost, 2),
         "lead_conversion": round(conversion, 1),
         "revenue_prediction": forecast.get("prediction", 0),
@@ -2832,6 +2885,8 @@ def altair_response_engine(intent, business_data, analysis):
         monthly = data.get("current_month_financials") or {}
         month_revenue = val(monthly, "paid_revenue")
         month_expenses = val(monthly, "expenses")
+        month_investments = val(monthly, "investments")
+        month_money_out = val(monthly, "money_out",) or (month_expenses + month_investments)
         difference = val(monthly, "recorded_difference")
         label = "positive recorded difference" if difference > 0 else (
             "negative recorded difference" if difference < 0 else "break-even recorded difference"
@@ -3243,6 +3298,19 @@ def api_business_insights():
         )
 
         
+        # MONTHLY INVESTMENTS (investments are cash outflows, not operating expenses)
+        cursor.execute("""
+            SELECT
+                DATE_FORMAT(investment_date, '%Y-%m') AS month,
+                COALESCE(SUM(amount), 0) AS investments
+            FROM investments
+            WHERE user_id = %s
+              AND investment_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
+            GROUP BY DATE_FORMAT(investment_date, '%Y-%m')
+            ORDER BY month ASC
+        """, (user_id,))
+        investment_rows = cursor.fetchall() or []
+
         # PREPARE MONTHLY DATA
         
 
@@ -3255,11 +3323,13 @@ def api_business_insights():
         }
 
         expenses_by_month = {
-            str(row["month"]): float(
-                row.get("expenses", 0) or 0
-            )
-            for row in expense_rows
-            if row.get("month")
+            str(row["month"]): float(row.get("expenses", 0) or 0)
+            for row in expense_rows if row.get("month")
+        }
+
+        investments_by_month = {
+            str(row["month"]): float(row.get("investments", 0) or 0)
+            for row in investment_rows if row.get("month")
         }
 
         
@@ -3305,18 +3375,14 @@ def api_business_insights():
                 2
             )
 
-            expense_value = round(
-                expenses_by_month.get(
-                    month_key,
-                    0.0
-                ),
-                2
-            )
+            operating_expense_value = expenses_by_month.get(month_key, 0.0)
+            investment_value = investments_by_month.get(month_key, 0.0)
+            # Recurring payments are already stored as expenses when processed.
+            # Money-out therefore combines expense records + investment records,
+            # without adding the recurring schedule a second time.
+            expense_value = round(operating_expense_value + investment_value, 2)
 
-            profit_value = round(
-                revenue_value - expense_value,
-                2
-            )
+            profit_value = round(revenue_value - expense_value, 2)
 
             chart_labels.append(
                 month_date.strftime("%b %Y")
@@ -3353,6 +3419,37 @@ def api_business_insights():
         analysis["profit_history"] = (
             profit_history
         )
+        analysis["money_out_label"] = "Money out (expenses + investments)"
+        analysis["profit_label"] = "Recorded difference (revenue − money out)"
+        analysis["investment_history"] = [
+            round(investments_by_month.get(
+                f"{(now.year * 12 + now.month - 1 - offset) // 12:04d}-{((now.year * 12 + now.month - 1 - offset) % 12) + 1:02d}", 0.0
+            ), 2)
+            for offset in range(11, -1, -1)
+        ]
+
+        # Dashboard/Otis financial context: catalogue values are opportunity estimates,
+        # not booked revenue. Recurring schedules are commitments, not actual spend until
+        # processed into expenses. Money-out records combine expenses and investments.
+        inventory_context = business_data.get("inventory") or {}
+        recurring_context = business_data.get("recurring") or {}
+        investment_context = business_data.get("investments") or {}
+        expense_context = business_data.get("expenses") or {}
+        analysis["financial_context"] = {
+            "products": int(inventory_context.get("total_products", 0) or 0),
+            "services": int(inventory_context.get("total_services", 0) or 0),
+            "catalogue_items": int(inventory_context.get("total_items", 0) or 0),
+            "inventory_cost_value": round(float(inventory_context.get("inventory_value", 0) or 0), 2),
+            "inventory_potential_sales_value": round(float(inventory_context.get("inventory_potential_sales_value", 0) or 0), 2),
+            "inventory_potential_margin": round(float(inventory_context.get("inventory_potential_margin", 0) or 0), 2),
+            "low_stock": int(inventory_context.get("low_stock", 0) or 0),
+            "out_of_stock": int(inventory_context.get("out_of_stock", 0) or 0),
+            "recorded_expenses": round(float(expense_context.get("total", 0) or 0), 2),
+            "recorded_investments": round(float(investment_context.get("total", 0) or 0), 2),
+            "recorded_money_out": round(float(expense_context.get("total", 0) or 0) + float(investment_context.get("total", 0) or 0), 2),
+            "active_recurring_payments": int(recurring_context.get("count", 0) or 0),
+            "estimated_monthly_recurring_cost": round(float(recurring_context.get("monthly_cost", 0) or 0), 2),
+        }
 
         
         # RECENT INVOICES
@@ -3418,6 +3515,20 @@ def api_business_insights():
             cursor.fetchall() or []
         )
 
+        cursor.execute("""
+            SELECT
+                investment_name AS party,
+                category AS reference,
+                amount,
+                'Investment' AS status,
+                investment_date AS transaction_date
+            FROM investments
+            WHERE user_id = %s
+            ORDER BY investment_date DESC, id DESC
+            LIMIT 8
+        """, (user_id,))
+        investment_transactions = cursor.fetchall() or []
+
         
         # COMBINE TRANSACTIONS
         
@@ -3427,6 +3538,7 @@ def api_business_insights():
         for row in (
             invoice_transactions
             + expense_transactions
+            + investment_transactions
         ):
 
             transaction_date = row.get(
@@ -5039,9 +5151,9 @@ def create_invoice():
 
 
 
-
+# ============================================================
 # QUOTATIONS
-
+# ============================================================
 
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
@@ -9631,8 +9743,10 @@ def search_ai_leads():
             "lead_group":
                 qualification.get(
                     "lead_group",
-                    qualification.get("lead_quality", "Needs Verification")
+                    qualification.get("lead_quality", "Needs Review")
                 ),
+
+            "intent_label": qualification.get("intent_label", "No verified demand signal"),
 
             "score_breakdown":
                 qualification.get(
@@ -10051,7 +10165,7 @@ def _lead_text_requests_service(text, service):
 
 
 def qualify_lead_with_ai(lead, service, target_industry, target_location, business_size, keywords, user_id=None, sender_name="our team"):
-    """Evidence-based lead score (0-100). Unknown information never earns demand points."""
+    """Score prospect fit transparently; a fit score is not a promise of buying intent."""
     from datetime import datetime, timedelta, timezone
 
     prospect_name = (lead.get("company_name") or "").strip()
@@ -10064,144 +10178,146 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
     source_url = (lead.get("source_url") or lead.get("google_maps_url") or "").strip()
     source_text = (lead.get("evidence_text") or lead.get("post_text") or lead.get("source_text") or "").strip()
     published_at = lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")
+
     reasons, analysis_points = [], []
+    stop_words = {
+        "the", "and", "for", "with", "from", "that", "this", "your", "our", "you", "are", "can",
+        "business", "businesses", "company", "companies", "service", "services", "solution", "solutions",
+        "south", "africa", "near", "best", "all", "any", "new", "looking", "need", "want", "offer"
+    }
+    def tokens(value):
+        return [w for w in re.findall(r"[a-z0-9]+", str(value or "").casefold()) if len(w) > 2 and w not in stop_words]
 
-    # A missing description is an information gap, not proof of buying intent.
-    missing_service_info_points = 0
-    service_listing = (lead.get("services_offered") or lead.get("service_description") or lead.get("offering_evidence") or "").strip()
-    if not service_listing and not source_text:
-        analysis_points.append("No public service/product description was supplied; this is unknown information and earns no demand points.")
-    elif source_text:
-        analysis_points.append("Source text is available for relevance and demand checks.")
+    raw_types = lead.get("types") or []
+    if isinstance(raw_types, str):
+        raw_types = [raw_types]
+    searchable_text = " ".join([
+        prospect_name, industry, address, source_text, website,
+        " ".join(str(item) for item in raw_types)
+    ]).casefold()
+    searchable_tokens = set(tokens(searchable_text))
 
-    # B. Demand: award points only when the source text supports it.
+    # 1) Service/industry/keyword relevance: up to 40 points.
+    service_text = (service or "").strip().casefold()
+    service_tokens = list(dict.fromkeys(tokens(service_text)))
+    industry_tokens = list(dict.fromkeys(tokens(target_industry)))
+    keyword_tokens = list(dict.fromkeys(tokens(keywords)))
+    relevance_points = 0
+    if service_text and service_text in searchable_text:
+        service_relevance = 25
+        reasons.append("The public listing directly mentions the selected service.")
+    elif service_tokens:
+        matched_service = sum(1 for word in service_tokens if word in searchable_tokens)
+        service_relevance = round(25 * matched_service / len(service_tokens))
+        if matched_service:
+            reasons.append("Service-related terms matched: " + ", ".join([w for w in service_tokens if w in searchable_tokens][:5]) + ".")
+    else:
+        service_relevance = 0
+    industry_relevance = 0
+    if industry_tokens:
+        matched_industry = sum(1 for word in industry_tokens if word in searchable_tokens)
+        industry_relevance = round(10 * matched_industry / len(industry_tokens))
+    keyword_relevance = 0
+    if keyword_tokens:
+        matched_keywords = sum(1 for word in keyword_tokens if word in searchable_tokens)
+        keyword_relevance = round(5 * matched_keywords / len(keyword_tokens))
+    relevance_points = min(40, service_relevance + industry_relevance + keyword_relevance)
+    if relevance_points == 0:
+        analysis_points.append("The listing has no clear text match to the requested service, industry, or extra keywords.")
+
+    # 2) Location match: up to 15 points. Partial credit is explicitly only a search-location hint.
+    location_text = (target_location or "").strip().casefold()
+    location_points = 0
+    if location_text and location_text in (address + " " + source_text).casefold():
+        location_points = 15
+        reasons.append("The target location appears in the listing.")
+    elif address:
+        location_points = 6
+        analysis_points.append("An address is available, but the exact target-location text could not be verified.")
+    else:
+        analysis_points.append("Location could not be verified from the returned listing.")
+
+    # 3) Reachability/profile completeness: up to 20 points.
+    contactability_points = 0
+    contactability_reasons = []
+    if phone:
+        contactability_points += 6
+        contactability_reasons.append("phone available")
+    if email:
+        contactability_points += 6
+        contactability_reasons.append("email available")
+    if website:
+        contactability_points += 4
+        contactability_reasons.append("website available")
+    if address:
+        contactability_points += 4
+        contactability_reasons.append("address available")
+    if contactability_reasons:
+        reasons.append("Contact details: " + ", ".join(contactability_reasons) + ".")
+
+    # 4) Basic business evidence: up to 10 points.
+    legitimacy_points = 0
+    if business_status == "OPERATIONAL":
+        legitimacy_points = 10
+        reasons.append("The listing marks the business as operational.")
+    elif business_status in ("CLOSED_PERMANENTLY", "CLOSED_TEMPORARILY"):
+        legitimacy_points = 0
+        analysis_points.append("The listing indicates that the business is closed; verify before outreach.")
+    elif prospect_name and (phone or email or website or address):
+        legitimacy_points = 5
+        analysis_points.append("The listing has a name and contact/profile details, but operational status is unverified.")
+
+    # 5) Potential opportunity evidence: up to 10 points. Missing website is only a lead to verify, not proof.
+    opportunity_points = 0
+    website_service = any(term in service_text for term in (
+        "website", "web development", "web design", "e-commerce", "ecommerce", "online store", "digital marketing"
+    ))
+    if website_service and not website:
+        opportunity_points += 6
+        reasons.append("Potential online-presence gap: no website was returned by the source; verify before outreach.")
+    for key in (
+        "visibility_issue_evidence", "mobile_friendly_evidence", "booking_feature_evidence",
+        "ecommerce_feature_evidence", "contact_form_evidence"
+    ):
+        if lead.get(key):
+            opportunity_points = min(10, opportunity_points + 2)
+    if opportunity_points:
+        analysis_points.append("Opportunity points are based on explicit evidence or a website absence that still needs verification.")
+
+    # 6) Explicit buying-intent evidence: only up to 5 extra points.
     intent_points, intent_reason = _lead_text_requests_service(source_text, service)
+    intent_bonus = 5 if intent_points > 0 else 0
+    intent_label = "Demand signal found" if intent_points > 0 else "No verified demand signal"
     if intent_reason:
         reasons.append(intent_reason)
     else:
-        analysis_points.append("No explicit or credible demand signal was found in the available source text.")
+        analysis_points.append("No explicit buying request was found in the available public text; fit does not mean confirmed intent to buy.")
 
-    # C. Recency: parse only source-provided timestamps/age strings. No date means unknown.
-    recency_points = 0
-    age_days = None
-    if published_at:
-        try:
-            if isinstance(published_at, datetime):
-                published_dt = published_at
-            else:
-                stamp = str(published_at).strip()
-                relative = re.search(r"\b(\d+)\s*(minute|hour|day|week|month|year)s?\s+ago\b", stamp, re.I)
-                if relative:
-                    number = int(relative.group(1))
-                    unit = relative.group(2).lower()
-                    seconds = number * {
-                        "minute": 60, "hour": 3600, "day": 86400,
-                        "week": 604800, "month": 2592000, "year": 31536000
-                    }[unit]
-                    age_days = seconds / 86400
-                    published_dt = datetime.now(timezone.utc) - timedelta(seconds=seconds)
-                else:
-                    published_dt = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
-            if age_days is None:
-                now = datetime.now(published_dt.tzinfo) if published_dt.tzinfo else datetime.now()
-                age_days = max(0, (now - published_dt).total_seconds() / 86400)
-            if age_days <= 7:
-                recency_points = 20
-            elif age_days <= 30:
-                recency_points = 14
-            elif age_days <= 90:
-                recency_points = 8
-            elif age_days <= 365:
-                recency_points = 3
-            else:
-                recency_points = 0
-                analysis_points.append("The source date is older than one year and received no recency points.")
-        except (ValueError, TypeError, OverflowError, KeyError):
-            analysis_points.append("The source date was not machine-readable; recency is unknown.")
-    else:
-        analysis_points.append("No original publication date was supplied; the lead is not assumed to be recent.")
-
-    # D. Relevance: score matches across the selected offer, industry and keywords.
-    relevance_points = 0
-    search_terms = [
-        w for w in re.findall(r"[a-z0-9]+", " ".join([service or "", target_industry or "", keywords or ""]).lower())
-        if len(w) > 3
-    ]
-    searchable_text = " ".join([industry, source_text, " ".join(lead.get("types") or []), prospect_name]).lower()
-    matched_terms = [term for term in dict.fromkeys(search_terms) if term in searchable_text]
-    if matched_terms:
-        relevance_points = min(15, 5 + (len(matched_terms) - 1) * 2)
-        analysis_points.append("Relevant terms matched the public listing: " + ", ".join(matched_terms[:5]) + ".")
-    else:
-        analysis_points.append("No direct service/industry/keyword match was present in available text.")
-
-    # E. Opportunity evidence is only awarded for explicit, provided evidence fields.
-    opportunity_points = 0
-    opportunity_labels = []
-    for key, label, points in (
-        ("visibility_issue_evidence", "verified online-visibility issue", 8),
-        ("mobile_friendly_evidence", "verified mobile-usability issue", 5),
-        ("booking_feature_evidence", "verified booking-feature gap", 4),
-        ("ecommerce_feature_evidence", "verified e-commerce feature gap", 4),
-        ("contact_form_evidence", "verified enquiry/contact gap", 4),
-    ):
-        if lead.get(key):
-            opportunity_points = min(20, opportunity_points + points)
-            opportunity_labels.append(label)
-    if opportunity_labels:
-        reasons.append("Opportunity evidence: " + ", ".join(opportunity_labels) + ".")
-
-    # F. Contactability / fit, capped at 10. It cannot substitute for buying intent.
-    supplementary = 0
-    supplementary_reasons = []
-    def award(condition, label):
-        nonlocal supplementary
-        if condition and supplementary < 10:
-            supplementary += 1
-            supplementary_reasons.append(label)
-
-    award(bool(phone), "Public phone number available.")
-    award(bool(email), "Public email available.")
-    award(bool(address), "Location/address available.")
-    target_location_l = (target_location or "").casefold()
-    award(bool(target_location_l and address and target_location_l in address.casefold()), "Location text matches.")
-    award(bool(prospect_name and prospect_name.lower() not in ("unknown business", "unknown", "public profile / request")), "Prospect name available.")
-    award(business_status == "OPERATIONAL", "Business marked operational.")
-    award(bool(source_url), "Public source/profile URL available.")
-    award(bool(website or source_url), "Online source available.")
-    award(bool(lead.get("email_verified") is True), "Email verified.")
-    award(bool(lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")), "Source date recorded.")
-
-    # Previously contacted/converted status is scoped to this authenticated user.
-    not_contacted_or_converted = bool(lead.get("_not_contacted_or_converted", False))
-    award(not_contacted_or_converted, "Not recorded as contacted/converted in this user's lead list.")
-
-    score = max(0, min(100, intent_points + recency_points + relevance_points + opportunity_points + supplementary))
-    if intent_points >= 35 and recency_points >= 14:
-        quality = "High-Intent Lead"
-    elif intent_points >= 18 or opportunity_points >= 8:
-        quality = "Strong Opportunity"
+    score = max(0, min(100, relevance_points + location_points + contactability_points + legitimacy_points + opportunity_points + intent_bonus))
+    if score >= 75:
+        quality = "High Fit"
+    elif score >= 55:
+        quality = "Good Fit"
     elif score >= 35:
-        quality = "Potential Customer"
-    elif score >= 15:
-        quality = "Business Prospect"
+        quality = "Possible Fit"
     else:
-        quality = "Needs Verification"
+        quality = "Needs Review"
 
     analysis_points.append(
-        f"Score breakdown: buying intent {intent_points}/35, recency {recency_points}/20, "
-        f"relevance {relevance_points}/15, verified opportunity evidence {opportunity_points}/20, "
-        f"contactability/fit {supplementary}/10. Final score: {score}/100."
+        f"Fit breakdown: relevance {relevance_points}/40, location {location_points}/15, "
+        f"contactability {contactability_points}/20, business evidence {legitimacy_points}/10, "
+        f"opportunity evidence {opportunity_points}/10, explicit demand bonus {intent_bonus}/5. "
+        f"Fit score: {score}/100. Demand evidence: {intent_label}."
     )
-    ai_analysis = f"{prospect_name or 'This prospect'} was evaluated for {service or 'the selected offer'}. " + " ".join(analysis_points)
-    ai_reason = " ".join(reasons) if reasons else "No direct buying signal was verified. Treat this as a prospect to review, not a confirmed buyer."
+    ai_analysis = f"{prospect_name or 'This prospect'} was assessed for {service or 'the selected offer'}. " + " ".join(analysis_points)
+    ai_reason = " ".join(reasons) if reasons else "The listing needs manual verification before prioritising outreach."
     sender_name = (sender_name or "our team").strip() or "our team"
     recipient_greeting = prospect_name or "there"
     ai_message = (
         f"Hi {recipient_greeting},\n\n"
         f"I came across your public profile/listing while researching potential contacts in {target_location or 'your area'}.\n\n"
-        f"I’m reaching out from {sender_name}. We offer {service or 'services relevant to your needs'} and I wanted to ask whether this is something you may be interested in discussing.\n\n"
-        "If this is not relevant, no problem at all.\n\n"
+        f"I’m reaching out from {sender_name}. We offer {service or 'services relevant to your business'} and wanted to ask whether this may be useful to you.\n\n"
+        "If it is not relevant, no problem at all.\n\n"
         f"Kind regards,\n{sender_name}"
     )
     return {
@@ -10211,14 +10327,16 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
         "ai_message": ai_message,
         "lead_quality": quality,
         "lead_group": quality,
+        "intent_label": intent_label,
         "score_breakdown": {
-            "buying_intent": intent_points,
-            "recency": recency_points,
             "service_relevance": relevance_points,
+            "location_fit": location_points,
+            "contactability": contactability_points,
+            "business_evidence": legitimacy_points,
             "opportunity_evidence": opportunity_points,
-            "supplementary_score": supplementary,
+            "intent_bonus": intent_bonus,
+            "raw_buying_intent_points": intent_points,
             "final_score": score,
-            "supplementary_reasons": supplementary_reasons,
         },
     }
 
@@ -10395,9 +10513,9 @@ def save_google_lead():
         }), 500
     
 
-
+# ============================================================
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
-
+# ============================================================
 
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
@@ -10636,9 +10754,9 @@ def business_analytics():
     )
 
 
-
+# ============================================================
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
-
+# ============================================================
 
 
 def ensure_manual_transactions_table(cursor):
