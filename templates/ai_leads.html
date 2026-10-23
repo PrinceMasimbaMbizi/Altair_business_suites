@@ -3304,30 +3304,44 @@
 
                             <select name="max_results">
 
-                                <option value="5">
-                                    5 Leads
+                                <option value="5" {% if search_max_results|default(10)==5 %}selected{% endif %}>5 Leads
                                 </option>
-
-                                <option value="10" selected>
-                                    10 Leads
-                                </option>
-
-                                <option value="15">
-                                    15 Leads
-                                </option>
-
-                                <option value="20">
-                                    20 Leads
-                                </option>
+                                <option value="10" {% if search_max_results|default(10)==10 %}selected{% endif %}>10
+                                    Leads</option>
+                                <option value="20" {% if search_max_results|default(10)==20 %}selected{% endif %}>20
+                                    Leads</option>
+                                <option value="40" {% if search_max_results|default(10)==40 %}selected{% endif %}>40
+                                    Leads</option>
+                                <option value="60" {% if search_max_results|default(10)==60 %}selected{% endif %}>60
+                                    Leads</option>
+                                <option value="80" {% if search_max_results|default(10)==80 %}selected{% endif %}>80
+                                    Leads</option>
+                                <option value="100" {% if search_max_results|default(10)==100 %}selected{% endif %}>100
+                                    Leads (Maximum)</option>
 
                             </select>
 
                             <small>
-                                Maximum number of prospects to return
+                                Maximum number of combined, de-duplicated prospects to return (up to 100)
                             </small>
 
                         </div>
 
+                        <div class="field">
+                            <label>Search Recency</label>
+                            <select name="recency_days">
+                                <option value="7" {% if search_recency_days|default(30)==7 %}selected{% endif %}>Last 7
+                                    days</option>
+                                <option value="30" {% if search_recency_days|default(30)==30 %}selected{% endif %}>Last
+                                    30 days</option>
+                                <option value="90" {% if search_recency_days|default(30)==90 %}selected{% endif %}>Last
+                                    90 days</option>
+                                <option value="365" {% if search_recency_days|default(30)==365 %}selected{% endif %}>
+                                    Last 365 days</option>
+                            </select>
+                            <small>Public web search applies its supported freshness filter where available. Unknown
+                                dates are never treated as recent.</small>
+                        </div>
 
                     </div>
 
@@ -3438,6 +3452,23 @@
                 {% if google_results %}
 
 
+                <div
+                    style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px 0;">
+                    <div style="font-size:12px;color:#777;">Group results by lead quality and evidence</div>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#555;">
+                        Show group
+                        <select id="leadGroupFilter" onchange="filterCurrentSearchLeads()"
+                            style="padding:8px 10px;border:1px solid #e5e5ec;border-radius:8px;background:#fff;font:inherit;">
+                            <option value="all">All groups</option>
+                            <option value="High-Intent Lead">High-Intent Leads</option>
+                            <option value="Strong Opportunity">Strong Opportunities</option>
+                            <option value="Potential Customer">Potential Customers</option>
+                            <option value="Business Prospect">Business Prospects</option>
+                            <option value="Needs Verification">Needs Verification</option>
+                        </select>
+                    </label>
+                </div>
+
                 <div class="table-container google-results-container">
 
 
@@ -3473,6 +3504,10 @@
                                 </th>
 
                                 <th>
+                                    Lead Group
+                                </th>
+
+                                <th>
                                     Lead Score
                                 </th>
 
@@ -3495,7 +3530,8 @@
                             {% for lead in google_results %}
 
 
-                            <tr>
+                            <tr class="current-search-lead-row"
+                                data-lead-group="{{ lead.lead_group|default(lead.lead_quality|default('Needs Verification'))|e }}">
 
 
                                 <!-- BUSINESS -->
@@ -3577,6 +3613,17 @@
                                     —
                                     {% endif %}
 
+                                </td>
+
+                                <!-- LEAD GROUP -->
+
+                                <td>
+                                    {% set group_name = lead.lead_group|default(lead.lead_quality|default('Needs
+                                    Verification')) %}
+                                    <span
+                                        class="badge {% if group_name == 'High-Intent Lead' %}converted{% elif group_name == 'Strong Opportunity' %}interested{% elif group_name == 'Potential Customer' %}new{% elif group_name == 'Business Prospect' %}contacted{% else %}not-interested{% endif %}">
+                                        {{ group_name }}
+                                    </span>
                                 </td>
 
                                 <!-- LEAD SCORE -->
@@ -4582,6 +4629,17 @@
                     });
                 })();
 
+            </script>
+
+            <script>
+                function filterCurrentSearchLeads() {
+                    const filter = document.getElementById("leadGroupFilter");
+                    if (!filter) return;
+                    const wanted = filter.value;
+                    document.querySelectorAll(".current-search-lead-row").forEach(row => {
+                        row.style.display = (wanted === "all" || row.dataset.leadGroup === wanted) ? "" : "none";
+                    });
+                }
             </script>
 
 </body>
