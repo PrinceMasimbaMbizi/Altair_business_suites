@@ -92,6 +92,23 @@ ALTAIR_UI_JS = r"""(function(){
   window.altairHideLeadLoader=hideLeadLoader;
   window.addEventListener('pageshow',hideLeadLoader);
 
+  // Warm up ordinary internal page links before the user clicks them.
+  // Only prefetch on hover/focus; never prefetch forms, searches, logout, or destructive actions.
+  const prefetched=new Set();
+  function warmPageLink(anchor){
+    if(!anchor||!(anchor instanceof HTMLAnchorElement)||!anchor.href)return;
+    let u;try{u=new URL(anchor.href,location.href)}catch(e){return}
+    if(u.origin!==location.origin||u.pathname===location.pathname)return;
+    if(u.pathname==='/logout'||u.pathname==='/login'||u.pathname==='/register'||u.pathname.includes('/search')||u.pathname.includes('/delete')||u.pathname.includes('/add')||u.pathname.includes('/download')||u.pathname.includes('/export'))return;
+    if(u.search||prefetched.has(u.href))return;
+    prefetched.add(u.href);
+    const link=document.createElement('link');link.rel='prefetch';link.as='document';link.href=u.href;link.fetchPriority='low';
+    link.onerror=()=>prefetched.delete(u.href);
+    document.head.appendChild(link);
+  }
+  document.addEventListener('pointerover',function(e){const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(a)warmPageLink(a)},{passive:true});
+  document.addEventListener('focusin',function(e){const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(a)warmPageLink(a)});
+
   // Lead search uses normal navigation so the browser displays the returned results,
   // while the overlay remains visible until the new results page loads.
   document.addEventListener('submit',function(event){
@@ -10380,6 +10397,8 @@ def save_google_lead():
 
 
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
+
+
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
     """Display analytics based on the logged-in user's own business records."""
@@ -10619,6 +10638,8 @@ def business_analytics():
 
 
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
+
+
 
 def ensure_manual_transactions_table(cursor):
     """Create the manual ledger table if it does not already exist."""
