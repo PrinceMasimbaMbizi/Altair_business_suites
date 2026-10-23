@@ -9033,6 +9033,10 @@ def search_ai_leads():
         audience_terms.append(business_size + " business")
     audience_terms.append(location)
     audience_query = " ".join(part for part in audience_terms if part).strip() or location
+    # Keep the query variable passed to the template defined on every path.
+    # Previously this was referenced as search_query at render time without
+    # ever being assigned, causing a 500 after both sources had finished.
+    search_query = audience_query
 
     print("=" * 70)
     print("ALTAIR MULTI-SOURCE LEAD SEARCH")
@@ -9202,6 +9206,29 @@ def search_ai_leads():
     # results both retained. Each source can return up to max_results.
     google_places = discovered_places + facebook_pages
     print("MULTI-SOURCE TOTALS — Google Places:", len(discovered_places), "Facebook public Pages:", len(facebook_pages))
+
+    # Tell the user what actually happened instead of leaving them with a
+    # generic server error or a blank results area.
+    if discovered_places and facebook_pages:
+        flash(
+            f"Search completed: Google Places found {len(discovered_places)} businesses and Facebook public-page search found {len(facebook_pages)} pages.",
+            "success"
+        )
+    elif discovered_places:
+        flash(
+            f"Search completed using Google Places ({len(discovered_places)} results). Facebook search returned no results or was unavailable, so Google results are shown on their own.",
+            "success"
+        )
+    elif facebook_pages:
+        flash(
+            f"Google Places returned no results or was unavailable. Showing {len(facebook_pages)} publicly indexed Facebook Pages instead.",
+            "success"
+        )
+    else:
+        flash(
+            "No results were returned by Google Places or Facebook public-page search. Check the API keys and try a broader industry, keyword, or location. Your other Altair features are unaffected.",
+            "error"
+        )
 
     if prospect_type in {"people", "both"}:
         flash(
@@ -9476,23 +9503,28 @@ def search_ai_leads():
         # QUALIFY THE LEAD
         
 
-        qualification = qualify_lead_with_ai(
-
-            lead=potential_lead,
-
-            service=services,
-
-            target_industry=industry,
-
-            target_location=location,
-
-            business_size=business_size,
-
-            keywords=keywords,
-
-            user_id=user_id,
-            sender_name=sender_name
-        )
+        try:
+            qualification = qualify_lead_with_ai(
+                lead=potential_lead,
+                service=services,
+                target_industry=industry,
+                target_location=location,
+                business_size=business_size,
+                keywords=keywords,
+                user_id=user_id,
+                sender_name=sender_name
+            ) or {}
+        except Exception as exc:
+            # Keep the search results usable if AI qualification fails for one lead.
+            print("LEAD AI QUALIFICATION ERROR:", company_name, type(exc).__name__, str(exc))
+            qualification = {
+                "lead_score": 0,
+                "ai_analysis": "AI qualification was unavailable for this result.",
+                "ai_reason": "The lead was found, but the qualification step could not complete.",
+                "ai_message": "",
+                "lead_quality": "Needs Review",
+                "score_breakdown": {}
+            }
 
 
         

@@ -2836,6 +2836,43 @@
                 padding: 22px 16px;
             }
         }
+
+        /* Search feedback messages: explain source failures without a 500 page. */
+        .flash-messages {
+            display: grid;
+            gap: 10px;
+            margin: 0 0 18px;
+        }
+
+        .flash-message {
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .flash-message.success {
+            background: #ecfdf3;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .flash-message.warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        .flash-message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
     </style>
 
 </head>
@@ -2971,6 +3008,20 @@
 
         <main class="main">
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages" role="status" aria-live="polite">
+                {% for category, message in messages %}
+                <div class="flash-message {{ category if category in ['success', 'warning', 'error'] else 'warning' }}">
+                    {% if category == 'success' %}<i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                    {% elif category == 'error' %}<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                    {% else %}<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>{% endif %}
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
 
             <!-- 
              TOP BAR
@@ -3341,13 +3392,15 @@
                     <div class="search-complete-icon"><i class="fa-solid fa-check"></i></div>
                     {% if google_results %}
                     <h2 id="searchCompleteTitle">Search Completed!</h2>
-                    <p>Altair has finished searching Google and found <span class="search-complete-count">{{
+                    <p>Altair has finished searching Google Places and Facebook public-page results and found <span
+                            class="search-complete-count">{{
                             google_results|length }} result{% if google_results|length != 1 %}s{% endif %}</span> for
                         your search. Taking you to your results now.</p>
                     {% else %}
                     <h2 id="searchCompleteTitle">Search Finished</h2>
-                    <p>The search has completed, but no businesses were found for this search. You can adjust your
-                        keywords or target location and try again.</p>
+                    <p>Neither source returned results for this search. Check the source-status messages on the page,
+                        confirm your API keys, or try broader keywords or a different location. Your other Altair
+                        features are unaffected.</p>
                     {% endif %}
                     <div class="search-complete-actions">
                         <button type="button" class="search-complete-view-btn" id="viewSearchResultsBtn"><i
