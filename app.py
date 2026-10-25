@@ -1,6 +1,6 @@
 import types
 
-from flask import (Flask,render_template,request,redirect,url_for,flash as _flask_flash,session,send_from_directory,abort,jsonify)
+from flask import (Flask,render_template as _flask_render_template,request,redirect,url_for,flash as _flask_flash,session,send_from_directory,abort,jsonify)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime, date
@@ -47,11 +47,52 @@ app = Flask(__name__)
 
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
-
 if not app.secret_key:
-    raise RuntimeError(
-        "FLASK_SECRET_KEY is not configured."
-    )
+    app.secret_key = os.urandom(32).hex()
+    app.logger.warning("FLASK_SECRET_KEY is not set; a temporary local key is being used.")
+
+# SINGLE-FILE FRONTEND ADAPTER
+# Every former page template is now a conditional section inside templates/index.html.
+# Existing route handlers, database operations, validation and authorization stay in place.
+_TEMPLATE_VIEW_MAP = {
+    "dashboard.html": "dashboard",
+    "customer.html": "customer",
+    "invoice.html": "invoice",
+    "invoice_view.html": "invoice_view",
+    "view_quotation.html": "quotation_view",
+    "items.html": "items",
+    "transactions.html": "transactions",
+    "ai_leads.html": "ai_leads",
+    "business_analytics.html": "business_analytics",
+    "settings.html": "settings",
+    "help_support.html": "help_support",
+    "company_setup.html": "company_setup",
+    "login.html": "login",
+    "register.html": "register",
+    "forecasting.html": "forecasting",
+    "employees_team.html": "employees_team",
+    "documents_reports.html": "documents_reports",
+    "billing_payments.html": "billing_payments",
+    "billing_history.html": "billing_history",
+    "integrations.html": "integrations",
+    "subscription_plans.html": "coming_soon",
+    "usage_limits.html": "coming_soon",
+    "notifications.html": "coming_soon",
+}
+
+def render_template(template_name, **context):
+    """Render all app screens through the single index.html frontend."""
+    name = str(template_name or "")
+    if name == "index.html":
+        context.setdefault("active_view", request.args.get("view", "dashboard"))
+        return _flask_render_template("index.html", **context)
+    view = _TEMPLATE_VIEW_MAP.get(name)
+    if view:
+        context.setdefault("active_view", view)
+        return _flask_render_template("index.html", **context)
+    # Non-HTML or future templates remain supported instead of silently breaking.
+    return _flask_render_template(name, **context)
+
 
 
 
@@ -91,23 +132,6 @@ ALTAIR_UI_JS = r"""(function(){
   function hideLeadLoader(){if(overlay)overlay.classList.remove('show');document.body.style.overflow='';clearInterval(progressTimer);progressTimer=null}
   window.altairHideLeadLoader=hideLeadLoader;
   window.addEventListener('pageshow',hideLeadLoader);
-
-  // Warm up ordinary internal page links before the user clicks them.
-  // Only prefetch on hover/focus; never prefetch forms, searches, logout, or destructive actions.
-  const prefetched=new Set();
-  function warmPageLink(anchor){
-    if(!anchor||!(anchor instanceof HTMLAnchorElement)||!anchor.href)return;
-    let u;try{u=new URL(anchor.href,location.href)}catch(e){return}
-    if(u.origin!==location.origin||u.pathname===location.pathname)return;
-    if(u.pathname==='/logout'||u.pathname==='/login'||u.pathname==='/register'||u.pathname.includes('/search')||u.pathname.includes('/delete')||u.pathname.includes('/add')||u.pathname.includes('/download')||u.pathname.includes('/export'))return;
-    if(u.search||prefetched.has(u.href))return;
-    prefetched.add(u.href);
-    const link=document.createElement('link');link.rel='prefetch';link.as='document';link.href=u.href;link.fetchPriority='low';
-    link.onerror=()=>prefetched.delete(u.href);
-    document.head.appendChild(link);
-  }
-  document.addEventListener('pointerover',function(e){const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(a)warmPageLink(a)},{passive:true});
-  document.addEventListener('focusin',function(e){const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;if(a)warmPageLink(a)});
 
   // Lead search uses normal navigation so the browser displays the returned results,
   // while the overlay remains visible until the new results page loads.
@@ -261,25 +285,24 @@ app.jinja_env.filters["money"] = format_money
 
 
 def get_db_connection():
-
+    """Open a MySQL connection using Render environment variables."""
+    required = ("DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME")
+    missing = [key for key in required if not os.environ.get(key)]
+    if missing:
+        raise RuntimeError("Missing required database environment variables: " + ", ".join(missing))
+    try:
+        port = int(os.environ.get("DB_PORT", "3306"))
+    except (TypeError, ValueError):
+        port = 3306
     return mysql.connector.connect(
-
-        host=os.environ.get("DB_HOST"),
-
-        port=int(
-            os.environ.get(
-                "DB_PORT",
-                3306
-            )
-        ),
-
-        user=os.environ.get("DB_USER"),
-
-        password=os.environ.get("DB_PASSWORD"),
-
-        database=os.environ.get("DB_NAME"),
-
-        ssl_verify_cert=False
+        host=os.environ["DB_HOST"],
+        port=port,
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        database=os.environ["DB_NAME"],
+        ssl_verify_cert=False,
+        connection_timeout=15,
+        autocommit=False,
     )
 
 def require_current_company():
@@ -1862,66 +1885,48 @@ def get_business_ai_data(user_id):
         """, (user_id,))
         current_month_expenses = cursor.fetchone() or {}
 
-        cursor.execute("""
-            SELECT COALESCE(SUM(amount), 0) AS total
-            FROM investments
-            WHERE user_id = %s
-              AND YEAR(investment_date) = YEAR(CURRENT_DATE())
-              AND MONTH(investment_date) = MONTH(CURRENT_DATE())
-        """, (user_id,))
-        current_month_investments = cursor.fetchone() or {}
-
         month_revenue = float(current_month_revenue.get("paid_revenue", 0) or 0)
         month_expenses = float(current_month_expenses.get("total", 0) or 0)
-        month_investments = float(current_month_investments.get("total", 0) or 0)
-        month_money_out = month_expenses + month_investments
         data["current_month_financials"] = {
             "paid_revenue": round(month_revenue, 2),
             "expenses": round(month_expenses, 2),
-            "investments": round(month_investments, 2),
-            "money_out": round(month_money_out, 2),
-            "recorded_difference": round(month_revenue - month_money_out, 2),
+            "recorded_difference": round(month_revenue - month_expenses, 2),
         }
 
-        # INVESTMENTS: keep them separate from operating expenses, but include
-        # them in cash-outflow/profitability comparisons.
+   
+        # INVESTMENTS
+
         cursor.execute("""
             SELECT
+
                 COUNT(*) AS count,
-                COALESCE(SUM(amount), 0) AS total,
-                COALESCE(SUM(expected_return), 0) AS expected_returns
+
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS total
+
             FROM investments
+
             WHERE user_id = %s
         """, (user_id,))
-        data["investments"] = cursor.fetchone() or {}
 
-        # PRODUCTS & SERVICES: the real table used by /items is `inventory`.
-        # These catalogue/stock figures help Otis make better recommendations;
-        # they are not counted as sales revenue until captured in paid invoices.
+        data["investments"] = (
+            cursor.fetchone() or {}
+        )
+
+
+        # INVENTORY
+
         cursor.execute("""
             SELECT
-                COUNT(*) AS total_items,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN 1 ELSE 0 END), 0) AS total_products,
-                COALESCE(SUM(CASE WHEN item_type = 'Service' THEN 1 ELSE 0 END), 0) AS total_services,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * cost_price ELSE 0 END), 0) AS inventory_value,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * selling_price ELSE 0 END), 0) AS inventory_potential_sales_value,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' THEN quantity * (selling_price - cost_price) ELSE 0 END), 0) AS inventory_potential_margin,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' AND quantity <= 0 THEN 1 ELSE 0 END), 0) AS out_of_stock,
-                COALESCE(SUM(CASE WHEN item_type = 'Product' AND quantity > 0 AND quantity <= low_stock_level THEN 1 ELSE 0 END), 0) AS low_stock
-            FROM inventory
+                COUNT(*) AS total_items
+            FROM items
             WHERE user_id = %s
         """, (user_id,))
-        data["inventory"] = cursor.fetchone() or {}
 
-        # Combined money-out summary. `recurring_payments` are not added again
-        # here because processed recurring payments are already written to
-        # `expenses`; adding the schedule as well would double-count them.
-        data["money_out"] = {
-            "expenses": round(float((data.get("expenses") or {}).get("total", 0) or 0), 2),
-            "investments": round(float((data.get("investments") or {}).get("total", 0) or 0), 2),
-        }
-        data["money_out"]["total"] = round(
-            data["money_out"]["expenses"] + data["money_out"]["investments"], 2
+        data["inventory"] = (
+            cursor.fetchone() or {}
         )
 
         
@@ -2050,17 +2055,6 @@ def altair_business_summary(
         ) or 0
     )
 
-    inventory = business_data.get("inventory") or {}
-    recurring = business_data.get("recurring") or {}
-    investments = business_data.get("investments") or {}
-    product_count = int(inventory.get("total_products", 0) or 0)
-    service_count = int(inventory.get("total_services", 0) or 0)
-    low_stock = int(inventory.get("low_stock", 0) or 0)
-    out_of_stock = int(inventory.get("out_of_stock", 0) or 0)
-    investment_total = float(investments.get("total", 0) or 0)
-    recurring_monthly = float(recurring.get("monthly_cost", 0) or 0)
-    inventory_sales_value = float(inventory.get("inventory_potential_sales_value", 0) or 0)
-
 
     
     # HEALTH DESCRIPTION
@@ -2112,20 +2106,8 @@ def altair_business_summary(
         f"total {overdue:,.2f}.\n\n"
 
         f"EXPENSES:\n"
-        f"Recorded operating expenses total "
-        f"{expenses:,.2f}; recorded investments total "
-        f"{investment_total:,.2f}. Total recorded money out is "
-        f"{expenses + investment_total:,.2f}.\n"
-        f"Active recurring payments: {int(recurring.get('count', 0) or 0)}; "
-        f"estimated monthly recurring commitments: {recurring_monthly:,.2f}. "
-        f"Recurring schedules are not added again to actual expenses if already processed.\n\n"
-
-        f"PRODUCTS & SERVICES:\n"
-        f"Catalogue contains {product_count} products and {service_count} services. "
-        f"Current stock cost value is {float(inventory.get('inventory_value', 0) or 0):,.2f}; "
-        f"estimated selling value of stocked products is {inventory_sales_value:,.2f}. "
-        f"This selling value is potential, not booked revenue. "
-        f"Low-stock products: {low_stock}; out-of-stock products: {out_of_stock}.\n\n"
+        f"Recorded expenses total "
+        f"{expenses:,.2f}.\n\n"
 
         f"SALES:\n"
         f"Lead conversion is currently "
@@ -2202,11 +2184,10 @@ def altair_response_engine(intent, business_data, analysis):
     if intent == "expenses":
 
         total_expenses = number(expenses, "total")
-        investment_total = number(investments, "total")
-        total_money_out = total_expenses + investment_total
+
         monthly_recurring = number(recurring, "monthly_cost")
 
-        if total_money_out == 0:
+        if total_expenses == 0:
 
             return (
                 "Your current business data shows no recorded "
@@ -2218,9 +2199,7 @@ def altair_response_engine(intent, business_data, analysis):
 
         return (
             "Here is your expense overview:\n\n"
-            f"Recorded operating expenses: {money(total_expenses)}\n"
-            f"Recorded investments: {money(investment_total)}\n"
-            f"Total recorded money out: {money(total_money_out)}\n"
+            f"Recorded expenses: {money(total_expenses)}\n"
             f"Estimated monthly recurring costs: "
             f"{money(monthly_recurring)}\n\n"
             "To control spending, review your largest expenses, "
@@ -2242,14 +2221,12 @@ def altair_response_engine(intent, business_data, analysis):
         overdue_amount = number(invoices, "overdue_amount")
 
         total_expenses = number(expenses, "total")
-        investment_total = number(investments, "total")
-        total_money_out = total_expenses + investment_total
 
         monthly_recurring = number(recurring, "monthly_cost")
 
         outstanding = pending_amount + overdue_amount
 
-        estimated_difference = paid_revenue - total_money_out
+        estimated_difference = paid_revenue - total_expenses
 
         return (
             "Here is your recorded cash-flow overview:\n\n"
@@ -2257,11 +2234,9 @@ def altair_response_engine(intent, business_data, analysis):
             f"Pending invoices: {money(pending_amount)}\n"
             f"Overdue invoices: {money(overdue_amount)}\n"
             f"Total outstanding invoices: {money(outstanding)}\n"
-            f"Recorded operating expenses: {money(total_expenses)}\n"
-            f"Recorded investments: {money(investment_total)}\n"
-            f"Total recorded money out: {money(total_money_out)}\n"
-            f"Monthly recurring costs (already included in expenses when processed): {money(monthly_recurring)}\n\n"
-            f"Paid revenue minus recorded money out: "
+            f"Recorded expenses: {money(total_expenses)}\n"
+            f"Monthly recurring costs: {money(monthly_recurring)}\n\n"
+            f"Paid revenue minus recorded expenses: "
             f"{money(estimated_difference)}\n\n"
             "Recommended actions:\n"
             "1. Follow up on overdue invoices.\n"
@@ -2659,10 +2634,7 @@ def generate_business_advice(business_data):
     pending = num(invoices, "pending_amount")
     overdue = num(invoices, "overdue_amount")
     invoice_count = int(num(invoices, "total"))
-    operating_expense_total = num(expenses, "total")
-    investments = data.get("investments") or {}
-    investment_total = num(investments, "total")
-    expense_total = operating_expense_total + investment_total
+    expense_total = num(expenses, "total")
     monthly_cost = num(recurring, "monthly_cost")
     total_leads = int(num(leads, "total"))
     converted = int(num(leads, "converted"))
@@ -2756,9 +2728,7 @@ def generate_business_advice(business_data):
         "paid_revenue": round(paid, 2),
         "overdue_amount": round(overdue, 2),
         "pending_amount": round(pending, 2),
-        "expenses": round(operating_expense_total, 2),
-        "investments": round(investment_total, 2),
-        "money_out_total": round(expense_total, 2),
+        "expenses": round(expense_total, 2),
         "monthly_recurring": round(monthly_cost, 2),
         "lead_conversion": round(conversion, 1),
         "revenue_prediction": forecast.get("prediction", 0),
@@ -2885,8 +2855,6 @@ def altair_response_engine(intent, business_data, analysis):
         monthly = data.get("current_month_financials") or {}
         month_revenue = val(monthly, "paid_revenue")
         month_expenses = val(monthly, "expenses")
-        month_investments = val(monthly, "investments")
-        month_money_out = val(monthly, "money_out",) or (month_expenses + month_investments)
         difference = val(monthly, "recorded_difference")
         label = "positive recorded difference" if difference > 0 else (
             "negative recorded difference" if difference < 0 else "break-even recorded difference"
@@ -3298,19 +3266,6 @@ def api_business_insights():
         )
 
         
-        # MONTHLY INVESTMENTS (investments are cash outflows, not operating expenses)
-        cursor.execute("""
-            SELECT
-                DATE_FORMAT(investment_date, '%Y-%m') AS month,
-                COALESCE(SUM(amount), 0) AS investments
-            FROM investments
-            WHERE user_id = %s
-              AND investment_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
-            GROUP BY DATE_FORMAT(investment_date, '%Y-%m')
-            ORDER BY month ASC
-        """, (user_id,))
-        investment_rows = cursor.fetchall() or []
-
         # PREPARE MONTHLY DATA
         
 
@@ -3323,13 +3278,11 @@ def api_business_insights():
         }
 
         expenses_by_month = {
-            str(row["month"]): float(row.get("expenses", 0) or 0)
-            for row in expense_rows if row.get("month")
-        }
-
-        investments_by_month = {
-            str(row["month"]): float(row.get("investments", 0) or 0)
-            for row in investment_rows if row.get("month")
+            str(row["month"]): float(
+                row.get("expenses", 0) or 0
+            )
+            for row in expense_rows
+            if row.get("month")
         }
 
         
@@ -3375,14 +3328,18 @@ def api_business_insights():
                 2
             )
 
-            operating_expense_value = expenses_by_month.get(month_key, 0.0)
-            investment_value = investments_by_month.get(month_key, 0.0)
-            # Recurring payments are already stored as expenses when processed.
-            # Money-out therefore combines expense records + investment records,
-            # without adding the recurring schedule a second time.
-            expense_value = round(operating_expense_value + investment_value, 2)
+            expense_value = round(
+                expenses_by_month.get(
+                    month_key,
+                    0.0
+                ),
+                2
+            )
 
-            profit_value = round(revenue_value - expense_value, 2)
+            profit_value = round(
+                revenue_value - expense_value,
+                2
+            )
 
             chart_labels.append(
                 month_date.strftime("%b %Y")
@@ -3419,37 +3376,6 @@ def api_business_insights():
         analysis["profit_history"] = (
             profit_history
         )
-        analysis["money_out_label"] = "Money out (expenses + investments)"
-        analysis["profit_label"] = "Recorded difference (revenue − money out)"
-        analysis["investment_history"] = [
-            round(investments_by_month.get(
-                f"{(now.year * 12 + now.month - 1 - offset) // 12:04d}-{((now.year * 12 + now.month - 1 - offset) % 12) + 1:02d}", 0.0
-            ), 2)
-            for offset in range(11, -1, -1)
-        ]
-
-        # Dashboard/Otis financial context: catalogue values are opportunity estimates,
-        # not booked revenue. Recurring schedules are commitments, not actual spend until
-        # processed into expenses. Money-out records combine expenses and investments.
-        inventory_context = business_data.get("inventory") or {}
-        recurring_context = business_data.get("recurring") or {}
-        investment_context = business_data.get("investments") or {}
-        expense_context = business_data.get("expenses") or {}
-        analysis["financial_context"] = {
-            "products": int(inventory_context.get("total_products", 0) or 0),
-            "services": int(inventory_context.get("total_services", 0) or 0),
-            "catalogue_items": int(inventory_context.get("total_items", 0) or 0),
-            "inventory_cost_value": round(float(inventory_context.get("inventory_value", 0) or 0), 2),
-            "inventory_potential_sales_value": round(float(inventory_context.get("inventory_potential_sales_value", 0) or 0), 2),
-            "inventory_potential_margin": round(float(inventory_context.get("inventory_potential_margin", 0) or 0), 2),
-            "low_stock": int(inventory_context.get("low_stock", 0) or 0),
-            "out_of_stock": int(inventory_context.get("out_of_stock", 0) or 0),
-            "recorded_expenses": round(float(expense_context.get("total", 0) or 0), 2),
-            "recorded_investments": round(float(investment_context.get("total", 0) or 0), 2),
-            "recorded_money_out": round(float(expense_context.get("total", 0) or 0) + float(investment_context.get("total", 0) or 0), 2),
-            "active_recurring_payments": int(recurring_context.get("count", 0) or 0),
-            "estimated_monthly_recurring_cost": round(float(recurring_context.get("monthly_cost", 0) or 0), 2),
-        }
 
         
         # RECENT INVOICES
@@ -3515,20 +3441,6 @@ def api_business_insights():
             cursor.fetchall() or []
         )
 
-        cursor.execute("""
-            SELECT
-                investment_name AS party,
-                category AS reference,
-                amount,
-                'Investment' AS status,
-                investment_date AS transaction_date
-            FROM investments
-            WHERE user_id = %s
-            ORDER BY investment_date DESC, id DESC
-            LIMIT 8
-        """, (user_id,))
-        investment_transactions = cursor.fetchall() or []
-
         
         # COMBINE TRANSACTIONS
         
@@ -3538,7 +3450,6 @@ def api_business_insights():
         for row in (
             invoice_transactions
             + expense_transactions
-            + investment_transactions
         ):
 
             transaction_date = row.get(
@@ -3807,13 +3718,18 @@ def dashboard():
             url_for("company_setup")
         )
 
-    # Render the uploaded dashboard UI (index.html) as a Flask/Jinja template.
-    # Keep the same context expected by the page's company branding and profile.
     return render_template(
-        "index.html",
+        "dashboard.html",
+
         company=company,
-        user_name=session.get("user_name"),
-        user_email=session.get("user_email"),
+
+        user_name=session.get(
+            "user_name"
+        ),
+
+        user_email=session.get(
+            "user_email"
+        )
     )
 
 
@@ -9108,15 +9024,8 @@ def search_ai_leads():
         max_results = 10
 
 
-    # A search may return up to 100 combined, de-duplicated prospects.
-    max_results = max(1, min(max_results, 100))
-
-    try:
-        recency_days = int(request.form.get("recency_days", "30"))
-    except (ValueError, TypeError):
-        recency_days = 30
-    if recency_days not in {7, 30, 90, 365}:
-        recency_days = 30
+    # Keep public web search bounded while allowing the UI's 5/10/15/20 options.
+    max_results = max(1, min(max_results, 20))
 
 
     
@@ -9167,7 +9076,7 @@ def search_ai_leads():
     # Keep the query variable passed to the template defined on every path.
     # Previously this was referenced as search_query at render time without
     # ever being assigned, causing a 500 after both sources had finished.
-    search_query = f"{audience_query} | offer: {services} | freshness: {recency_days} days"
+    search_query = audience_query
 
     print("=" * 70)
     print("ALTAIR MULTI-SOURCE LEAD SEARCH")
@@ -9176,54 +9085,33 @@ def search_ai_leads():
     print("Prospect mode:", prospect_type)
     print("=" * 70)
 
-    # SOURCE 1 — Google Places API. Run several bounded queries so the
-    # requested count can exceed Places' 20-results-per-request limit.
-    # This source is independent of Facebook/Brave.
+    # SOURCE 1 — Google Places API (Text Search, current Places API v1).
+    # A missing/invalid Google key must not stop Facebook discovery.
     google_api_key = os.environ.get("GOOGLE_PLACES_API_KEY", "").strip()
     if google_api_key:
-        google_queries = []
-        for candidate in [
-            audience_query + " businesses",
-            (industry + " businesses " + location) if industry and industry.lower() not in {"any", "all", "all industries"} else "",
-            (keywords + " businesses " + location) if keywords else "",
-            ("small and medium businesses " + location) if not industry else "",
-            ("businesses and organizations " + location),
-        ]:
-            candidate = re.sub(r"\\s+", " ", candidate or "").strip()
-            if candidate and candidate not in google_queries:
-                google_queries.append(candidate)
-
-        google_headers = {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": google_api_key,
-            "X-Goog-FieldMask": (
-                "places.id,places.displayName,places.formattedAddress,"
-                "places.websiteUri,places.nationalPhoneNumber,"
-                "places.internationalPhoneNumber,places.types,"
-                "places.businessStatus,places.googleMapsUri,places.primaryType"
-            ),
-        }
-        google_had_success = False
-        for google_query in google_queries:
-            if len(discovered_places) >= max_results:
-                break
-            try:
-                response = requests.post(
-                    "https://places.googleapis.com/v1/places:searchText",
-                    headers=google_headers,
-                    json={
-                        "textQuery": google_query,
-                        "pageSize": min(20, max_results - len(discovered_places)),
-                        "languageCode": "en",
-                    },
-                    timeout=25,
-                )
-                print("GOOGLE PLACES SEARCH STATUS:", response.status_code, "QUERY:", google_query)
-                if response.status_code != 200:
-                    print("GOOGLE PLACES ERROR BODY:", response.text[:500])
-                    source_errors.append(f"Google Places returned HTTP {response.status_code}; Facebook discovery will still be attempted.")
-                    continue
-                google_had_success = True
+        google_query = " ".join(part for part in [audience_query, "businesses"] if part).strip()
+        try:
+            response = requests.post(
+                "https://places.googleapis.com/v1/places:searchText",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Goog-Api-Key": google_api_key,
+                    "X-Goog-FieldMask": (
+                        "places.id,places.displayName,places.formattedAddress,"
+                        "places.websiteUri,places.nationalPhoneNumber,"
+                        "places.internationalPhoneNumber,places.types,"
+                        "places.businessStatus,places.googleMapsUri,places.primaryType"
+                    ),
+                },
+                json={
+                    "textQuery": google_query,
+                    "pageSize": min(max_results, 20),
+                    "languageCode": "en",
+                },
+                timeout=25,
+            )
+            print("GOOGLE PLACES SEARCH STATUS:", response.status_code, "QUERY:", google_query)
+            if response.status_code == 200:
                 payload = response.json() if response.content else {}
                 for place in payload.get("places", []) or []:
                     place_id = str(place.get("id") or "").strip()
@@ -9237,16 +9125,17 @@ def search_ai_leads():
                     normalized["_email_from_snippet"] = ""
                     normalized["_evidence_text"] = ""
                     discovered_places.append(normalized)
-                    if len(discovered_places) >= max_results:
+                    if len([x for x in discovered_places if x.get("_source_type") == "Google Places"]) >= max_results:
                         break
-            except requests.RequestException as exc:
-                print("GOOGLE PLACES CONNECTION ERROR:", type(exc).__name__, str(exc))
-                source_errors.append("Could not connect to Google Places; Facebook discovery will still be attempted.")
-            except (ValueError, TypeError) as exc:
-                print("GOOGLE PLACES RESPONSE ERROR:", type(exc).__name__, str(exc))
-                source_errors.append("Google Places returned an unreadable response; Facebook discovery will still be attempted.")
-        if not google_had_success and not source_errors:
-            source_errors.append("Google Places returned no usable results; Facebook discovery will still be attempted.")
+            else:
+                print("GOOGLE PLACES ERROR BODY:", response.text[:700])
+                source_errors.append(f"Google Places search failed (HTTP {response.status_code}); Facebook search will still be attempted.")
+        except requests.RequestException as exc:
+            print("GOOGLE PLACES CONNECTION ERROR:", type(exc).__name__, str(exc))
+            source_errors.append("Could not connect to Google Places; Facebook search will still be attempted.")
+        except (ValueError, TypeError) as exc:
+            print("GOOGLE PLACES RESPONSE ERROR:", type(exc).__name__, str(exc))
+            source_errors.append("Google Places returned an unreadable response; Facebook search will still be attempted.")
     else:
         source_errors.append("GOOGLE_PLACES_API_KEY is not configured, so Google Places was skipped; Facebook discovery will still be attempted.")
 
@@ -9256,14 +9145,9 @@ def search_ai_leads():
     facebook_pages = []
     if brave_api_key:
         search_queries = []
-        # Search both potential customers and direct demand signals. These are
-        # public indexed results, not private Facebook data or direct Graph API.
         query_variants = [
             f"site:facebook.com {audience_query}",
             f"site:facebook.com/pages {audience_query}",
-            f"site:facebook.com {services} looking for {location}",
-            f"site:facebook.com need {services} {location}",
-            f"site:facebook.com {services} recommendations {location}",
         ]
         if industry and industry.lower() not in {"any", "all", "all industries"}:
             query_variants.append(f"site:facebook.com {industry} {location}")
@@ -9283,10 +9167,9 @@ def search_ai_leads():
                     "https://api.search.brave.com/res/v1/web/search",
                     params={
                         "q": web_query,
-                        "count": 20,
+                        "count": min(20, max(5, max_results * 2)),
                         "safesearch": "moderate",
                         "search_lang": "en",
-                        **({"freshness": {7: "pw", 30: "pm", 365: "py"}.get(recency_days)} if recency_days in {7, 30, 365} else {}),
                     },
                     headers={
                         "Accept": "application/json",
@@ -9346,7 +9229,6 @@ def search_ai_leads():
                         "_source_type": "Facebook public web result",
                         "_email_from_snippet": email_match.group(0) if email_match else "",
                         "_evidence_text": description,
-                        "published_at": item.get("published_at") or item.get("published") or item.get("page_age"),
                         "_meta_page_id": "",
                     })
                     if len(facebook_pages) >= max_results:
@@ -9360,23 +9242,10 @@ def search_ai_leads():
     else:
         source_errors.append("BRAVE_SEARCH_API_KEY is not configured, so Facebook discovery was skipped; Google Places can still work.")
 
-    # Merge sources fairly and enforce the user's requested combined result cap.
-    # This prevents 100 Google + 100 Facebook results when the user asked for 100.
-    google_places = []
-    source_lists = [iter(discovered_places), iter(facebook_pages)]
-    exhausted = [False, False]
-    while len(google_places) < max_results and not all(exhausted):
-        for idx, source_iter in enumerate(source_lists):
-            if len(google_places) >= max_results:
-                break
-            if exhausted[idx]:
-                continue
-            try:
-                google_places.append(next(source_iter))
-            except StopIteration:
-                exhausted[idx] = True
-
-    print("MULTI-SOURCE TOTALS — Google Places:", len(discovered_places), "Facebook public Pages:", len(facebook_pages), "Combined shown:", len(google_places), "Requested cap:", max_results)
+    # Merge both sources into one lead-scoring pipeline, with Google and Facebook
+    # results both retained. Each source can return up to max_results.
+    google_places = discovered_places + facebook_pages
+    print("MULTI-SOURCE TOTALS — Google Places:", len(discovered_places), "Facebook public Pages:", len(facebook_pages))
 
     # Tell the user what actually happened instead of leaving them with a
     # generic server error or a blank results area.
@@ -9642,7 +9511,6 @@ def search_ai_leads():
             "prospect_type": place.get("_prospect_type", "Business / Organization"),
             "source_type": place.get("_source_type", "Google Places"),
             "evidence_text": place.get("_evidence_text", ""),
-            "published_at": place.get("published_at") or place.get("_published_at"),
             "services_offered": "",
 
             # Cached from the single batch query above.
@@ -9732,16 +9600,8 @@ def search_ai_leads():
             "lead_quality":
                 qualification.get(
                     "lead_quality",
-                    "Needs Verification"
+                    "Potential Lead"
                 ),
-
-            "lead_group":
-                qualification.get(
-                    "lead_group",
-                    qualification.get("lead_quality", "Needs Review")
-                ),
-
-            "intent_label": qualification.get("intent_label", "No verified demand signal"),
 
             "score_breakdown":
                 qualification.get(
@@ -9846,9 +9706,6 @@ def search_ai_leads():
         search_keywords=keywords,
 
         search_prospect_type=prospect_type,
-
-        search_max_results=max_results,
-        search_recency_days=recency_days,
 
         user_name=session.get(
             "user_name"
@@ -10088,12 +9945,11 @@ def find_public_business_email(website_url):
 
 
 def _lead_text_requests_service(text, service):
-    """Conservatively detect demand language for a service/product."""
+    'Classify actual source text; optionally use a configured Qwen-compatible endpoint.'
     raw_text = (text or "").strip()
     service = (service or "").strip()
     if not raw_text or not service:
         return 0, ""
-
     qwen_url = os.environ.get("QWEN_API_URL", "").strip()
     qwen_key = os.environ.get("QWEN_API_KEY", "").strip()
     qwen_model = os.environ.get("QWEN_MODEL", "qwen-plus").strip()
@@ -10106,8 +9962,8 @@ def _lead_text_requests_service(text, service):
                     "model": qwen_model,
                     "temperature": 0,
                     "messages": [
-                        {"role": "system", "content": "Classify only the supplied text. Do not infer facts. Return JSON only with intent equal to explicit_request, vague_interest, or none, and a short evidence quote copied exactly from the text."},
-                        {"role": "user", "content": f"Product/service offered: {service}\nSource text: {raw_text[:4000]}\nDoes the text show that the author wants to buy, hire, find, or get recommendations for this product/service?"}
+                        {"role": "system", "content": "Classify only the supplied text. Do not infer facts. Return JSON only with intent equal to explicit_request, vague_interest, or none, and a short evidence quote copied from the text."},
+                        {"role": "user", "content": f"Service offered: {service}\nSource text: {raw_text[:4000]}\nDoes the text clearly show that the author wants to buy or hire for this service?"}
                     ]
                 },
                 timeout=8
@@ -10117,52 +9973,61 @@ def _lead_text_requests_service(text, service):
             parsed = json.loads(content[content.find("{"):content.rfind("}") + 1])
             intent = str(parsed.get("intent", "none")).lower()
             quote = str(parsed.get("evidence", "")).strip()
-            if quote and quote.casefold() in raw_text.casefold():
+            if quote and quote.lower() in raw_text.lower():
                 if intent == "explicit_request":
-                    return 35, "Explicit demand evidence: " + quote
+                    return 25, "Configured Qwen classifier found an explicit request in source text: " + quote
                 if intent == "vague_interest":
-                    return 18, "Possible demand evidence: " + quote
+                    return 10, "Configured Qwen classifier found vague interest in source text: " + quote
             return 0, ""
         except Exception as exc:
-            print("QWEN LEAD INTENT CLASSIFICATION ERROR:", type(exc).__name__, str(exc))
+            print("QWEN LEAD INTENT CLASSIFICATION ERROR:", exc)
+            # Continue with the conservative local text classifier.
 
-    text_l = raw_text.casefold()
-    service_l = service.casefold()
-    service_words = [w for w in re.findall(r"[a-z0-9]+", service_l) if len(w) > 2]
-    website_service = any(term in service_l for term in (
+    text = raw_text.lower()
+    service = service.lower()
+    website_service = any(term in service for term in (
         "website", "web development", "web design", "e-commerce", "ecommerce", "online store"
     ))
-    demand_patterns = [
-        r"\b(?:i|we)\s+(?:am\s+)?(?:need|need(?:ing)?|want|want(?:ing)?|looking for|searching for)\b",
-        r"\b(?:looking to hire|seeking|recommend(?:ation)?s? for|anyone know|who can provide|where can i get)\b",
-        r"\b(?:quote|quotation|estimate|price|cost)\s+(?:for|on)\b",
-        r"\b(?:can anyone|does anyone)\s+(?:recommend|know)\b",
-    ]
-    has_demand_language = any(re.search(pattern, text_l, re.I) for pattern in demand_patterns)
     if website_service:
-        synonyms = ["website", "web site", "web developer", "web designer", "online store",
-                    "e-commerce", "ecommerce", "web design", "website development"]
-        service_match = any(term in text_l for term in synonyms)
+        explicit_patterns = [
+            r"\bi need (a |an )?(website|web site|online store|e-?commerce site)\b",
+            r"\blooking for (a |an )?(website developer|web developer|someone to build|web designer)\b",
+            r"\bcan anyone recommend (a |an )?(website|web|web developer|website developer)\b",
+            r"\bwho can help me (build|create|develop)\b.{0,50}\b(website|web site|online store)\b",
+            r"\bneed someone to (build|create|design|develop)\b.{0,50}\b(website|web site|online store)\b",
+            r"\bseeking (a |an )?(web developer|website developer|web designer)\b"
+        ]
+        vague_patterns = [
+            r"\bthinking about (getting|building|creating) (a )?(website|online store)\b",
+            r"\binterested in (a )?(website|online store|web design)\b",
+            r"\bwebsite (ideas|recommendations|suggestions)\b"
+        ]
     else:
-        # Match meaningful service tokens, avoiding a one-word match for common generic words.
-        service_match = bool(service_words) and (
-            " ".join(service_words) in text_l or
-            sum(1 for word in service_words if word in text_l) >= max(1, (len(service_words) + 1) // 2)
-        )
-    if has_demand_language and service_match:
-        return 35, "Source text contains customer-demand language related to the selected offer."
-    if service_match and any(term in text_l for term in (
-        "interested in", "considering", "planning to", "thinking about", "need advice",
-        "looking for options", "what do you recommend"
-    )):
-        return 18, "Source text suggests possible interest related to the selected offer."
+        words = [w for w in re.findall(r"[a-z0-9]+", service) if len(w) > 2]
+        if not words or not any(word in text for word in words):
+            return 0, ""
+        first = re.escape(words[0])
+        explicit_patterns = [
+            r"\bi need\b.{0,80}\b" + first + r"\b",
+            r"\blooking to hire\b.{0,80}\b" + first + r"\b",
+            r"\brecommend\b.{0,80}\b" + first + r"\b"
+        ]
+        vague_patterns = [r"\binterested in\b.{0,80}\b" + first + r"\b"]
+    if any(re.search(p, text, re.I) for p in explicit_patterns):
+        return 25, "Available source text contains an explicit request matching the selected service."
+    if any(re.search(p, text, re.I) for p in vague_patterns):
+        return 10, "Available source text shows vague interest in the selected service."
     return 0, ""
 
 
 def qualify_lead_with_ai(lead, service, target_industry, target_location, business_size, keywords, user_id=None, sender_name="our team"):
-    """Score prospect fit transparently; a fit score is not a promise of buying intent."""
-    from datetime import datetime, timedelta, timezone
+    """Evidence-based, seller-neutral lead score (0-100).
 
+    Main score: missing public service/product details (40), buying intent (25),
+    recency (10), relevance (5). Supplementary evidence is capped at 20.
+    Missing website is NOT a scoring criterion.
+    """
+    from datetime import datetime
     prospect_name = (lead.get("company_name") or "").strip()
     website = (lead.get("website") or "").strip()
     email = (lead.get("email") or "").strip()
@@ -10173,167 +10038,128 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
     source_url = (lead.get("source_url") or lead.get("google_maps_url") or "").strip()
     source_text = (lead.get("evidence_text") or lead.get("post_text") or lead.get("source_text") or "").strip()
     published_at = lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")
-
     reasons, analysis_points = [], []
-    stop_words = {
-        "the", "and", "for", "with", "from", "that", "this", "your", "our", "you", "are", "can",
-        "business", "businesses", "company", "companies", "service", "services", "solution", "solutions",
-        "south", "africa", "near", "best", "all", "any", "new", "looking", "need", "want", "offer"
-    }
-    def tokens(value):
-        return [w for w in re.findall(r"[a-z0-9]+", str(value or "").casefold()) if len(w) > 2 and w not in stop_words]
 
-    raw_types = lead.get("types") or []
-    if isinstance(raw_types, str):
-        raw_types = [raw_types]
-    searchable_text = " ".join([
-        prospect_name, industry, address, source_text, website,
-        " ".join(str(item) for item in raw_types)
-    ]).casefold()
-    searchable_tokens = set(tokens(searchable_text))
-
-    # 1) Service/industry/keyword relevance: up to 40 points.
-    service_text = (service or "").strip().casefold()
-    service_tokens = list(dict.fromkeys(tokens(service_text)))
-    industry_tokens = list(dict.fromkeys(tokens(target_industry)))
-    keyword_tokens = list(dict.fromkeys(tokens(keywords)))
-    relevance_points = 0
-    if service_text and service_text in searchable_text:
-        service_relevance = 25
-        reasons.append("The public listing directly mentions the selected service.")
-    elif service_tokens:
-        matched_service = sum(1 for word in service_tokens if word in searchable_tokens)
-        service_relevance = round(25 * matched_service / len(service_tokens))
-        if matched_service:
-            reasons.append("Service-related terms matched: " + ", ".join([w for w in service_tokens if w in searchable_tokens][:5]) + ".")
+    # A. Missing service/product information: a flexible opportunity signal.
+    # The existence of a website alone does not prove that offerings are listed.
+    service_listing = (lead.get("services_offered") or lead.get("service_description") or lead.get("offering_evidence") or "").strip()
+    if not service_listing and not source_text:
+        missing_service_info_points = 40
+        reasons.append("The available public listing does not show a clear list or description of services/products; this is an information gap, not proof that the prospect offers none.")
+        analysis_points.append("No clear services/products list was supplied by the source, so the information-gap signal earned 40 points. Website presence or absence was not used for this score.")
+    elif not service_listing and source_text and not re.search(r"\b(service|services|product|products|offering|offers|speciali[sz]e|provide|provides|we do|menu|treatments|solutions)\b", source_text, re.I):
+        missing_service_info_points = 40
+        reasons.append("The available public text does not clearly describe services/products.")
+        analysis_points.append("The public snippet does not clearly describe services/products; the website field itself does not affect this score.")
     else:
-        service_relevance = 0
-    industry_relevance = 0
-    if industry_tokens:
-        matched_industry = sum(1 for word in industry_tokens if word in searchable_tokens)
-        industry_relevance = round(10 * matched_industry / len(industry_tokens))
-    keyword_relevance = 0
-    if keyword_tokens:
-        matched_keywords = sum(1 for word in keyword_tokens if word in searchable_tokens)
-        keyword_relevance = round(5 * matched_keywords / len(keyword_tokens))
-    relevance_points = min(40, service_relevance + industry_relevance + keyword_relevance)
-    if relevance_points == 0:
-        analysis_points.append("The listing has no clear text match to the requested service, industry, or extra keywords.")
+        missing_service_info_points = 0
+        analysis_points.append("Public text includes service/product information, so no missing-offerings points were awarded.")
 
-    # 2) Location match: up to 15 points. Partial credit is explicitly only a search-location hint.
-    location_text = (target_location or "").strip().casefold()
-    location_points = 0
-    if location_text and location_text in (address + " " + source_text).casefold():
-        location_points = 15
-        reasons.append("The target location appears in the listing.")
-    elif address:
-        location_points = 6
-        analysis_points.append("An address is available, but the exact target-location text could not be verified.")
-    else:
-        analysis_points.append("Location could not be verified from the returned listing.")
-
-    # 3) Reachability/profile completeness: up to 20 points.
-    contactability_points = 0
-    contactability_reasons = []
-    if phone:
-        contactability_points += 6
-        contactability_reasons.append("phone available")
-    if email:
-        contactability_points += 6
-        contactability_reasons.append("email available")
-    if website:
-        contactability_points += 4
-        contactability_reasons.append("website available")
-    if address:
-        contactability_points += 4
-        contactability_reasons.append("address available")
-    if contactability_reasons:
-        reasons.append("Contact details: " + ", ".join(contactability_reasons) + ".")
-
-    # 4) Basic business evidence: up to 10 points.
-    legitimacy_points = 0
-    if business_status == "OPERATIONAL":
-        legitimacy_points = 10
-        reasons.append("The listing marks the business as operational.")
-    elif business_status in ("CLOSED_PERMANENTLY", "CLOSED_TEMPORARILY"):
-        legitimacy_points = 0
-        analysis_points.append("The listing indicates that the business is closed; verify before outreach.")
-    elif prospect_name and (phone or email or website or address):
-        legitimacy_points = 5
-        analysis_points.append("The listing has a name and contact/profile details, but operational status is unverified.")
-
-    # 5) Potential opportunity evidence: up to 10 points. Missing website is only a lead to verify, not proof.
-    opportunity_points = 0
-    website_service = any(term in service_text for term in (
-        "website", "web development", "web design", "e-commerce", "ecommerce", "online store", "digital marketing"
-    ))
-    if website_service and not website:
-        opportunity_points += 6
-        reasons.append("Potential online-presence gap: no website was returned by the source; verify before outreach.")
-    for key in (
-        "visibility_issue_evidence", "mobile_friendly_evidence", "booking_feature_evidence",
-        "ecommerce_feature_evidence", "contact_form_evidence"
-    ):
-        if lead.get(key):
-            opportunity_points = min(10, opportunity_points + 2)
-    if opportunity_points:
-        analysis_points.append("Opportunity points are based on explicit evidence or a website absence that still needs verification.")
-
-    # 6) Explicit buying-intent evidence: only up to 5 extra points.
+    # B. Buying intent: only source text with actual evidence can earn points.
     intent_points, intent_reason = _lead_text_requests_service(source_text, service)
-    intent_bonus = 5 if intent_points > 0 else 0
-    intent_label = "Demand signal found" if intent_points > 0 else "No verified demand signal"
     if intent_reason:
         reasons.append(intent_reason)
     else:
-        analysis_points.append("No explicit buying request was found in the available public text; fit does not mean confirmed intent to buy.")
+        analysis_points.append("No source text demonstrating a request to buy the selected service was available; buying-intent points are zero.")
 
-    score = max(0, min(100, relevance_points + location_points + contactability_points + legitimacy_points + opportunity_points + intent_bonus))
-    if score >= 75:
-        quality = "High Fit"
-    elif score >= 55:
-        quality = "Good Fit"
-    elif score >= 35:
-        quality = "Possible Fit"
+    # C. Recency: only use a source-provided timestamp.
+    recency_points = 0
+    if published_at:
+        try:
+            published_dt = published_at if isinstance(published_at, datetime) else datetime.fromisoformat(str(published_at).replace("Z", "+00:00"))
+            now = datetime.now(published_dt.tzinfo) if published_dt.tzinfo else datetime.now()
+            age_hours = max(0, (now - published_dt).total_seconds() / 3600)
+            if age_hours < 2: recency_points = 10
+            elif age_hours < 6: recency_points = 7
+            elif age_hours < 24: recency_points = 4
+            elif age_hours <= 72: recency_points = 2
+        except (ValueError, TypeError, OverflowError):
+            analysis_points.append("The source timestamp could not be parsed; no recency points were awarded.")
     else:
-        quality = "Needs Review"
+        analysis_points.append("No original publication timestamp was available; no recency points were awarded.")
 
-    analysis_points.append(
-        f"Fit breakdown: relevance {relevance_points}/40, location {location_points}/15, "
-        f"contactability {contactability_points}/20, business evidence {legitimacy_points}/10, "
-        f"opportunity evidence {opportunity_points}/10, explicit demand bonus {intent_bonus}/5. "
-        f"Fit score: {score}/100. Demand evidence: {intent_label}."
-    )
-    ai_analysis = f"{prospect_name or 'This prospect'} was assessed for {service or 'the selected offer'}. " + " ".join(analysis_points)
-    ai_reason = " ".join(reasons) if reasons else "The listing needs manual verification before prioritising outreach."
+    # D. Relevance is derived dynamically from the user's chosen search terms.
+    relevance_points = 0
+    service_tokens = [w for w in re.findall(r"[a-z0-9]+", (service or "").lower()) if len(w) > 3]
+    target_tokens = [w for w in re.findall(r"[a-z0-9]+", " ".join([target_industry or "", keywords or ""]).lower()) if len(w) > 3]
+    searchable_text = " ".join([industry, source_text, " ".join(lead.get("types") or [])]).lower()
+    if any(token in searchable_text for token in service_tokens + target_tokens):
+        relevance_points = 5
+        analysis_points.append("Available listing text/category matches one or more of the selected service, industry, or keyword terms.")
+    else:
+        analysis_points.append("No direct text/category match was available for the selected search terms; no relevance points were awarded.")
+
+    main_score = min(80, missing_service_info_points + intent_points + recency_points + relevance_points)
+
+    # Supplementary evidence: each supported criterion earns one point, capped at 20.
+    supplementary = 0
+    supplementary_reasons = []
+    def award(condition, label):
+        nonlocal supplementary
+        if condition and supplementary < 20:
+            supplementary += 1
+            supplementary_reasons.append(label)
+
+    award(bool(phone), "A public phone number is listed.")
+    award(bool(email and lead.get("email_verified") is True), "Email is verified by a reliable process.")
+    award(bool(address), "A location/address is available from the source.")
+    target_location_l = (target_location or "").lower()
+    award(bool(target_location_l and address and target_location_l in address.lower()), "Location matches the requested location text.")
+    award(bool(prospect_name and prospect_name.lower() not in ("unknown business", "unknown", "public profile / request")), "A prospect/profile name is available.")
+    award(bool(industry and (not target_industry or target_industry.lower() in industry.lower() or industry.lower() in target_industry.lower())), "Category is consistent with the selected target industry.")
+    award(business_status == "OPERATIONAL", "The business listing is marked operational.")
+    award(bool(source_url), "A public source/profile URL is available.")
+    award(bool(lead.get("social_url")), "A public social profile URL is available.")
+    award(bool(phone or email or website), "At least one public contact channel is listed.")
+    award(bool(published_at), "The original source date is recorded.")
+    award(bool(website or source_url), "A public online profile or source page is available.")
+    award(bool(lead.get("visibility_issue_evidence")), "Evidence supports an online-visibility opportunity.")
+    award(bool(lead.get("mobile_friendly_evidence")), "Evidence supports a mobile usability opportunity.")
+    award(bool(lead.get("booking_feature_evidence")), "Evidence supports a booking opportunity.")
+    award(bool(lead.get("ecommerce_feature_evidence")), "Evidence supports an e-commerce opportunity.")
+    award(bool(lead.get("contact_form_evidence")), "Evidence supports an enquiry/contact opportunity.")
+    award(bool(prospect_name and (phone or email or website or source_url)), "The prospect has a name and at least one supporting contact/source field.")
+
+    if "_not_contacted_or_converted" in lead:
+        not_contacted_or_converted = bool(lead.get("_not_contacted_or_converted"))
+    else:
+        not_contacted_or_converted = False
+        if user_id and lead.get("google_place_id"):
+            db = cursor = None
+            try:
+                db = get_db_connection()
+                cursor = db.cursor(dictionary=True)
+                cursor.execute("SELECT lead_status FROM leads WHERE user_id=%s AND google_place_id=%s LIMIT 1", (user_id, lead.get("google_place_id")))
+                existing = cursor.fetchone()
+                not_contacted_or_converted = bool(not existing or (existing.get("lead_status") or "").lower() not in ("contacted", "converted"))
+            except Exception as exc:
+                print("LEAD STATUS SCORE CHECK ERROR:", type(exc).__name__, str(exc))
+            finally:
+                if cursor: cursor.close()
+                if db: db.close()
+    award(not_contacted_or_converted, "Lead is not recorded as contacted or converted in this user's database.")
+
+    supplementary = min(20, supplementary)
+    score = max(0, min(100, main_score + supplementary))
+    quality = ("Excellent potential lead" if score >= 80 else "Strong potential lead" if score >= 60 else "Potential lead" if score >= 40 else "Weak potential lead" if score >= 20 else "Low potential lead")
+    analysis_points.append(f"Score breakdown: missing service/product information {missing_service_info_points}%, buying intent {intent_points}%, recency {recency_points}%, relevance {relevance_points}%, supplementary evidence {supplementary}%. Final lead score: {score}%.")
+    ai_analysis = f"{prospect_name or 'This prospect'} was evaluated for {service or 'the selected offer'}. " + " ".join(analysis_points)
+    ai_reason = " ".join(reasons) if reasons else "Score is based only on available source evidence. Verify details before outreach."
     sender_name = (sender_name or "our team").strip() or "our team"
     recipient_greeting = prospect_name or "there"
     ai_message = (
         f"Hi {recipient_greeting},\n\n"
         f"I came across your public profile/listing while researching potential contacts in {target_location or 'your area'}.\n\n"
-        f"I’m reaching out from {sender_name}. We offer {service or 'services relevant to your business'} and wanted to ask whether this may be useful to you.\n\n"
-        "If it is not relevant, no problem at all.\n\n"
+        f"I’m reaching out from {sender_name}. We offer {service or 'services relevant to your needs'} and I wanted to ask whether this is something you may be interested in discussing.\n\n"
+        "If this is not relevant, no problem at all.\n\n"
         f"Kind regards,\n{sender_name}"
     )
-    return {
-        "lead_score": score,
-        "ai_analysis": ai_analysis,
-        "ai_reason": ai_reason,
-        "ai_message": ai_message,
-        "lead_quality": quality,
-        "lead_group": quality,
-        "intent_label": intent_label,
-        "score_breakdown": {
-            "service_relevance": relevance_points,
-            "location_fit": location_points,
-            "contactability": contactability_points,
-            "business_evidence": legitimacy_points,
-            "opportunity_evidence": opportunity_points,
-            "intent_bonus": intent_bonus,
-            "raw_buying_intent_points": intent_points,
-            "final_score": score,
-        },
-    }
+    return {"lead_score": score, "ai_analysis": ai_analysis, "ai_reason": ai_reason,
+            "ai_message": ai_message, "lead_quality": quality,
+            "score_breakdown": {"missing_service_information": missing_service_info_points, "buying_intent": intent_points,
+                                "recency": recency_points, "service_relevance": relevance_points,
+                                "main_score": main_score, "supplementary_score": supplementary,
+                                "final_score": score, "supplementary_reasons": supplementary_reasons}}
 
 
 #saving the google leads
@@ -11012,7 +10838,4 @@ def delete_manual_transaction(transaction_id):
 
 # RUN APP
 if __name__ == "__main__":
-
-    app.run(
-        debug=True
-    )
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")
