@@ -3807,18 +3807,13 @@ def dashboard():
             url_for("company_setup")
         )
 
+    # Render the uploaded dashboard UI (index.html) as a Flask/Jinja template.
+    # Keep the same context expected by the page's company branding and profile.
     return render_template(
-        "dashboard.html",
-
+        "index.html",
         company=company,
-
-        user_name=session.get(
-            "user_name"
-        ),
-
-        user_email=session.get(
-            "user_email"
-        )
+        user_name=session.get("user_name"),
+        user_email=session.get("user_email"),
     )
 
 
