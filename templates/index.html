@@ -38680,8 +38680,9 @@
                                             action="{{ url_for('delete_manual_transaction', transaction_id=tx.source_id) }}"
                                             onsubmit="return confirm('Delete this manual transaction? This cannot be undone.');">
                                             <button class="icon-btn" type="submit"
-                                                title="Delete manual transaction">Delete</button></form>{% else %}<span
-                                            class="source">Managed in {{ tx.source|lower }} page</span>{% endif %}</td>
+                                                title="Delete manual transaction">Delete</button>
+                                        </form>{% else %}<span class="source">Managed in {{ tx.source|lower }}
+                                            page</span>{% endif %}</td>
                                 </tr>
                                 {% else %}<tr>
                                     <td colspan="7">
@@ -41708,6 +41709,7 @@
             }
         })();
     </script>
+    
     {% endif %}
     {% if active_view == 'quotation_view' %}
     <script>
@@ -41854,7 +41856,7 @@
         })();
     </script>
     {% endif %}
-    {% endif %}
+
     {% if active_view == 'items' %}
     <script>
 
