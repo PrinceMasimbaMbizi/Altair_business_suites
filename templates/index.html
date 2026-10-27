@@ -34503,15 +34503,97 @@
         }
     </style>
     {% endif %}
+
+    <style>
+        /* Preloaded workspace pages: each route keeps its own live DOM and JS state. */
+        #cachedPageFrames {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background: #f5f6fa;
+        }
+
+        .cached-page-frame {
+            display: none;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: #f5f6fa;
+        }
+
+        .cached-page-frame.is-active {
+            display: block;
+        }
+
+        .cached-page-frame iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            background: #f5f6fa;
+        }
+
+        .cached-frame-fallback {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+            color: #5b5b70;
+            background: #f5f6fa;
+            font: 600 13px/1.7 Inter, sans-serif;
+        }
+
+        .cached-frame-fallback.show {
+            display: flex;
+        }
+
+        #mainContent.frame-mode {
+            position: relative !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        #mainContent.frame-mode #view-dashboard {
+            display: none !important;
+        }
+
+        #mainContent.frame-mode #cachedPageFrames {
+            display: block;
+        }
+
+        #mainContent.frame-mode>.unified-view:not(#view-dashboard) {
+            display: none !important;
+        }
+
+        @media (max-width: 700px) {
+            #mainContent.frame-mode {
+                padding: 0 !important;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
+    <!-- ============================================================
+         HTML SECTION GUIDE
+         Search for labels such as "INVOICES SECTION", "CUSTOMERS SECTION",
+         "INVENTORY SUBSECTION", or "FORECASTING SECTION" in this file.
+         ============================================================ -->
+
     {% if active_view == 'dashboard' %}<div id="dataLoadingScreen" role="status" aria-live="polite"
         aria-label="Loading your workspace">
         <div class="data-loader-ring" aria-hidden="true"></div>
         <div class="data-loader-brand">Altair Business Suite</div>
-        <div class="data-loader-title">Preparing your workspace...</div>
-        <div class="data-loader-subtitle">Loading your business information securely.</div>
+        <div class="data-loader-title">Loading your workspace...</div>
+        <div class="data-loader-subtitle">Preparing your pages and business information securely.</div>
         <div class="data-loader-progress" aria-hidden="true"><span></span></div>
     </div>{% endif %}<div class="app {% if active_view in ['login', 'register'] %}auth-app{% endif %}" id="altairApp">
         {% if active_view not in ['login', 'register'] %}<aside class="sidebar" id="appSidebar"
@@ -34634,6 +34716,7 @@
             </a>
         </aside>{% endif %}
         <main class="main {% if active_view in ['login', 'register'] %}auth-main{% endif %}" id="mainContent">
+            <!-- ==================== DASHBOARD SECTION ==================== -->
             {% if active_view == 'dashboard' %}<section class="unified-view dashboard-unified-view" id="view-dashboard">
 
 
@@ -34698,6 +34781,7 @@
 
                 <!-- INVOICE STATISTICS -->
 
+                <!-- ==================== METRICS / STATISTICS SUBSECTION ==================== -->
                 <section class="stats">
 
                     <!-- TOTAL -->
@@ -34809,17 +34893,10 @@
 
                 </section>
 
-                <!-- 
-                 REVENUE + AI
-             -->
 
 
 
-
-                <!-- 
-     REVENUE + ALTAIR AI BUSINESS INSIGHTS
- -->
-
+                <!-- ==================== DASHBOARD SUBSECTION — REVENUE OVERVIEW AND OTIS BUSINESS ADVISOR ==================== -->
                 <section class="dashboard-grid revenue-advisor-grid">
 
                     <!-- 
@@ -34966,10 +35043,7 @@
                 </section>
 
 
-                <!-- 
-     LEADS + QUICK ACTIONS
- -->
-
+                <!-- ==================== DASHBOARD SUBSECTION — CHARTS AND BUSINESS ACTIVITY ==================== -->
                 <section class="dashboard-grid" style="margin-top:20px;">
 
 
@@ -35538,6 +35612,7 @@
                  TRANSACTIONS
              -->
 
+                <!-- ==================== DASHBOARD SUBSECTION — RECENT TRANSACTIONS ==================== -->
                 <section class="card transactions">
 
 
@@ -35573,6 +35648,9 @@
                 <div style="height:40px;"></div>
 
             </section>{% endif %}
+            {% if active_view == 'dashboard' %}<div id="cachedPageFrames" aria-label="Preloaded workspace pages"></div>
+            {% endif %}
+            <!-- ==================== CUSTOMERS SECTION ==================== -->
             {% if active_view == 'customer' %}<section class="unified-view module-customer" id="view-customer">
 
                 <div class="mobile-header">
@@ -35687,6 +35765,7 @@
              STATISTICS
         ============================ -->
 
+                <!-- ==================== METRICS / STATISTICS SUBSECTION ==================== -->
                 <section class="stats-grid">
 
                     <div class="stat-card">
@@ -35787,6 +35866,7 @@
              CUSTOMER TABLE
         ============================ -->
 
+                <!-- ==================== CUSTOMERS SUBSECTION — CUSTOMER LIST AND ACTIONS ==================== -->
                 <section class="content-card">
 
                     <div class="card-header">
@@ -36165,6 +36245,7 @@
                 </footer>
 
             </section>{% endif %}
+            <!-- ==================== INVOICES AND QUOTATIONS SECTION ==================== -->
             {% if active_view == 'invoice' %}<section class="unified-view module-invoice" id="view-invoice">
 
 
@@ -36280,6 +36361,7 @@
 
 
 
+                <!-- ==================== INVOICES SUBSECTION — SALES AND BILLING NOTICE ==================== -->
                 <section class="sales-notice" aria-label="Sales and billing centre">
                     <div class="notice-icon">🧾</div>
                     <div>
@@ -36293,6 +36375,7 @@
                     </div>
                 </section>
 
+                <!-- ==================== INVOICES SUBSECTION — QUOTATION LIST ==================== -->
                 <section class="quotation-list"
                     style="margin:24px 0 30px;padding:24px;border:1px solid rgba(124,58,237,.22);border-radius:18px;background:var(--card-bg, #fff);box-shadow:0 10px 30px rgba(20,20,40,.05);">
                     <div
@@ -36402,6 +36485,7 @@
              INVOICE STATISTICS
          -->
 
+                <!-- ==================== METRICS / STATISTICS SUBSECTION ==================== -->
                 <section class="stats">
 
 
@@ -36540,6 +36624,7 @@
              AMOUNT STATISTICS
          -->
 
+                <!-- ==================== METRICS / STATISTICS SUBSECTION ==================== -->
                 <section class="stats">
 
 
@@ -37017,6 +37102,7 @@
              QUICK ACTIONS
          -->
 
+                <!-- ==================== INVOICES SUBSECTION — QUICK ACTIONS ==================== -->
                 <section class="quick-actions">
 
 
@@ -37105,6 +37191,7 @@
 
 
             </section>{% endif %}
+            <!-- ==================== INVOICE DETAILS / PREVIEW SECTION ==================== -->
             {% if active_view == 'invoice_view' %}<section class="unified-view module-invoice_view"
                 id="view-invoice_view">
                 <div id="actionNotice" class="notice" role="status" aria-live="polite"></div>
@@ -37193,6 +37280,7 @@
                         </div>
                     </header>
 
+                    <!-- ==================== DOCUMENT SUBSECTION — CUSTOMER AND DOCUMENT DETAILS ==================== -->
                     <section class="details">
                         <div class="detail">
                             <h3>Prepared For</h3>
@@ -37234,6 +37322,7 @@
                         </table>
                     </div>
 
+                    <!-- ==================== DOCUMENT SUBSECTION — TOTALS AND AMOUNTS ==================== -->
                     <section class="totals">
                         <div class="total-row"><span>Subtotal</span><strong>R{{ '%.2f'|format(quotation.subtotal|float)
                                 }}</strong></div>
@@ -37246,6 +37335,7 @@
                     </section>
 
                     {% if quotation.terms or quotation.notes %}
+                    <!-- ==================== DOCUMENT SUBSECTION — NOTES AND TERMS ==================== -->
                     <section class="notes">
                         {% if quotation.terms %}<h3>Terms &amp; Conditions</h3>
                         <p>{{ quotation.terms }}</p>{% endif %}
@@ -37258,6 +37348,7 @@
                         terms stated above.</div>
                 </article>
             </section>{% endif %}
+            <!-- ==================== QUOTATION DETAILS / PREVIEW SECTION ==================== -->
             {% if active_view == 'quotation_view' %}<section class="unified-view module-quotation_view"
                 id="view-quotation_view">
                 <div id="actionNotice" class="notice" role="status" aria-live="polite"></div>
@@ -37338,6 +37429,7 @@
                         </div>
                     </header>
 
+                    <!-- ==================== DOCUMENT SUBSECTION — CUSTOMER AND DOCUMENT DETAILS ==================== -->
                     <section class="details">
                         <div class="detail">
                             <h3>Prepared For</h3>
@@ -37380,6 +37472,7 @@
                         </table>
                     </div>
 
+                    <!-- ==================== DOCUMENT SUBSECTION — TOTALS AND AMOUNTS ==================== -->
                     <section class="totals">
                         <div class="total-row"><span>Subtotal</span><strong>R{{ '%.2f'|format(quotation.subtotal|float)
                                 }}</strong>
@@ -37394,6 +37487,7 @@
                     </section>
 
                     {% if quotation.terms or quotation.notes %}
+                    <!-- ==================== DOCUMENT SUBSECTION — NOTES AND TERMS ==================== -->
                     <section class="notes">
                         {% if quotation.terms %}<h3>Terms &amp; Conditions</h3>
                         <p>{{ quotation.terms }}</p>{% endif %}
@@ -37406,6 +37500,7 @@
                         stated above.</div>
                 </article>
             </section>{% endif %}
+            <!-- ==================== INVENTORY SECTION — PRODUCTS, EXPENSES, INVESTMENTS, RECURRING PAYMENTS AND MONEY OUT ==================== -->
             {% if active_view == 'items' %}<section class="unified-view module-items" id="view-items">
 
 
@@ -37528,9 +37623,11 @@
          PRODUCTS & SERVICES
      -->
 
+                <!-- ==================== INVENTORY SUBSECTION — PRODUCTS AND SERVICES ==================== -->
                 <section id="productsSection" class="inventory-section active">
 
 
+                    <!-- ==================== METRICS / STATISTICS SUBSECTION ==================== -->
                     <section class="stats">
 
 
@@ -37840,6 +37937,7 @@
          EXPENSES
      -->
 
+                <!-- ==================== INVENTORY SUBSECTION — EXPENSES ==================== -->
                 <section id="expensesSection" class="inventory-section">
 
 
@@ -38049,6 +38147,7 @@
          INVESTMENTS
      -->
 
+                <!-- ==================== INVENTORY SUBSECTION — INVESTMENTS ==================== -->
                 <section id="investmentsSection" class="inventory-section">
 
 
@@ -38290,6 +38389,7 @@
          RECURRING PAYMENTS
      -->
 
+                <!-- ==================== INVENTORY SUBSECTION — RECURRING PAYMENTS ==================== -->
                 <section id="recurringSection" class="inventory-section">
 
 
@@ -38594,6 +38694,7 @@
          MONEY OUT RECORDS
      -->
 
+                <!-- ==================== INVENTORY SUBSECTION — MONEY OUT RECORDS ==================== -->
                 <section id="recordsSection" class="inventory-section">
 
 
@@ -38795,6 +38896,7 @@
                 </section>
 
             </section>{% endif %}
+            <!-- ==================== TRANSACTIONS SECTION ==================== -->
             {% if active_view == 'transactions' %}<section class="unified-view module-transactions"
                 id="view-transactions">
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -38812,6 +38914,7 @@
                         Transaction</button>
                 </header>
 
+                <!-- ==================== TRANSACTIONS SUBSECTION — SUMMARY CARDS ==================== -->
                 <section class="cards">
                     <article class="card">
                         <div class="card-head">Income received <span class="card-icon">↗</span></div>
@@ -38839,6 +38942,7 @@
                     </article>
                 </section>
 
+                <!-- ==================== CONTENT PANEL ==================== -->
                 <section class="panel">
                     <div class="panel-head">
                         <div>
@@ -38931,8 +39035,10 @@
                     Invoice and expense entries shown here are read-only to avoid changes being out of sync with their
                     original modules. All records are scoped to your signed-in user.</p>
             </section>{% endif %}
+            <!-- ==================== AI LEAD FINDER SECTION ==================== -->
             {% if active_view == 'ai_leads' %}<section class="unified-view module-ai_leads" id="view-ai_leads">
             </section>{% endif %}
+            <!-- ==================== BUSINESS ANALYTICS SECTION ==================== -->
             {% if active_view == 'business_analytics' %}<section class="unified-view module-business_analytics"
                 id="view-business_analytics">
                 <header class="topbar">
@@ -38954,6 +39060,7 @@
                     <button class="btn" type="submit">Apply filters</button><a class="btn secondary"
                         href="{{ url_for('business_analytics') }}">Reset</a>
                 </form>
+                <!-- ==================== BUSINESS ANALYTICS SUBSECTION — CHARTS AND DATA ==================== -->
                 <section class="grid">
                     <article class="panel metric">
                         <div class="metric-head"><span>Revenue Received</span><span class="metric-icon">💰</span></div>
@@ -39003,6 +39110,7 @@
                         </div>
                     </article>
                 </section>
+                <!-- ==================== BUSINESS ANALYTICS SUBSECTION — CHARTS AND DATA ==================== -->
                 <section class="content-grid">
                     <article class="panel section">
                         <div class="section-head">
@@ -39028,6 +39136,9 @@
                         </p>
                     </article>
                 </section>
+
+
+                <!-- ==================== BUSINESS ANALYTICS SUBSECTION — CHARTS AND DATA ==================== -->
                 <section class="content-grid">
                     <article class="panel section">
                         <div class="section-head">
@@ -39071,6 +39182,7 @@
                     deducted
                     from the estimated-profit figure above.</p>
             </section>{% endif %}
+            <!-- ==================== SETTINGS SECTION ==================== -->
             {% if active_view == 'settings' %}<section class="unified-view module-settings" id="view-settings">
                 <div class="content">
                     <header class="topbar">
@@ -39101,6 +39213,7 @@
 
                     <form method="POST" action="{{ url_for('settings') }}" enctype="multipart/form-data">
                         <div class="settings-container">
+                            <!-- ==================== SETTINGS SUBSECTION — CONFIGURATION CARD ==================== -->
                             <section class="settings-card">
                                 <div class="card-header">
                                     <div class="card-header-left">
@@ -39144,6 +39257,7 @@
                                 </div>
                             </section>
 
+                            <!-- ==================== SETTINGS SUBSECTION — CONFIGURATION CARD ==================== -->
                             <section class="settings-card">
                                 <div class="card-header">
                                     <div class="card-header-left">
@@ -39220,6 +39334,7 @@
                                 </div>
                             </section>
 
+                            <!-- ==================== SETTINGS SUBSECTION — CONFIGURATION CARD ==================== -->
                             <section class="settings-card">
                                 <div class="card-header">
                                     <div class="card-header-left">
@@ -39289,9 +39404,11 @@
                     </form>
                 </div>
             </section>{% endif %}
+            <!-- ==================== HELP AND SUPPORT SECTION ==================== -->
             {% if active_view == 'help_support' %}<section class="unified-view module-help_support"
                 id="view-help_support">
                 <div class="help-wrap">
+                    <!-- ==================== HELP SUBSECTION — INTRODUCTION ==================== -->
                     <section class="help-hero">
                         <div class="help-eyebrow">ALTAIR CUSTOMER CARE</div>
                         <h1>Help &amp; Support</h1>
@@ -39313,6 +39430,7 @@
                         {% endwith %}
                     </div>
 
+                    <!-- ==================== HELP SUBSECTION — GUIDES ==================== -->
                     <section class="help-section" id="help-guides">
                         <div class="help-section-head">
                             <div>
@@ -39369,6 +39487,7 @@
                             topics. Try another search or submit a support ticket.</p>
                     </section>
 
+                    <!-- ==================== HELP SUBSECTION — FREQUENTLY ASKED QUESTIONS ==================== -->
                     <section class="help-section help-two-col" id="faqs">
                         <div>
                             <div class="help-section-head">
@@ -39467,6 +39586,7 @@
                         </div>
                     </section>
 
+                    <!-- ==================== HELP SUBSECTION — SUPPORT TICKET FORM ==================== -->
                     <section class="help-section help-two-col" id="submit-ticket">
                         <div class="help-card">
                             <div class="help-section-head">
@@ -39546,6 +39666,7 @@
                     </section>
                 </div>
             </section>{% endif %}
+            <!-- ==================== COMPANY PROFILE / SETUP SECTION ==================== -->
             {% if active_view == 'company_setup' %}<section class="unified-view module-company_setup"
                 id="view-company_setup">
 
@@ -39887,6 +40008,7 @@
 
 
             </section>{% endif %}
+            <!-- ==================== FORECASTING SECTION ==================== -->
             {% if active_view == 'forecasting' %}<section class="unified-view module-forecasting" id="view-forecasting">
                 <div class="topbar">
                     <div class="welcome">
@@ -39908,6 +40030,7 @@
                         class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
                 {% endwith %}
 
+                <!-- ==================== FORECASTING SUBSECTION — OVERVIEW ==================== -->
                 <section class="forecast-hero">
                     <div><span class="eyebrow">ALTAIR BUSINESS INTELLIGENCE</span>
                         <h2>See what may come next.</h2>
@@ -39949,6 +40072,7 @@
                     </article>
                 </div>
 
+                <!-- ==================== CONTENT PANEL ==================== -->
                 <section class="panel forecast-chart-panel">
                     <div class="panel-heading">
                         <div>
@@ -39965,6 +40089,7 @@
                 </section>
 
                 <div class="two-col">
+                    <!-- ==================== CONTENT PANEL ==================== -->
                     <section class="panel">
                         <div class="panel-heading">
                             <div>
@@ -39977,6 +40102,7 @@
                             </div>{% endfor %}</div>
                         <div class="data-note"><strong>Data note:</strong> {{ data_note }}</div>
                     </section>
+                    <!-- ==================== CONTENT PANEL ==================== -->
                     <section class="panel">
                         <div class="panel-heading">
                             <div>
@@ -39998,6 +40124,7 @@
                     </section>
                 </div>
 
+                <!-- ==================== CONTENT PANEL ==================== -->
                 <section class="panel scenario-panel">
                     <div class="panel-heading">
                         <div>
@@ -40034,6 +40161,7 @@
                     revenue proxy and recorded expenses as costs. It does not yet model payment timing, tax, inventory
                     demand, seasonality, or formal accounting profit.</p>
             </section>{% endif %}
+            <!-- ==================== EMPLOYEES AND TEAM SECTION ==================== -->
             {% if active_view == 'employees_team' %}<section class="unified-view module-employees_team"
                 id="view-employees_team">
                 <div class="coming-topbar">
@@ -40044,6 +40172,7 @@
                     </div>
                     <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">🧑‍💼</div>
                     <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
@@ -40063,6 +40192,7 @@
                 </section>
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
+            <!-- ==================== DOCUMENTS AND REPORTS SECTION ==================== -->
             {% if active_view == 'documents_reports' %}<section class="unified-view module-documents_reports"
                 id="view-documents_reports">
                 <div class="coming-topbar">
@@ -40073,6 +40203,7 @@
                     </div>
                     <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">📄</div>
                     <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
@@ -40092,6 +40223,7 @@
                 </section>
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
+            <!-- ==================== BILLING AND PAYMENTS SECTION ==================== -->
             {% if active_view == 'billing_payments' %}<section class="unified-view module-billing_payments"
                 id="view-billing_payments">
                 <div class="coming-topbar">
@@ -40102,6 +40234,7 @@
                     </div>
                     <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">💰</div>
                     <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
@@ -40122,6 +40255,7 @@
                 </section>
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
+            <!-- ==================== BILLING HISTORY SECTION ==================== -->
             {% if active_view == 'billing_history' %}<section class="unified-view module-billing_history"
                 id="view-billing_history">
                 <div class="coming-topbar">
@@ -40132,6 +40266,7 @@
                     </div>
                     <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">🧾</div>
                     <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
@@ -40152,6 +40287,7 @@
                 </section>
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
+            <!-- ==================== INTEGRATIONS SECTION ==================== -->
             {% if active_view == 'integrations' %}<section class="unified-view module-integrations"
                 id="view-integrations">
                 <div class="coming-topbar">
@@ -40162,6 +40298,7 @@
                     </div>
                     <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">🔗</div>
                     <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
@@ -40181,6 +40318,7 @@
                 </section>
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
+            <!-- ==================== LOGIN SECTION ==================== -->
             {% if active_view == 'login' %}<section class="unified-view auth-view" id="view-login">
                 <div class="auth-card">
                     <div class="auth-brand">
@@ -40198,6 +40336,7 @@
                     <p class="auth-switch">New to Altair? <a href="{{ url_for('register') }}">Create an account</a></p>
                 </div>
             </section>{% endif %}
+            <!-- ==================== REGISTRATION SECTION ==================== -->
             {% if active_view == 'register' %}<section class="unified-view auth-view" id="view-register">
                 <div class="auth-card">
                     <div class="auth-brand">
@@ -40216,6 +40355,7 @@
                     <p class="auth-switch">Already registered? <a href="{{ url_for('login') }}">Sign in</a></p>
                 </div>
             </section>{% endif %}
+            <!-- ==================== COMING SOON SECTION ==================== -->
             {% if active_view == 'coming_soon' %}<section class="unified-view module-coming-soon">
                 <div class="coming-topbar">
                     <div>
@@ -40224,6 +40364,7 @@
                         <p>{{ feature.description if feature else 'This feature is being prepared.' }}</p>
                     </div><a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
                 </div>
+                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
                 <section class="coming-card">
                     <div class="coming-icon">{{ feature.icon if feature else '🚧' }}</div><span
                         class="coming-pill">Service Under Construction</span>
@@ -40253,6 +40394,8 @@
         let dataLoadingScreenDismissed = false;
 
         function hideDataLoadingScreen() {
+            // AI insights can finish before the other modules. Keep the overlay up until preload finishes.
+            if (window.altairPreloadStarted && !window.altairPreloadComplete) return;
             if (dataLoadingScreenDismissed) return;
             dataLoadingScreenDismissed = true;
             const loadingScreen = document.getElementById("dataLoadingScreen");
@@ -40263,7 +40406,7 @@
         }
 
         // Safety net: a slow/unavailable analytics endpoint must never trap the user on the loader.
-        window.setTimeout(hideDataLoadingScreen, 8000);
+        window.setTimeout(function () { if (!window.altairPreloadStarted) hideDataLoadingScreen(); }, 45000);
 
         async function loadAltairInsights() {
 
@@ -43347,6 +43490,357 @@
             document.addEventListener('submit', function (e) { const f = e.target; if (!(f instanceof HTMLFormElement)) return; if (f.dataset.onceSubmitted === '1') { e.preventDefault(); return; } f.dataset.onceSubmitted = '1'; const b = e.submitter; if (b) { b.dataset.originalText = b.textContent; b.disabled = true; } }, true);
         })();
     </script>
+
+
+    {% if active_view == 'dashboard' %}
+    <script>
+
+        (function () {
+            if (window.__altairPreloadManagerStarted) return;
+            window.__altairPreloadManagerStarted = true;
+            window.altairPreloadStarted = true;
+            window.altairPreloadComplete = false;
+
+            const main = document.getElementById('mainContent');
+            const host = document.getElementById('cachedPageFrames');
+            const loader = document.getElementById('dataLoadingScreen');
+            const subtitle = loader ? loader.querySelector('.data-loader-subtitle') : null;
+            const progress = loader ? loader.querySelector('.data-loader-progress span') : null;
+            const navLinks = Array.from(document.querySelectorAll('#appSidebar a.nav-item[href]'));
+            const routeMap = new Map();
+            const frameRecords = [];
+            let finishedCount = 0;
+            let navigationStarted = false;
+
+            if (!main || !host) {
+                window.altairPreloadComplete = true;
+                if (typeof window.hideDataLoadingScreen === 'function') window.hideDataLoadingScreen();
+                return;
+            }
+
+            function normalizedKey(value) {
+                const url = new URL(value, window.location.origin);
+                let path = url.pathname.replace(/\/+$/, '') || '/';
+                return path + url.search;
+            }
+
+            const dashboardLink = navLinks.find(a => {
+                try { return normalizedKey(a.href) === normalizedKey(window.location.origin + '/'); }
+                catch (_) { return false; }
+            });
+            const dashboardKey = dashboardLink ? normalizedKey(dashboardLink.href) : normalizedKey(window.location.origin + '/');
+
+            function setProgress(message) {
+                if (subtitle) subtitle.textContent = message;
+                if (progress) {
+                    const pct = frameRecords.length ? Math.min(100, Math.round((finishedCount / frameRecords.length) * 100)) : 100;
+                    progress.style.width = pct + '%';
+                    progress.style.transition = 'width .25s ease';
+                }
+            }
+
+            function markFinished(record, timedOut) {
+                if (record.finished) return;
+                record.finished = true;
+                finishedCount += 1;
+                if (record.timer) clearTimeout(record.timer);
+                if (timedOut && record.fallback) {
+                    record.fallback.classList.add('show');
+                    record.fallback.textContent = 'This section is taking longer than expected. It will appear here as soon as the connection finishes.';
+                }
+                if (record.started) {
+                    record.started = false;
+                    activeLoads = Math.max(0, activeLoads - 1);
+                }
+                setProgress('Preparing section ' + finishedCount + ' of ' + frameRecords.length + '…');
+                if (finishedCount >= frameRecords.length) {
+                    finishPreloading();
+                } else {
+                    pumpQueue();
+                }
+            }
+
+            function installFrameStyle(record) {
+                try {
+                    const doc = record.iframe.contentDocument;
+                    if (!doc || !doc.head) return;
+                    let style = doc.getElementById('altairCachedFrameStyle');
+                    if (!style) {
+                        style = doc.createElement('style');
+                        style.id = 'altairCachedFrameStyle';
+                        style.textContent = `
+                            html, body { width:100% !important; height:100% !important; margin:0 !important; overflow:hidden !important; }
+                            body { background:#f5f6fa !important; }
+                            aside.sidebar, #appSidebar { display:none !important; }
+                            .app { display:block !important; width:100% !important; min-height:100vh !important; height:100vh !important; overflow:hidden !important; }
+                            main.main, main#mainContent { display:block !important; position:relative !important; margin:0 !important; width:100% !important; max-width:none !important; min-width:0 !important; height:100vh !important; min-height:100vh !important; padding:28px 35px !important; overflow-y:auto !important; overflow-x:hidden !important; box-sizing:border-box !important; }
+                            .mobile-header { display:none !important; }
+                            @media(max-width:700px) { main.main, main#mainContent { padding:15px !important; } }
+                        `;
+                        doc.head.appendChild(style);
+                    }
+                    if (record.fallback) record.fallback.classList.remove('show');
+                    // Route links inside a cached page should switch the outer workspace, not nest another app.
+                    if (!doc.documentElement.dataset.altairNavBound) {
+                        doc.documentElement.dataset.altairNavBound = '1';
+                        doc.addEventListener('click', function (event) {
+                            const anchor = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+                            if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+                            const url = new URL(anchor.href, window.location.origin);
+                            if (url.origin !== window.location.origin) return;
+                            const key = normalizedKey(url.href);
+                            if (key === dashboardKey || routeMap.has(key)) {
+                                event.preventDefault();
+                                if (window.altairNavigateTo) window.altairNavigateTo(url.href, true);
+                            } else if (anchor.pathname === '/logout') {
+                                event.preventDefault();
+                                window.top.location.href = anchor.href;
+                            }
+                        }, true);
+                    }
+                } catch (error) {
+                    console.warn('Could not style cached Altair page:', error);
+                }
+            }
+
+            function createFrame(url, key) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'cached-page-frame';
+                wrapper.dataset.routeKey = key;
+
+                const iframe = document.createElement('iframe');
+                iframe.title = 'Altair workspace section';
+                iframe.loading = 'eager';
+                iframe.src = 'about:blank';
+
+                const fallback = document.createElement('div');
+                fallback.className = 'cached-frame-fallback';
+                fallback.textContent = 'Loading this section…';
+
+                wrapper.appendChild(iframe);
+                wrapper.appendChild(fallback);
+                host.appendChild(wrapper);
+
+                const record = { key, url, wrapper, iframe, fallback, finished: false, loaded: false, started: false, timer: null };
+                iframe.addEventListener('load', function () {
+                    // Ignore the initial about:blank load; the real route is started by the queue.
+                    if (!record.started || iframe.src === 'about:blank') return;
+                    record.loaded = true;
+                    installFrameStyle(record);
+                    if (record.timer) clearTimeout(record.timer);
+                    markFinished(record, false);
+                });
+
+                routeMap.set(key, record);
+                frameRecords.push(record);
+                return record;
+            }
+            // Build a list of unique, same-origin navigation destinations. Never preload logout or auth pages.
+            const uniqueRoutes = new Map();
+            navLinks.forEach(function (link) {
+                if (link.hasAttribute('data-app-action')) return;
+                const raw = (link.getAttribute('href') || '').trim();
+                if (!raw || raw === '#') return;
+                try {
+                    const url = new URL(raw, window.location.origin);
+                    if (url.origin !== window.location.origin) return;
+                    if (/\/(logout|register|login)(\/|$)/i.test(url.pathname)) return;
+                    const key = normalizedKey(url.href);
+                    if (key === dashboardKey) return;
+                    if (!uniqueRoutes.has(key)) uniqueRoutes.set(key, url.href);
+                } catch (_) { }
+            });
+
+            uniqueRoutes.forEach((url, key) => createFrame(url, key));
+
+            function finishPreloading() {
+                if (window.altairPreloadComplete) return;
+                window.altairPreloadComplete = true;
+                if (subtitle) subtitle.textContent = 'Your workspace is ready.';
+                if (progress) progress.style.width = '100%';
+                window.setTimeout(function () {
+                    if (typeof window.hideDataLoadingScreen === 'function') window.hideDataLoadingScreen();
+                    else if (loader) loader.remove();
+                }, 350);
+            }
+
+            function setActiveNavigation(url) {
+                const key = normalizedKey(url);
+                navLinks.forEach(link => {
+                    let active = false;
+                    try { active = normalizedKey(link.href) === key; } catch (_) { }
+                    link.classList.toggle('active', active);
+                    if (active) link.setAttribute('aria-current', 'page');
+                    else link.removeAttribute('aria-current');
+                });
+            }
+
+            function showDashboard(updateHistory) {
+                main.classList.remove('frame-mode');
+                frameRecords.forEach(record => record.wrapper.classList.remove('is-active'));
+                setActiveNavigation(dashboardKey);
+                if (updateHistory && normalizedKey(window.location.href) !== dashboardKey) {
+                    history.pushState({ altairCachedPage: true, url: dashboardKey }, '', dashboardKey);
+                }
+                main.scrollTop = 0;
+            }
+
+            function navigateTo(url, updateHistory) {
+                const key = normalizedKey(url);
+                if (key === dashboardKey) {
+                    showDashboard(!!updateHistory);
+                    return;
+                }
+                const record = routeMap.get(key);
+                if (!record) {
+                    // Routes not in the sidebar should use normal navigation.
+                    window.location.href = url;
+                    return;
+                }
+                main.classList.add('frame-mode');
+                frameRecords.forEach(item => item.wrapper.classList.toggle('is-active', item === record));
+                setActiveNavigation(url);
+                if (updateHistory && normalizedKey(window.location.href) !== key) {
+                    history.pushState({ altairCachedPage: true, url: key }, '', url);
+                }
+                if (record.loaded) installFrameStyle(record);
+                main.scrollTop = 0;
+            }
+
+            window.altairNavigateTo = navigateTo;
+
+            navLinks.forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    if (link.hasAttribute('data-app-action')) return;
+                    if (link.classList.contains('logout-link')) return;
+                    const raw = link.getAttribute('href') || '';
+                    if (!raw || raw === '#') return;
+                    let url;
+                    try { url = new URL(raw, window.location.origin); } catch (_) { return; }
+                    if (url.origin !== window.location.origin) return;
+                    const key = normalizedKey(url.href);
+                    if (key === dashboardKey || routeMap.has(key)) {
+                        event.preventDefault();
+                        navigateTo(url.href, true);
+                    }
+                });
+            });
+
+            window.addEventListener('popstate', function () {
+                const key = normalizedKey(window.location.href);
+                if (key === dashboardKey || routeMap.has(key)) navigateTo(window.location.href, false);
+                else window.location.reload();
+            });
+
+            // Limit simultaneous backend requests so preloading does not overload the app.
+            let nextRoute = 0;
+            let activeLoads = 0;
+            const maxConcurrentLoads = 4;
+
+            function startFrame(record) {
+                if (record.started || record.finished) return;
+                record.started = true;
+                record.loaded = false;
+                record.timer = window.setTimeout(function () {
+                    if (!record.loaded) markFinished(record, true);
+                }, 16000);
+                record.iframe.src = record.url;
+            }
+
+            function pumpQueue() {
+                while (activeLoads < maxConcurrentLoads && nextRoute < frameRecords.length) {
+                    const record = frameRecords[nextRoute++];
+                    activeLoads += 1;
+                    startFrame(record);
+                }
+            }
+
+            if (!frameRecords.length) {
+                finishPreloading();
+            } else {
+                setProgress('Preparing ' + frameRecords.length + ' workspace sections…');
+                const preloadFailsafe = window.setTimeout(function () {
+                    frameRecords.forEach(record => {
+                        if (!record.finished) markFinished(record, !record.loaded);
+                    });
+                    finishPreloading();
+                }, 42000);
+                const originalFinish = finishPreloading;
+                finishPreloading = function () {
+                    originalFinish();
+                    clearTimeout(preloadFailsafe);
+                };
+                pumpQueue();
+            }
+        })();
+    </script>
+
+    {% endif %}
+
+
+    \n<style id="altair-remove-dashboard-welcome-popup">
+        .welcome-overlay {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+    </style>
+    <script id="altair-remove-dashboard-welcome-popup-script">
+        (function () {
+            const phrases = [
+                'thank you for using',
+                "we're glad to have you here",
+                'glad to have you here'
+            ];
+
+            function removeWelcomePopup(root) {
+                const scope = root && root.querySelectorAll ? root : document;
+                const candidates = scope.querySelectorAll('body *');
+                for (const element of candidates) {
+                    if (!element || !element.isConnected) continue;
+                    const text = (element.innerText || element.textContent || '')
+                        .replace(/\s+/g, ' ').trim().toLowerCase();
+                    if (!text || text.length > 900) continue;
+                    const matchesWelcome = phrases.some(phrase => text.includes(phrase));
+                    const hasOkay = /\bokay\b/.test(text);
+                    if (!matchesWelcome || !hasOkay) continue;
+
+                    const popup = element.closest(
+                        '.welcome-overlay, [role="dialog"], .modal, .popup, .overlay, .welcome-box'
+                    );
+                    if (popup) {
+                        popup.remove();
+                        continue;
+                    }
+
+                    // Fallback: remove the smallest enclosing container containing only this popup's text.
+                    let parent = element;
+                    while (parent.parentElement && parent.parentElement !== document.body) {
+                        const parentText = (parent.parentElement.innerText || '').replace(/\s+/g, ' ').trim();
+                        if (parentText.length > 900) break;
+                        parent = parent.parentElement;
+                    }
+                    if (parent !== document.body) parent.remove();
+                }
+            }
+
+            function run() {
+                removeWelcomePopup(document);
+                document.querySelectorAll('.welcome-overlay').forEach(element => element.remove());
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', run, { once: true });
+            } else {
+                run();
+            }
+
+            const observer = new MutationObserver(() => removeWelcomePopup(document));
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+            window.addEventListener('altair:page-updated', run);
+        })();
+    </script>
+
 </body>
 
 </html>
