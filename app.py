@@ -2566,13 +2566,13 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-# ============================================================
+
 # ALTAIR AI ASSISTANT 2.0
 # Conversation handling, stronger intent recognition, and
 # transparent business-health / lead-conversion analysis.
 # Keep this section after the original engines so these improved
 # functions are the active versions used by the existing routes.
-# ============================================================
+
 
 # Preserve the existing tested response engine for its established
 # revenue, expense, cash-flow, invoice, customer, and forecast answers.
@@ -3749,6 +3749,9 @@ def coming_soon(feature):
         "documents-reports": {"title": "Documents & Reports", "icon": "📄", "category": "BUSINESS MANAGEMENT", "description": "Keep important business documents and downloadable reports organised.", "status": "Coming Soon"},
         "notifications": {"title": "Notifications", "icon": "🔔", "category": "BUSINESS MANAGEMENT", "description": "Control business alerts, reminders, and important account notifications.", "status": "Coming Soon"},
         "integrations": {"title": "Integrations", "icon": "🔗", "category": "BUSINESS MANAGEMENT", "description": "Connect Altair with the tools and services your business already uses.", "status": "Coming Soon"},
+        "facebook-analytics": {"title": "Facebook Analytics", "icon": "📘", "category": "BUSINESS INTELLIGENCE", "description": "Connect Facebook Page insights and review audience engagement, reach, and lead activity.", "status": "Under Construction"},
+        "whatsapp-analytics": {"title": "WhatsApp Analytics", "icon": "💬", "category": "BUSINESS INTELLIGENCE", "description": "WhatsApp business messaging analytics and conversation insights are being prepared.", "status": "Under Construction"},
+        "altair-ai-assistant": {"title": "Altair AI Assistant", "icon": "✨", "category": "BUSINESS INTELLIGENCE", "description": "A dedicated Altair AI Assistant workspace is being prepared. You can continue using Otis from the dashboard in the meantime.", "status": "Under Construction"},
     }
 
     feature_data = features.get(feature)
@@ -3787,7 +3790,7 @@ def coming_soon(feature):
     }
 
     return render_template(
-        template_by_feature[feature],
+        template_by_feature.get(feature, "subscription_plans.html"),
         company=company,
         feature=feature_data,
         feature_slug=feature,
@@ -3801,13 +3804,39 @@ def coming_soon(feature):
 # FORECASTING ROUTE COMPATIBILITY FIX
 # Some page templates use url_for("forecasting"). Register the endpoint so
 # those templates can render while the dedicated forecasting page is pending.
-@app.route("/forecasting")
+@app.route("/forecasting", methods=["GET", "POST"])
 def forecasting():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    flash("The Forecasting page is not available yet. You can continue from your dashboard.", "info")
-    return redirect(url_for("dashboard"))
+    # The forecast interface is being completed. Show a useful branded placeholder
+    # instead of redirecting the user back to the dashboard or returning a 405.
+    feature = {
+        "title": "Forecasting Centre",
+        "icon": "🔮",
+        "category": "BUSINESS INTELLIGENCE",
+        "description": "Forecasting charts and scenario planning are being prepared for your business workspace.",
+        "status": "Under Construction",
+    }
+    db = None
+    cursor = None
+    company = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (session["user_id"],))
+        company = cursor.fetchone()
+    except Exception:
+        app.logger.exception("FORECASTING PLACEHOLDER COMPANY LOOKUP FAILED")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    if company is None:
+        return redirect(url_for("company_setup"))
+    return render_template("subscription_plans.html", company=company, feature=feature, feature_slug="forecasting",
+                           user_name=session.get("user_name"), user_email=session.get("user_email"))
 
 # CUSTOMERS ROUTE COMPATIBILITY FIX
 # Some templates still call url_for("customers"), while the main route endpoint
@@ -5062,9 +5091,9 @@ def create_invoice():
 
 
 
-# ============================================================
+
 # QUOTATIONS
-# ============================================================
+
 
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
@@ -10334,9 +10363,9 @@ def save_google_lead():
         }), 500
     
 
-# ============================================================
+
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
-# ============================================================
+
 
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
@@ -10575,9 +10604,9 @@ def business_analytics():
     )
 
 
-# ============================================================
+
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
-# ============================================================
+
 
 
 def ensure_manual_transactions_table(cursor):
