@@ -2566,13 +2566,13 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-
+# ============================================================
 # ALTAIR AI ASSISTANT 2.0
 # Conversation handling, stronger intent recognition, and
 # transparent business-health / lead-conversion analysis.
 # Keep this section after the original engines so these improved
 # functions are the active versions used by the existing routes.
-
+# ============================================================
 
 # Preserve the existing tested response engine for its established
 # revenue, expense, cash-flow, invoice, customer, and forecast answers.
@@ -5091,9 +5091,9 @@ def create_invoice():
 
 
 
-
+# ============================================================
 # QUOTATIONS
-
+# ============================================================
 
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
@@ -8432,7 +8432,8 @@ def ai_leads():
         
 
         return render_template(
-            "ai_leads.html",
+            "index.html",
+            active_view="ai_leads",
             company=company,
             leads=leads,
             total_leads=total_leads,
@@ -8749,7 +8750,8 @@ def update_lead_status(lead_id):
         stats = cursor.fetchone()
 
         return render_template(
-            "ai_leads.html",
+            "index.html",
+            active_view="ai_leads",
             company=company,
             leads=leads,
             total_leads=stats["total_leads"],
@@ -9684,7 +9686,8 @@ def search_ai_leads():
 
     return render_template(
 
-        "ai_leads.html",
+        "index.html",
+        active_view="ai_leads",
 
         company=get_company_for_user(
             user_id
@@ -10363,9 +10366,9 @@ def save_google_lead():
         }), 500
     
 
-
+# ============================================================
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
-
+# ============================================================
 
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
@@ -10604,9 +10607,9 @@ def business_analytics():
     )
 
 
-
+# ============================================================
 # TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
-
+# ============================================================
 
 
 def ensure_manual_transactions_table(cursor):
