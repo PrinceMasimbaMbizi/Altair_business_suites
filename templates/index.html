@@ -36048,8 +36048,6 @@
                 <div style="height:40px;"></div>
 
             </section>{% endif %}
-            {% if active_view == 'dashboard' %}<div id="cachedPageFrames" aria-label="Preloaded workspace pages"></div>
-            {% endif %}
             <!-- ==================== CUSTOMERS SECTION ==================== -->
             {% if active_view == 'customer' %}<section class="unified-view module-customer" id="view-customer">
 
@@ -42205,6 +42203,9 @@
                 const chartCanvas = document.getElementById("revenueChart");
 
                 if (chartCanvas && typeof Chart !== "undefined") {
+                    const themeText = getComputedStyle(document.documentElement).getPropertyValue('--altair-text').trim() || (document.documentElement.dataset.theme === 'dark' ? '#f2f4ff' : '#424256');
+                    Chart.defaults.color = themeText;
+                    Chart.defaults.borderColor = document.documentElement.dataset.theme === 'dark' ? 'rgba(255,255,255,.12)' : 'rgba(80,80,110,.12)';
                     const existingChart = Chart.getChart(chartCanvas);
                     if (existingChart) existingChart.destroy();
 
@@ -45250,287 +45251,18 @@
 
     {% if active_view == 'dashboard' %}
     <script>
-
-        (function () {
-            if (window.__altairPreloadManagerStarted) return;
-            window.__altairPreloadManagerStarted = true;
-            window.altairPreloadStarted = true;
-            window.altairPreloadComplete = false;
-
-            const main = document.getElementById('mainContent');
-            const host = document.getElementById('cachedPageFrames');
+        // Stable navigation: use normal Flask routes instead of hidden iframe page caching.
+        // This avoids blank white workspaces when a cached frame fails or loads incompletely.
+        window.altairPreloadStarted = false;
+        window.altairPreloadComplete = true;
+        window.addEventListener('load', function () {
             const loader = document.getElementById('dataLoadingScreen');
-            const subtitle = loader ? loader.querySelector('.data-loader-subtitle') : null;
-            const progress = loader ? loader.querySelector('.data-loader-progress span') : null;
-            const navLinks = Array.from(document.querySelectorAll('#appSidebar a.nav-item[href]'));
-            const routeMap = new Map();
-            const frameRecords = [];
-            let finishedCount = 0;
-            let navigationStarted = false;
-
-            if (!main || !host) {
-                window.altairPreloadComplete = true;
-                if (typeof window.hideDataLoadingScreen === 'function') window.hideDataLoadingScreen();
-                return;
+            if (loader) {
+                loader.classList.add('is-hidden');
+                window.setTimeout(() => loader.remove(), 400);
             }
-
-            function normalizedKey(value) {
-                const url = new URL(value, window.location.origin);
-                let path = url.pathname.replace(/\/+$/, '') || '/';
-                return path + url.search;
-            }
-
-            const dashboardLink = navLinks.find(a => {
-                try { return normalizedKey(a.href) === normalizedKey(window.location.origin + '/'); }
-                catch (_) { return false; }
-            });
-            const dashboardKey = dashboardLink ? normalizedKey(dashboardLink.href) : normalizedKey(window.location.origin + '/');
-
-            function setProgress(message) {
-                if (subtitle) subtitle.textContent = message;
-                if (progress) {
-                    const pct = frameRecords.length ? Math.min(100, Math.round((finishedCount / frameRecords.length) * 100)) : 100;
-                    progress.style.width = pct + '%';
-                    progress.style.transition = 'width .25s ease';
-                }
-            }
-
-            function markFinished(record, timedOut) {
-                if (record.finished) return;
-                record.finished = true;
-                finishedCount += 1;
-                if (record.timer) clearTimeout(record.timer);
-                if (timedOut && record.fallback) {
-                    record.fallback.classList.add('show');
-                    record.fallback.textContent = 'This section is taking longer than expected. It will appear here as soon as the connection finishes.';
-                }
-                if (record.started) {
-                    record.started = false;
-                    activeLoads = Math.max(0, activeLoads - 1);
-                }
-                setProgress('Preparing section ' + finishedCount + ' of ' + frameRecords.length + '…');
-                if (finishedCount >= frameRecords.length) {
-                    finishPreloading();
-                } else {
-                    pumpQueue();
-                }
-            }
-
-            function installFrameStyle(record) {
-                try {
-                    const doc = record.iframe.contentDocument;
-                    if (!doc || !doc.head) return;
-                    let style = doc.getElementById('altairCachedFrameStyle');
-                    if (!style) {
-                        style = doc.createElement('style');
-                        style.id = 'altairCachedFrameStyle';
-                        style.textContent = `
-                            html, body { width:100% !important; height:100% !important; margin:0 !important; overflow:hidden !important; }
-                            body { background:#f5f6fa !important; }
-                            aside.sidebar, #appSidebar { display:none !important; }
-                            .app { display:block !important; width:100% !important; min-height:100vh !important; height:100vh !important; overflow:hidden !important; }
-                            main.main, main#mainContent { display:block !important; position:relative !important; margin:0 !important; width:100% !important; max-width:none !important; min-width:0 !important; height:100vh !important; min-height:100vh !important; padding:28px 35px !important; overflow-y:auto !important; overflow-x:hidden !important; box-sizing:border-box !important; }
-                            .mobile-header { display:none !important; }
-                            @media(max-width:700px) { main.main, main#mainContent { padding:15px !important; } }
-                        `;
-                        doc.head.appendChild(style);
-                    }
-                    if (record.fallback) record.fallback.classList.remove('show');
-                    // Route links inside a cached page should switch the outer workspace, not nest another app.
-                    if (!doc.documentElement.dataset.altairNavBound) {
-                        doc.documentElement.dataset.altairNavBound = '1';
-                        doc.addEventListener('click', function (event) {
-                            const anchor = event.target && event.target.closest ? event.target.closest('a[href]') : null;
-                            if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
-                            const url = new URL(anchor.href, window.location.origin);
-                            if (url.origin !== window.location.origin) return;
-                            const key = normalizedKey(url.href);
-                            if (key === dashboardKey || routeMap.has(key)) {
-                                event.preventDefault();
-                                if (window.altairNavigateTo) window.altairNavigateTo(url.href, true);
-                            } else if (anchor.pathname === '/logout') {
-                                event.preventDefault();
-                                window.top.location.href = anchor.href;
-                            }
-                        }, true);
-                    }
-                } catch (error) {
-                    console.warn('Could not style cached Altair page:', error);
-                }
-            }
-
-            function createFrame(url, key) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'cached-page-frame';
-                wrapper.dataset.routeKey = key;
-
-                const iframe = document.createElement('iframe');
-                iframe.title = 'Altair workspace section';
-                iframe.loading = 'eager';
-                iframe.src = 'about:blank';
-
-                const fallback = document.createElement('div');
-                fallback.className = 'cached-frame-fallback';
-                fallback.textContent = 'Loading this section…';
-
-                wrapper.appendChild(iframe);
-                wrapper.appendChild(fallback);
-                host.appendChild(wrapper);
-
-                const record = { key, url, wrapper, iframe, fallback, finished: false, loaded: false, started: false, timer: null };
-                iframe.addEventListener('load', function () {
-                    // Ignore the initial about:blank load; the real route is started by the queue.
-                    if (!record.started || iframe.src === 'about:blank') return;
-                    record.loaded = true;
-                    installFrameStyle(record);
-                    if (record.timer) clearTimeout(record.timer);
-                    markFinished(record, false);
-                });
-
-                routeMap.set(key, record);
-                frameRecords.push(record);
-                return record;
-            }
-            // Build a list of unique, same-origin navigation destinations. Never preload logout or auth pages.
-            const uniqueRoutes = new Map();
-            navLinks.forEach(function (link) {
-                if (link.hasAttribute('data-app-action')) return;
-                const raw = (link.getAttribute('href') || '').trim();
-                if (!raw || raw === '#') return;
-                try {
-                    const url = new URL(raw, window.location.origin);
-                    if (url.origin !== window.location.origin) return;
-                    if (/\/(logout|register|login)(\/|$)/i.test(url.pathname)) return;
-                    const key = normalizedKey(url.href);
-                    if (key === dashboardKey) return;
-                    if (!uniqueRoutes.has(key)) uniqueRoutes.set(key, url.href);
-                } catch (_) { }
-            });
-
-            uniqueRoutes.forEach((url, key) => createFrame(url, key));
-
-            function finishPreloading() {
-                if (window.altairPreloadComplete) return;
-                window.altairPreloadComplete = true;
-                if (subtitle) subtitle.textContent = 'Your workspace is ready.';
-                if (progress) progress.style.width = '100%';
-                window.setTimeout(function () {
-                    if (typeof window.hideDataLoadingScreen === 'function') window.hideDataLoadingScreen();
-                    else if (loader) loader.remove();
-                }, 350);
-            }
-
-            function setActiveNavigation(url) {
-                const key = normalizedKey(url);
-                navLinks.forEach(link => {
-                    let active = false;
-                    try { active = normalizedKey(link.href) === key; } catch (_) { }
-                    link.classList.toggle('active', active);
-                    if (active) link.setAttribute('aria-current', 'page');
-                    else link.removeAttribute('aria-current');
-                });
-            }
-
-            function showDashboard(updateHistory) {
-                main.classList.remove('frame-mode');
-                frameRecords.forEach(record => record.wrapper.classList.remove('is-active'));
-                setActiveNavigation(dashboardKey);
-                if (updateHistory && normalizedKey(window.location.href) !== dashboardKey) {
-                    history.pushState({ altairCachedPage: true, url: dashboardKey }, '', dashboardKey);
-                }
-                main.scrollTop = 0;
-            }
-
-            function navigateTo(url, updateHistory) {
-                const key = normalizedKey(url);
-                if (key === dashboardKey) {
-                    showDashboard(!!updateHistory);
-                    return;
-                }
-                const record = routeMap.get(key);
-                if (!record) {
-                    // Routes not in the sidebar should use normal navigation.
-                    window.location.href = url;
-                    return;
-                }
-                main.classList.add('frame-mode');
-                frameRecords.forEach(item => item.wrapper.classList.toggle('is-active', item === record));
-                setActiveNavigation(url);
-                if (updateHistory && normalizedKey(window.location.href) !== key) {
-                    history.pushState({ altairCachedPage: true, url: key }, '', url);
-                }
-                if (record.loaded) installFrameStyle(record);
-                main.scrollTop = 0;
-            }
-
-            window.altairNavigateTo = navigateTo;
-
-            navLinks.forEach(function (link) {
-                link.addEventListener('click', function (event) {
-                    if (link.hasAttribute('data-app-action')) return;
-                    if (link.classList.contains('logout-link')) return;
-                    const raw = link.getAttribute('href') || '';
-                    if (!raw || raw === '#') return;
-                    let url;
-                    try { url = new URL(raw, window.location.origin); } catch (_) { return; }
-                    if (url.origin !== window.location.origin) return;
-                    const key = normalizedKey(url.href);
-                    if (key === dashboardKey || routeMap.has(key)) {
-                        event.preventDefault();
-                        navigateTo(url.href, true);
-                    }
-                });
-            });
-
-            window.addEventListener('popstate', function () {
-                const key = normalizedKey(window.location.href);
-                if (key === dashboardKey || routeMap.has(key)) navigateTo(window.location.href, false);
-                else window.location.reload();
-            });
-
-            // Limit simultaneous backend requests so preloading does not overload the app.
-            let nextRoute = 0;
-            let activeLoads = 0;
-            const maxConcurrentLoads = 4;
-
-            function startFrame(record) {
-                if (record.started || record.finished) return;
-                record.started = true;
-                record.loaded = false;
-                record.timer = window.setTimeout(function () {
-                    if (!record.loaded) markFinished(record, true);
-                }, 16000);
-                record.iframe.src = record.url;
-            }
-
-            function pumpQueue() {
-                while (activeLoads < maxConcurrentLoads && nextRoute < frameRecords.length) {
-                    const record = frameRecords[nextRoute++];
-                    activeLoads += 1;
-                    startFrame(record);
-                }
-            }
-
-            if (!frameRecords.length) {
-                finishPreloading();
-            } else {
-                setProgress('Preparing ' + frameRecords.length + ' workspace sections…');
-                const preloadFailsafe = window.setTimeout(function () {
-                    frameRecords.forEach(record => {
-                        if (!record.finished) markFinished(record, !record.loaded);
-                    });
-                    finishPreloading();
-                }, 42000);
-                const originalFinish = finishPreloading;
-                finishPreloading = function () {
-                    originalFinish();
-                    clearTimeout(preloadFailsafe);
-                };
-                pumpQueue();
-            }
-        })();
+        }, { once: true });
     </script>
-
     {% endif %}
 
 
@@ -45891,6 +45623,208 @@
 
             .module-coming-soon .coming-card {
                 padding: 22px 16px !important
+            }
+        }
+    </style>
+
+
+    <style id="altair-critical-layout-theme-fixes">
+        /* Auth pages: restore the decorative, full-screen login/register composition. */
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .auth-app {
+            display: block !important;
+            min-height: 100vh !important;
+            height: auto !important;
+            overflow: visible !important;
+            background: #0b0b14 !important;
+        }
+
+        .auth-main {
+            position: relative !important;
+            isolation: isolate;
+        }
+
+        .auth-main::before,
+        .auth-main::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        .auth-main::before {
+            width: 440px;
+            height: 440px;
+            left: -150px;
+            top: -150px;
+            background: radial-gradient(circle, rgba(0, 240, 255, .20), transparent 68%);
+        }
+
+        .auth-main::after {
+            width: 520px;
+            height: 520px;
+            right: -190px;
+            bottom: -210px;
+            background: radial-gradient(circle, rgba(255, 0, 212, .18), transparent 68%);
+        }
+
+        .auth-view {
+            position: relative;
+            min-height: 100vh !important;
+            padding: clamp(18px, 4vw, 48px) !important;
+            background: linear-gradient(135deg, #0b0b14 0%, #111329 52%, #171024 100%) !important;
+        }
+
+        .auth-card {
+            position: relative;
+            overflow: hidden;
+            color: #171722 !important;
+            border: 1px solid rgba(255, 255, 255, .65) !important;
+            box-shadow: 0 28px 90px rgba(0, 0, 0, .38), 0 0 45px rgba(0, 240, 255, .07) !important;
+        }
+
+        .auth-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00f0ff, #9d4edd, #ff00d4);
+        }
+
+        .auth-card h1,
+        .auth-card label,
+        .auth-brand strong {
+            color: #171722 !important;
+        }
+
+        .auth-card .auth-subtitle,
+        .auth-card .auth-switch {
+            color: #68687c !important;
+        }
+
+        .auth-card input {
+            color: #171722 !important;
+            background: #fff !important;
+        }
+
+        .auth-card a {
+            color: #6d35d4 !important;
+        }
+
+        /* Charts must have measurable height and never collapse to an empty white panel. */
+        .chart-container {
+            position: relative !important;
+            min-height: 260px;
+            width: 100%;
+        }
+
+        #revenueChart {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 240px;
+        }
+
+        #cachedPageFrames,
+        .cached-page-frame {
+            display: none !important;
+        }
+
+        #mainContent.frame-mode {
+            position: static !important;
+            padding: 28px 35px !important;
+            overflow-y: auto !important;
+        }
+
+        #mainContent.frame-mode #view-dashboard,
+        #mainContent.frame-mode>.unified-view:not(#view-dashboard) {
+            display: block !important;
+        }
+
+        /* Dark mode: override legacy hard-coded blue/black text on every module. */
+        html[data-theme="dark"] body,
+        html[data-theme="dark"] #mainContent,
+        html[data-theme="dark"] #mainContent .unified-view {
+            color: #f2f4ff !important;
+        }
+
+        html[data-theme="dark"] #mainContent h1,
+        html[data-theme="dark"] #mainContent h2,
+        html[data-theme="dark"] #mainContent h3,
+        html[data-theme="dark"] #mainContent h4,
+        html[data-theme="dark"] #mainContent strong,
+        html[data-theme="dark"] #mainContent b,
+        html[data-theme="dark"] #mainContent .customer,
+        html[data-theme="dark"] #mainContent .stat-card h2,
+        html[data-theme="dark"] #mainContent .transaction,
+        html[data-theme="dark"] #mainContent .lead-name,
+        html[data-theme="dark"] #mainContent .page-title {
+            color: #f2f4ff !important;
+        }
+
+        html[data-theme="dark"] #mainContent p,
+        html[data-theme="dark"] #mainContent label,
+        html[data-theme="dark"] #mainContent small,
+        html[data-theme="dark"] #mainContent .muted,
+        html[data-theme="dark"] #mainContent .subtitle,
+        html[data-theme="dark"] #mainContent .page-subtitle,
+        html[data-theme="dark"] #mainContent .stat-label,
+        html[data-theme="dark"] #mainContent .transaction-heading,
+        html[data-theme="dark"] #mainContent .lead-source {
+            color: #aeb7d0 !important;
+        }
+
+        html[data-theme="dark"] #mainContent a:not(.nav-item):not(.logout-link) {
+            color: #8bdcff;
+        }
+
+        html[data-theme="dark"] #mainContent .ai-card,
+        html[data-theme="dark"] #mainContent .ai-card h1,
+        html[data-theme="dark"] #mainContent .ai-card h2,
+        html[data-theme="dark"] #mainContent .ai-card h3,
+        html[data-theme="dark"] #mainContent .ai-card strong,
+        html[data-theme="dark"] #mainContent .ai-card p {
+            color: #f2f4ff !important;
+        }
+
+        html[data-theme="dark"] #mainContent button:not(.nav-item) {
+            color: inherit;
+        }
+
+        html[data-theme="dark"] #mainContent .primary-button,
+        html[data-theme="dark"] #mainContent .btn-primary,
+        html[data-theme="dark"] #mainContent .save-btn,
+        html[data-theme="dark"] #mainContent .ai-btn {
+            color: #fff !important;
+        }
+
+        html[data-theme="dark"] #mainContent canvas {
+            color: #f2f4ff;
+        }
+
+        @media(max-width:760px) {
+            .auth-view {
+                padding: 18px !important;
+            }
+
+            .auth-card {
+                padding: 25px 22px !important;
+            }
+
+            #mainContent.frame-mode {
+                padding: 15px !important;
             }
         }
     </style>
