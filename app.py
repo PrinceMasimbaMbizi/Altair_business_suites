@@ -88,7 +88,8 @@ def render_template(template_name, **context):
         return _flask_render_template("index.html", **context)
     view = _TEMPLATE_VIEW_MAP.get(name)
     if view:
-        context.setdefault("active_view", view)
+        # Always render the corresponding unified section, including login/register.
+        context["active_view"] = view
         return _flask_render_template("index.html", **context)
     # Non-HTML or future templates remain supported instead of silently breaking.
     return _flask_render_template(name, **context)
