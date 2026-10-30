@@ -46,10 +46,25 @@ cloudinary.config(
 app = Flask(__name__)
 
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+# IMPORTANT:
+# Flask's signing key must remain identical across app restarts and workers.
+# A random key here invalidates every session cookie whenever Render restarts
+# the service or sends a request to a different worker.
+app.secret_key = (os.environ.get("FLASK_SECRET_KEY") or "").strip()
 if not app.secret_key:
-    app.secret_key = os.urandom(32).hex()
-    app.logger.warning("FLASK_SECRET_KEY is not set; a temporary local key is being used.")
+    raise RuntimeError(
+        "FLASK_SECRET_KEY is missing. Set one stable secret in Render Environment "
+        "and use the same value for every deployment/worker."
+    )
+
+# Login sessions are browser-session-only (not remembered permanently).
+app.config.update(
+    SESSION_PERMANENT=False,
+    SESSION_REFRESH_EACH_REQUEST=False,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("RENDER", "").strip().lower() == "true",
+)
 
 # SINGLE-FILE FRONTEND ADAPTER
 # Every former page template is now a conditional section inside templates/index.html.
@@ -86,9 +101,14 @@ def render_template(template_name, **context):
     if name == "index.html":
         context.setdefault("active_view", request.args.get("view", "dashboard"))
         return _flask_render_template("index.html", **context)
+
+    # Authentication pages deliberately use their original standalone templates.
+    # This preserves the exact login/register designs supplied by the user.
+    if name in ("login.html", "register.html"):
+        return _flask_render_template(name, **context)
+
     view = _TEMPLATE_VIEW_MAP.get(name)
     if view:
-        # Always render the corresponding unified section, including login/register.
         context["active_view"] = view
         return _flask_render_template("index.html", **context)
     # Non-HTML or future templates remain supported instead of silently breaking.
@@ -754,11 +774,13 @@ def login():
 
             user = cursor.fetchone()
 
-            if user and check_password_hash(
+            if user and user.get("password_hash") and check_password_hash(
                 user["password_hash"],
                 password
             ):
-
+                # Start a clean authenticated session after login.
+                session.clear()
+                session.permanent = False
                 session["user_id"] = user["id"]
 
                 session["user_name"] = user["name"]
@@ -853,6 +875,7 @@ def login():
 def logout():
 
     session.clear()
+    session.permanent = False
 
     flash(
         "You have been logged out.",

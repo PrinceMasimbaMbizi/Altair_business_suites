@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account | Altair Business Suite</title>
+
+    <style>
+        /* 
+           RESET
+         */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        /* 
+           BODY
+         */
+
+        body {
+
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            color: #ffffff;
+
+            background:
+                radial-gradient(circle at 10% 20%,
+                    rgba(124, 58, 237, 0.22),
+                    transparent 35%),
+                radial-gradient(circle at 90% 80%,
+                    rgba(79, 70, 229, 0.18),
+                    transparent 35%),
+                #080812;
+
+            overflow-x: hidden;
+        }
+
+
+        /* 
+           BACKGROUND EFFECTS
+         */
+
+        .background-glow {
+
+            position: fixed;
+
+            width: 500px;
+            height: 500px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(circle,
+                    rgba(139, 92, 246, 0.10),
+                    transparent 70%);
+
+            filter: blur(30px);
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+        .glow-one {
+            top: -250px;
+            left: -200px;
+        }
+
+        .glow-two {
+            bottom: -250px;
+            right: -200px;
+        }
+
+
+        /* 
+           MAIN CONTAINER
+         */
+
+        .auth-container {
+
+            position: relative;
+
+            z-index: 2;
+
+            width: 100%;
+            max-width: 1050px;
+
+            min-height: 650px;
+
+            display: grid;
+
+            grid-template-columns: 0.9fr 1.1fr;
+
+            overflow: hidden;
+
+            border: 1px solid rgba(255, 255, 255, 0.10);
+
+            border-radius: 28px;
+
+            background:
+                rgba(255, 255, 255, 0.045);
+
+            backdrop-filter: blur(25px);
+
+            -webkit-backdrop-filter: blur(25px);
+
+            box-shadow:
+                0 35px 100px rgba(0, 0, 0, 0.55);
+        }
+
+
+        /* 
+           LEFT BRANDING
+         */
+
+        .brand-panel {
+
+            position: relative;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: space-between;
+
+            padding: 55px;
+
+            background:
+                linear-gradient(145deg,
+                    rgba(124, 58, 237, 0.28),
+                    rgba(30, 30, 60, 0.15));
+
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+
+        .brand-content {
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+
+        /* LOGO */
+
+        .company-logo {
+
+            width: 72px;
+            height: 72px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 28px;
+
+            border-radius: 20px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.12);
+
+            box-shadow:
+                0 15px 40px rgba(0, 0, 0, 0.25);
+
+            overflow: hidden;
+        }
+
+        .company-logo img {
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+
+            padding: 8px;
+        }
+
+
+        .brand-panel h2 {
+
+            font-size: 30px;
+
+            line-height: 1.2;
+
+            letter-spacing: -0.7px;
+
+            margin-bottom: 14px;
+        }
+
+
+        .brand-panel h2 span {
+
+            color: #a78bfa;
+        }
+
+
+        .brand-description {
+
+            max-width: 360px;
+
+            color: #aaaabc;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        /* FEATURE LIST */
+
+        .features {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 14px;
+
+            margin-top: 35px;
+        }
+
+
+        .feature {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            color: #c9c9d8;
+
+            font-size: 13px;
+        }
+
+
+        .feature-icon {
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background:
+                rgba(139, 92, 246, 0.15);
+
+            border:
+                1px solid rgba(139, 92, 246, 0.20);
+
+            color: #a78bfa;
+
+            font-size: 13px;
+        }
+
+
+        /* BRAND FOOTER */
+
+        .brand-footer {
+
+            color: #77778a;
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+
+        /* 
+           FORM PANEL
+         */
+
+        .form-panel {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 55px;
+        }
+
+
+        .form-wrapper {
+
+            width: 100%;
+
+            max-width: 420px;
+        }
+
+
+        /* 
+           FORM HEADER
+         */
+
+        .form-header {
+
+            margin-bottom: 30px;
+        }
+
+
+        .form-header .small-title {
+
+            color: #a78bfa;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 10px;
+        }
+
+
+        .form-header h1 {
+
+            font-size: 30px;
+
+            letter-spacing: -0.8px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .form-header p {
+
+            color: #858596;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+
+        /* 
+           FLASH MESSAGE
+         */
+
+        .message {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 12px 14px;
+
+            margin-bottom: 20px;
+
+            border-radius: 11px;
+
+            background:
+                rgba(255, 255, 255, 0.05);
+
+            border:
+                1px solid rgba(255, 255, 255, 0.08);
+
+            color: #cfcfde;
+
+            font-size: 12px;
+        }
+
+
+        /* 
+           FORM GROUP
+         */
+
+        .form-group {
+
+            margin-bottom: 19px;
+        }
+
+
+        .form-group label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #c9c9d5;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+
+        .input-wrapper {
+
+            position: relative;
+        }
+
+
+        .input-icon {
+
+            position: absolute;
+
+            left: 14px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: #686879;
+
+            font-size: 14px;
+
+            pointer-events: none;
+        }
+
+
+        .form-group input {
+
+            width: 100%;
+
+            height: 50px;
+
+            padding:
+                0 15px 0 42px;
+
+            border:
+                1px solid rgba(255, 255, 255, 0.10);
+
+            border-radius: 12px;
+
+            outline: none;
+
+            background:
+                rgba(8, 8, 18, 0.65);
+
+            color: white;
+
+            font-size: 13px;
+
+            transition:
+                border 0.2s,
+                box-shadow 0.2s,
+                background 0.2s;
+        }
+
+
+        .form-group input::placeholder {
+
+            color: #555567;
+        }
+
+
+        .form-group input:focus {
+
+            border-color: #8b5cf6;
+
+            background:
+                rgba(8, 8, 18, 0.85);
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.10);
+        }
+
+
+        /* 
+           PASSWORD TOGGLE
+         */
+
+        .password-toggle {
+
+            position: absolute;
+
+            right: 13px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: none;
+
+            background: none;
+
+            color: #777789;
+
+            cursor: pointer;
+
+            font-size: 13px;
+        }
+
+
+        .password-toggle:hover {
+
+            color: #a78bfa;
+        }
+
+
+        /* 
+           PASSWORD STRENGTH
+         */
+
+        .password-strength {
+
+            height: 3px;
+
+            margin-top: 8px;
+
+            border-radius: 10px;
+
+            background: #252531;
+
+            overflow: hidden;
+        }
+
+
+        .strength-bar {
+
+            width: 0%;
+
+            height: 100%;
+
+            border-radius: 10px;
+
+            transition: width 0.3s;
+        }
+
+
+        .strength-text {
+
+            margin-top: 6px;
+
+            color: #686879;
+
+            font-size: 10px;
+        }
+
+
+        /* 
+           BUTTON
+         */
+
+        .create-btn {
+
+            width: 100%;
+
+            height: 51px;
+
+            margin-top: 8px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(135deg,
+                    #8b5cf6,
+                    #6366f1);
+
+            color: white;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 12px 30px rgba(99, 102, 241, 0.20);
+
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s,
+                filter 0.2s;
+        }
+
+
+        .create-btn:hover {
+
+            transform: translateY(-2px);
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 16px 35px rgba(99, 102, 241, 0.28);
+        }
+
+
+        .create-btn:active {
+
+            transform: translateY(0);
+        }
+
+
+        /* 
+           LOGIN LINK
+         */
+
+        .login-link {
+
+            text-align: center;
+
+            margin-top: 22px;
+
+            color: #777789;
+
+            font-size: 12px;
+        }
+
+
+        .login-link a {
+
+            color: #a78bfa;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+
+        .login-link a:hover {
+
+            color: #c4b5fd;
+
+            text-decoration: underline;
+        }
+
+
+        /* 
+           SECURITY NOTE
+         */
+
+        .security-note {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            margin-top: 22px;
+
+            color: #5f5f70;
+
+            font-size: 10px;
+        }
+
+
+        /* 
+           MOBILE
+         */
+
+        @media (max-width: 850px) {
+
+            body {
+
+                padding: 15px;
+
+            }
+
+            .auth-container {
+
+                grid-template-columns: 1fr;
+
+                max-width: 520px;
+
+                min-height: auto;
+
+            }
+
+            .brand-panel {
+
+                display: none;
+
+            }
+
+            .form-panel {
+
+                padding: 40px 25px;
+
+            }
+
+        }
+
+
+        @media (max-width: 450px) {
+
+            body {
+
+                padding: 10px;
+
+            }
+
+            .auth-container {
+
+                border-radius: 20px;
+
+            }
+
+            .form-panel {
+
+                padding: 32px 20px;
+
+            }
+
+            .form-header h1 {
+
+                font-size: 26px;
+
+            }
+
+
+        }
+
+        .company-logo img {
+            width: 140%;
+            height: 140%;
+            object-fit: contain;
+            padding: 0;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="background-glow glow-one"></div>
+
+    <div class="background-glow glow-two"></div>
+
+
+    <div class="auth-container">
+
+
+        <!-- 
+             BRAND PANEL
+        = -->
+
+        <section class="brand-panel">
+
+            <div class="brand-content">
+
+                <div class="company-logo">
+
+                    <img src="{{ url_for('static', filename='images/altair-logo.png') }}"
+                        alt="Altair Business Suite Logo">
+
+                </div>
+
+
+                <h2>
+                    Build smarter.<br>
+                    <span>Manage better.</span>
+                </h2>
+
+
+                <p class="brand-description">
+
+                    Altair Business Suite brings your
+                    customers, invoices, transactions
+                    and business intelligence that help you find more leads together
+                    in one professional workspace.
+
+                </p>
+
+
+                <div class="features">
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        Secure business workspace
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ◈
+                        </div>
+
+                        Your data stays private
+
+                    </div>
+
+
+                    <div class="feature">
+
+                        <div class="feature-icon">
+                            ✦
+                        </div>
+
+                        AI-powered business tools
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="brand-footer">
+
+                © 2026 Altair Business Suite<br>
+
+                Professional business management platform.
+
+            </div>
+
+        </section>
+
+
+        <!-- 
+             FORM PANEL
+        = -->
+
+        <section class="form-panel">
+
+            <div class="form-wrapper">
+
+
+                <!-- HEADER -->
+
+                <div class="form-header">
+
+                    <div class="small-title">
+                        Get started
+                    </div>
+
+                    <h1>
+                        Create your account
+                    </h1>
+
+                    <p>
+                        Set up your secure business workspace
+                        in just a few moments.
+                    </p>
+
+                </div>
+
+
+                <!-- FLASH MESSAGES -->
+
+                {% with messages = get_flashed_messages() %}
+
+                {% if messages %}
+
+                {% for message in messages %}
+
+                <div class="message">
+
+                    <span>●</span>
+
+                    {{ message }}
+
+                </div>
+
+                {% endfor %}
+
+                {% endif %}
+
+                {% endwith %}
+
+
+                <!-- FORM -->
+
+                <form method="POST">
+
+
+                    <!-- NAME -->
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                👤
+                            </span>
+
+                            <input id="name" type="text" name="name" placeholder="Enter your full name"
+                                autocomplete="name" required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Business Email
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                ✉
+                            </span>
+
+                            <input id="email" type="email" name="email" placeholder="you@company.com"
+                                autocomplete="email" required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="form-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                🔒
+                            </span>
+
+                            <input id="password" type="password" name="password" placeholder="Create a secure password"
+                                minlength="6" autocomplete="new-password" required>
+
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                Show
+                            </button>
+
+                        </div>
+
+
+                        <div class="password-strength">
+
+                            <div class="strength-bar" id="strengthBar"></div>
+
+                        </div>
+
+
+                        <div class="strength-text" id="strengthText">
+                            Use at least 6 characters.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BUTTON -->
+
+                    <button type="submit" class="create-btn">
+
+                        Create Business Account
+
+                    </button>
+
+
+                </form>
+
+
+                <!-- LOGIN -->
+
+                <div class="login-link">
+
+                    Already have an account?
+
+                    <a href="{{ url_for('login') }}">
+                        Sign in
+                    </a>
+
+                </div>
+
+
+                <!-- SECURITY -->
+
+                <div class="security-note">
+
+                    🔐 Your account credentials are securely protected.
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+    <script>
+
+        /* 
+           PASSWORD TOGGLE
+         */
+
+        function togglePassword() {
+
+            const password =
+                document.getElementById("password");
+
+            const button =
+                document.querySelector(".password-toggle");
+
+
+            if (password.type === "password") {
+
+                password.type = "text";
+
+                button.textContent = "Hide";
+
+            } else {
+
+                password.type = "password";
+
+                button.textContent = "Show";
+
+            }
+
+        }
+
+
+        /* 
+           PASSWORD STRENGTH
+         */
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const strengthBar =
+            document.getElementById("strengthBar");
+
+        const strengthText =
+            document.getElementById("strengthText");
+
+
+        passwordInput.addEventListener(
+            "input",
+            function () {
+
+                const password =
+                    passwordInput.value;
+
+                let strength = 0;
+
+
+                if (password.length >= 6) {
+                    strength++;
+                }
+
+                if (password.length >= 10) {
+                    strength++;
+                }
+
+                if (/[A-Z]/.test(password)) {
+                    strength++;
+                }
+
+                if (/[0-9]/.test(password)) {
+                    strength++;
+                }
+
+                if (/[^A-Za-z0-9]/.test(password)) {
+                    strength++;
+                }
+
+
+                if (password.length === 0) {
+
+                    strengthBar.style.width = "0%";
+
+                    strengthText.textContent =
+                        "Use at least 6 characters.";
+
+                }
+
+                else if (strength <= 2) {
+
+                    strengthBar.style.width = "35%";
+
+                    strengthText.textContent =
+                        "Weak password";
+
+                }
+
+                else if (strength === 3) {
+
+                    strengthBar.style.width = "65%";
+
+                    strengthText.textContent =
+                        "Good password";
+
+                }
+
+                else {
+
+                    strengthBar.style.width = "100%";
+
+                    strengthText.textContent =
+                        "Strong password";
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>
