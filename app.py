@@ -42,6 +42,12 @@ cloudinary.config(
 
 
 
+# PART 1 - START THE WEBSITE: create the Flask application and set its main settings.
+
+
+
+
+
 # FLASK APP
 app = Flask(__name__)
 
@@ -65,6 +71,12 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("RENDER", "").strip().lower() == "true",
 )
+
+# PART 2 - PAGE DISPLAY: connect each page name to the correct section in index.html.
+
+
+
+
 
 # SINGLE-FILE FRONTEND ADAPTER
 # Every former page template is now a conditional section inside templates/index.html.
@@ -113,6 +125,12 @@ def render_template(template_name, **context):
         return _flask_render_template("index.html", **context)
     # Non-HTML or future templates remain supported instead of silently breaking.
     return _flask_render_template(name, **context)
+
+
+
+
+# PART 3 - SMALL POP-UP MESSAGES AND LOADING EFFECTS: show alerts and progress screens.
+
 
 
 
@@ -241,6 +259,18 @@ def altair_ui_inject(response):
         print("ALTAIR UI INJECTION ERROR:", ui_error)
     return response
 
+# PART 4 - COMPANY LOGO: control which logo files can be uploaded and where they are stored.
+
+
+
+
+
+# PART 8 - SHOW COMPANY LOGO: send the saved company logo to the browser.
+
+
+
+
+
 # COMPANY LOGO UPLOAD SETTINGS
 UPLOAD_FOLDER = os.path.join(
     app.root_path,
@@ -264,6 +294,12 @@ def allowed_file(filename):
         and filename.rsplit(".", 1)[1].lower()
         in ALLOWED_EXTENSIONS
     )
+
+
+# PART 5 - MONEY DISPLAY: format amounts so prices are easy to read.
+
+
+
 
 
 # MONEY FORMATTER
@@ -300,6 +336,12 @@ def format_money(value):
 
 # Make the function available inside all Jinja templates
 app.jinja_env.filters["money"] = format_money
+
+
+# PART 6 - DATABASE CONNECTION: connect Flask to the MySQL database.
+
+
+
 
 
 # MYSQL CONNECTION
@@ -342,6 +384,12 @@ def require_current_company():
     company = get_current_company()
 
     return user_id, company    
+
+
+# PART 7 - USER AND COMPANY CHECKS: make sure each user sees only their own company information.
+
+
+
 
 
 # CURRENT USER / COMPANY SECURITY
@@ -505,7 +553,18 @@ def company_logo():
 
 
 
+# PART 9 - CREATE ACCOUNT PAGE: validate details and save a new user account.
+
+
+
+
+
 # REGISTER
+
+
+
+
+# EASY GUIDE: Create account page - checks the details and saves a new user.
 @app.route(
     "/register",
     methods=["GET", "POST"]
@@ -719,9 +778,20 @@ def register():
 
 
 
+# PART 10 - LOGIN PAGE: check the user’s email and password.
+
+
+
+
+
 # LOGIN
 
 
+
+
+
+
+# EASY GUIDE: Login page - checks the email and password, then opens the workspace.
 @app.route(
     "/login",
     methods=["GET", "POST"]
@@ -781,6 +851,7 @@ def login():
                 # Start a clean authenticated session after login.
                 session.clear()
                 session.permanent = False
+                session["show_workspace_loader"] = True
                 session["user_id"] = user["id"]
 
                 session["user_name"] = user["name"]
@@ -868,9 +939,20 @@ def login():
 
 
 
+# PART 11 - LOGOUT: end the current user session.
+
+
+
+
+
 # LOGOUT
 
 
+
+
+
+
+# EASY GUIDE: Logout - clears the current login session.
 @app.route("/logout")
 def logout():
 
@@ -888,6 +970,11 @@ def logout():
 
 
 #company setup code
+
+
+
+
+# EASY GUIDE: Company setup page - saves the business profile.
 @app.route("/company-setup", methods=["GET", "POST"])
 def company_setup():
 
@@ -1290,6 +1377,12 @@ def company_setup():
             db.close()
 
 
+# PART 23 - AI REVENUE FORECAST: estimate future business income.
+
+
+
+
+
 # ALTAIR AI - REVENUE FORECASTING ENGINE
 def predict_next_month_revenue(monthly_revenue):
 
@@ -1408,6 +1501,12 @@ def predict_next_month_revenue(monthly_revenue):
         "confidence": confidence,
         "model": "Linear Regression"
     }
+
+
+
+# PART 24 - OTIS CHATBOT: train the local business assistant to understand questions.
+
+
 
 
 
@@ -1801,7 +1900,8 @@ def get_business_ai_data(user_id):
         )
 
         
-        # CUSTOMERS
+        # PART 13 - CUSTOMERS PAGE: view and manage customer information.
+# CUSTOMERS
         
 
         cursor.execute("""
@@ -1868,7 +1968,8 @@ def get_business_ai_data(user_id):
         )
 
         
-        # EXPENSES
+        # PART 16 - EXPENSES: record and manage business spending.
+# EXPENSES
         cursor.execute("""
             SELECT
 
@@ -2015,6 +2116,12 @@ def get_business_ai_data(user_id):
 
 
 
+# PART 25 - BUSINESS SUMMARY: collect the numbers Otis needs to understand the business.
+
+
+
+
+
 # ALTAIR BUSINESS SUMMARY ENGINE
 
 
@@ -2142,6 +2249,12 @@ def altair_business_summary(
         f"{health}/100. "
         f"{health_text}"
     )
+
+
+
+
+# PART 26 - OTIS ANSWERS: prepare business advice and answers.
+
 
 
 
@@ -2906,6 +3019,12 @@ def altair_response_engine(intent, business_data, analysis):
     return altair_response_engine_legacy(intent, business_data, analysis)
 
 
+# PART 27 - OTIS CHAT ROUTE: receive a question from the chat window and return an answer.
+
+
+
+
+
 # ALTAIR AI CHAT API
 
 
@@ -3569,7 +3688,18 @@ def api_business_insights():
 
 
 
+# PART 22 - HELP AND SUPPORT: display help guides and support options.
+
+
+
+
+
 # HELP & SUPPORT CENTRE
+
+
+
+
+# EASY GUIDE: Help and support page - shows help information and support requests.
 @app.route("/help-support", methods=["GET", "POST"])
 def help_support():
     """Help centre and user-owned support tickets."""
@@ -3693,7 +3823,18 @@ def help_support():
     )
 
 
+# PART 12 - DASHBOARD PAGE: load the main business overview.
+
+
+
+
+
 # DASHBOARD
+
+
+
+
+# EASY GUIDE: Dashboard page - loads the main business overview.
 @app.route("/")
 def dashboard():
 
@@ -3742,8 +3883,13 @@ def dashboard():
             url_for("company_setup")
         )
 
+    # Show the full workspace loading screen only immediately after login.
+    show_workspace_loader = session.pop("show_workspace_loader", False)
+
     return render_template(
         "dashboard.html",
+
+        show_workspace_loader=show_workspace_loader,
 
         company=company,
 
@@ -3759,6 +3905,11 @@ def dashboard():
 
 
 # COMING SOON: ACCOUNT, BILLING, AND BUSINESS MANAGEMENT MODULES
+
+
+
+
+# EASY GUIDE: Coming soon pages - show a message for unfinished modules.
 @app.route("/coming-soon/<feature>")
 def coming_soon(feature):
     if "user_id" not in session:
@@ -3828,6 +3979,11 @@ def coming_soon(feature):
 # FORECASTING ROUTE COMPATIBILITY FIX
 # Some page templates use url_for("forecasting"). Register the endpoint so
 # those templates can render while the dedicated forecasting page is pending.
+
+
+
+
+# EASY GUIDE: Forecasting page - shows predicted business income and costs.
 @app.route("/forecasting", methods=["GET", "POST"])
 def forecasting():
     if "user_id" not in session:
@@ -3865,6 +4021,11 @@ def forecasting():
 # CUSTOMERS ROUTE COMPATIBILITY FIX
 # Some templates still call url_for("customers"), while the main route endpoint
 # is named "customer". Keep both endpoint names working to prevent BuildError.
+
+
+
+
+# EASY GUIDE: Customer link helper - keeps old customer links working.
 @app.route("/customers", endpoint="customers")
 def customers_compatibility():
     return redirect(url_for("customer"))
@@ -3873,6 +4034,11 @@ def customers_compatibility():
 # CUSTOMERS
 
 
+
+
+
+
+# EASY GUIDE: Customers page - lists and manages customer records.
 @app.route("/customer")
 def customer():
 
@@ -4020,6 +4186,11 @@ def customer():
 # ADD CUSTOMER
 
 
+
+
+
+
+# EASY GUIDE: Add customer - saves a new customer.
 @app.route(
     "/customer/add",
     methods=["POST"]
@@ -4181,6 +4352,11 @@ def add_customer():
 # CUSTOMER FINANCIAL HISTORY
 
 
+
+
+
+
+# EASY GUIDE: Customer history - shows a customer’s past activity.
 @app.route("/customer/<int:customer_id>/history")
 def customer_history(customer_id):
 
@@ -4380,6 +4556,11 @@ def customer_history(customer_id):
 # EDIT CUSTOMER
 
 
+
+
+
+
+# EASY GUIDE: Edit customer - updates a saved customer.
 @app.route(
     "/customer/<int:customer_id>/edit",
     methods=["POST"]
@@ -4510,6 +4691,11 @@ def edit_customer(customer_id):
 # DELETE CUSTOMER
 
 
+
+
+
+
+# EASY GUIDE: Delete customer - removes a customer when requested.
 @app.route(
     "/customer/<int:customer_id>/delete",
     methods=["POST"]
@@ -4581,9 +4767,20 @@ def delete_customer(customer_id):
             db.close()                        
 
 
+# PART 14 - INVOICE PAGE: view invoices and create customer bills.
+
+
+
+
+
 # INVOICE PAGE
 
 
+
+
+
+
+# EASY GUIDE: Invoices page - lists invoices and billing information.
 @app.route("/invoice")
 def invoice():
 
@@ -4829,6 +5026,11 @@ def invoice():
 # CREATE INVOICE
 
 
+
+
+
+
+# EASY GUIDE: Create invoice - saves a new invoice.
 @app.route(
     "/invoice/create",
     methods=["POST"]
@@ -5116,9 +5318,20 @@ def create_invoice():
 
 
 # ============================================================
+# PART 15 - QUOTATIONS: create and manage price quotations for customers.
+
+
+
+
+
 # QUOTATIONS
 # ============================================================
 
+
+
+
+
+# EASY GUIDE: Create quotation - saves a new quotation.
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
     """Create a quotation for the authenticated user's own account."""
@@ -5282,6 +5495,11 @@ def create_quotation():
     return redirect(url_for("invoice"))
 
 
+
+
+
+
+# EASY GUIDE: View quotation - displays one quotation.
 @app.route("/quotations/<int:quotation_id>", methods=["GET"])
 def view_quotation(quotation_id):
     """Display one quotation belonging to the currently authenticated user."""
@@ -5327,6 +5545,11 @@ def view_quotation(quotation_id):
             db.close()
 
 
+
+
+
+
+# EASY GUIDE: Update quotation - changes its status.
 @app.route("/quotations/<int:quotation_id>/status", methods=["POST"])
 def update_quotation_status(quotation_id):
     """Update status only when the quotation belongs to the logged-in user."""
@@ -5374,6 +5597,11 @@ def update_quotation_status(quotation_id):
 
 # VIEW INDIVIDUAL INVOICE
 
+
+
+
+
+# EASY GUIDE: View invoice - displays one invoice.
 @app.route(
     "/invoice/view/<int:invoice_id>",
     methods=["GET"]
@@ -5480,6 +5708,11 @@ def view_invoice(invoice_id):
 # MARK INVOICE AS PAID
 
 
+
+
+
+
+# EASY GUIDE: Mark invoice paid - changes an invoice to Paid.
 @app.route(
     "/invoice/<int:invoice_id>/paid",
     methods=["POST"]
@@ -5565,6 +5798,11 @@ def mark_invoice_paid(invoice_id):
 
 
 # DELETE INVOICE
+
+
+
+
+# EASY GUIDE: Delete invoice - removes an invoice when requested.
 @app.route(
     "/invoice/<int:invoice_id>/delete",
     methods=["POST"]
@@ -5651,6 +5889,11 @@ def delete_invoice(invoice_id):
 # REMIND CUSTOMER
 
 
+
+
+
+
+# EASY GUIDE: Invoice reminder - prepares a reminder for a customer.
 @app.route(
     "/invoice/<int:invoice_id>/remind",
     methods=["POST"]
@@ -5725,6 +5968,11 @@ def remind_invoice(invoice_id):
 # EXPENSES
 
 
+
+
+
+
+# EASY GUIDE: Add expense - records money spent by the business.
 @app.route(
     "/expenses/add",
     methods=["POST"]
@@ -5865,6 +6113,11 @@ def add_expense():
 # DELETE EXPENSE
 
 
+
+
+
+
+# EASY GUIDE: Delete expense - removes an expense record.
 @app.route(
     "/expenses/delete/<int:expense_id>",
     methods=["POST"]
@@ -5938,9 +6191,20 @@ def delete_expense(expense_id):
 
 
 
+# PART 17 - INVESTMENTS: record money put into the business.
+
+
+
+
+
 # ADD INVESTMENT
 
 
+
+
+
+
+# EASY GUIDE: Add investment - records money invested in the business.
 @app.route(
     "/investments/add",
     methods=["POST"]
@@ -6089,6 +6353,11 @@ def add_investment():
 # DELETE INVESTMENT
 
 
+
+
+
+
+# EASY GUIDE: Delete investment - removes an investment record.
 @app.route(
     "/investments/delete/<int:investment_id>",
     methods=["POST"]
@@ -6161,9 +6430,20 @@ def delete_investment(investment_id):
 
 
 
+# PART 18 - REPEATED PAYMENTS: manage payments that happen regularly.
+
+
+
+
+
 # ADD RECURRING PAYMENT
 
 
+
+
+
+
+# EASY GUIDE: Add recurring payment - saves a regular payment.
 @app.route(
     "/recurring/add",
     methods=["POST"]
@@ -6349,6 +6629,11 @@ def add_recurring_payment():
 
 
 # DELETE RECURRING PAYMENT
+
+
+
+
+# EASY GUIDE: Delete recurring payment - removes a regular payment.
 @app.route(
     "/recurring/delete/<int:payment_id>",
     methods=["POST"]
@@ -6480,6 +6765,12 @@ def convert_to_date(value):
     raise TypeError(
         f"Unsupported date type: {type(value).__name__}"
     )
+
+
+
+# PART 19 - PAYMENT DATE HELPERS: handle dates for repeated payments.
+
+
 
 
 
@@ -6813,7 +7104,18 @@ def process_recurring_payments(
 
 
 
+# PART 20 - INVENTORY AND MONEY: manage products, services and money records.
+
+
+
+
+
 # INVENTORY + MONEY MANAGEMENT
+
+
+
+
+# EASY GUIDE: Inventory and money page - manages products, expenses, investments and regular payments.
 @app.route("/items")
 def items():
 
@@ -7312,6 +7614,11 @@ def items():
 # ADD INVENTORY ITEM
 
 
+
+
+
+
+# EASY GUIDE: Add inventory item - saves a product or service.
 @app.route(
     "/items/add",
     methods=["POST"]
@@ -7518,6 +7825,11 @@ def add_item():
 # EDIT INVENTORY ITEM
 
 
+
+
+
+
+# EASY GUIDE: Edit inventory item - updates a product or service.
 @app.route(
     "/items/edit/<int:item_id>",
     methods=["POST"]
@@ -7716,6 +8028,11 @@ def edit_item(item_id):
 # DELETE INVENTORY ITEM
 
 
+
+
+
+
+# EASY GUIDE: Delete inventory item - removes a product or service.
 @app.route(
     "/items/delete/<int:item_id>",
     methods=["POST"]
@@ -7789,9 +8106,20 @@ def delete_item(item_id):
 
 
 
+# PART 21 - SETTINGS PAGE: update business and account preferences.
+
+
+
+
+
 # SETTINGS
 
 
+
+
+
+
+# EASY GUIDE: Settings page - saves business and account preferences.
 @app.route(
     "/settings",
     methods=["GET", "POST"]
@@ -8345,6 +8673,11 @@ def settings():
         db.close()
 
 
+
+
+
+
+# EASY GUIDE: AI Lead Finder page - searches for possible customers.
 @app.route("/ai-leads")
 def ai_leads():
 
@@ -8491,6 +8824,11 @@ def ai_leads():
 
 # ADD AI LEAD MANUALLY
 
+
+
+
+
+# EASY GUIDE: Add lead - saves a potential customer.
 @app.route(
     "/ai-leads/add",
     methods=["POST"]
@@ -8674,6 +9012,11 @@ def add_ai_lead():
 
 
 
+
+
+
+
+# EASY GUIDE: Update lead status - changes the progress of a lead.
 @app.route(
     "/ai-leads/<int:lead_id>/status",
     methods=["POST"]
@@ -10394,6 +10737,11 @@ def save_google_lead():
 # BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
 # ============================================================
 
+
+
+
+
+# EASY GUIDE: Business Analytics page - shows business performance information.
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
     """Display analytics based on the logged-in user's own business records."""
@@ -10658,6 +11006,11 @@ def ensure_manual_transactions_table(cursor):
     """)
 
 
+
+
+
+
+# EASY GUIDE: Transactions page - shows money coming in and going out.
 @app.route("/transactions", methods=["GET"])
 def transactions():
     if "user_id" not in session:

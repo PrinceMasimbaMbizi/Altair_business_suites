@@ -2555,11 +2555,18 @@
 
         .data-loader-progress span {
             display: block;
-            width: 40%;
+            width: 1%;
             height: 100%;
             border-radius: inherit;
             background: linear-gradient(90deg, #00f0ff, #9d4edd, #ff00d4);
-            animation: dataLoaderProgress 1.25s ease-in-out infinite;
+            transition: width .22s ease;
+        }
+
+        .data-loader-percent {
+            color: #00f0ff;
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: .5px;
         }
 
         @keyframes dataLoaderSpin {
@@ -2568,20 +2575,10 @@
             }
         }
 
-        @keyframes dataLoaderProgress {
-            0% {
-                transform: translateX(-110%);
-            }
-
-            100% {
-                transform: translateX(360%);
-            }
-        }
 
         @media (prefers-reduced-motion: reduce) {
 
-            .data-loader-ring,
-            .data-loader-progress span {
+            .data-loader-ring {
                 animation-duration: 2.5s;
             }
         }
@@ -2748,6 +2745,8 @@
             }
         }
     </style>
+
+    <!-- EASY GUIDE: CUSTOMERS PAGE - customer list, customer details and customer actions. -->
 
     {% if active_view == 'customer' %}
     <style>
@@ -4344,6 +4343,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: INVOICES PAGE - invoice list, billing totals and create-invoice form. -->
     {% if active_view == 'invoice' %}
     <style>
         /* RESET */
@@ -6218,6 +6218,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: SINGLE INVOICE PAGE - details for one selected invoice. -->
     {% if active_view == 'invoice_view' %}
     <style>
         * {
@@ -6629,6 +6630,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: SINGLE QUOTATION PAGE - details for one selected quotation. -->
     {% if active_view == 'quotation_view' %}
     <style>
         * {
@@ -7040,6 +7042,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: INVENTORY AND MONEY PAGE - products, services, expenses, investments and recurring payments. -->
     {% if active_view == 'items' %}
     <style>
         /* 
@@ -8862,6 +8865,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: TRANSACTIONS PAGE - records of money coming in and going out. -->
     {% if active_view == 'transactions' %}
     <style>
         :root {
@@ -9771,6 +9775,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: AI LEAD FINDER PAGE - search for and manage possible customers. -->
     {% if active_view == 'ai_leads' %}
     <style>
         /* `
@@ -12626,6 +12631,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: BUSINESS ANALYTICS PAGE - charts and business performance numbers. -->
     {% if active_view == 'business_analytics' %}
     <style>
         * {
@@ -13165,6 +13171,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: SETTINGS PAGE - business and account preferences. -->
     {% if active_view == 'settings' %}
     <style>
         :root {
@@ -13818,6 +13825,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: HELP AND SUPPORT PAGE - guides, common questions and support requests. -->
     {% if active_view == 'help_support' %}
     <style>
         /* 
@@ -16830,6 +16838,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: COMPANY SETUP PAGE - enter the business profile. -->
     {% if active_view == 'company_setup' %}
     <style>
         * {
@@ -17374,6 +17383,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: FORECASTING PAGE - estimated future income and expenses. -->
     {% if active_view == 'forecasting' %}
     <style>
         /* 
@@ -20352,6 +20362,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: EMPLOYEES PAGE - team management area. -->
     {% if active_view == 'employees_team' %}
     <style>
         /* 
@@ -23165,6 +23176,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: REPORTS PAGE - business documents and reports area. -->
     {% if active_view == 'documents_reports' %}
     <style>
         /* 
@@ -25978,6 +25990,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: BILLING PAGE - subscription payment area. -->
     {% if active_view == 'billing_payments' %}
     <style>
         /* 
@@ -28791,6 +28804,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: BILLING HISTORY PAGE - previous billing records. -->
     {% if active_view == 'billing_history' %}
     <style>
         /* 
@@ -31604,6 +31618,7 @@
         }
     </style>
     {% endif %}
+    <!-- EASY GUIDE: INTEGRATIONS PAGE - connect other services. -->
     {% if active_view == 'integrations' %}
     <style>
         /* 
@@ -34988,13 +35003,18 @@
          "INVENTORY SUBSECTION", or "FORECASTING SECTION" in this file.
          ============================================================ -->
 
-    {% if active_view == 'dashboard' %}<div id="dataLoadingScreen" role="status" aria-live="polite"
-        aria-label="Loading your workspace">
+    <!-- EASY GUIDE: DASHBOARD PAGE - business overview, income, costs and Otis summary. -->
+
+    {% if active_view == 'dashboard' and show_workspace_loader %}<div id="dataLoadingScreen" role="status"
+        aria-live="polite" aria-label="Loading your workspace">
         <div class="data-loader-ring" aria-hidden="true"></div>
         <div class="data-loader-brand">Altair Business Suite</div>
         <div class="data-loader-title">Loading your workspace...</div>
-        <div class="data-loader-subtitle">Preparing your pages and business information securely.</div>
-        <div class="data-loader-progress" aria-hidden="true"><span></span></div>
+        <div class="data-loader-subtitle" id="dataLoaderMessage">Preparing your pages and business information securely.
+        </div>
+        <div class="data-loader-percent" id="dataLoaderPercent">1%</div>
+        <div class="data-loader-progress" role="progressbar" aria-label="Workspace loading progress" aria-valuemin="1"
+            aria-valuemax="100" aria-valuenow="1" id="dataLoaderBar"><span id="dataLoaderFill"></span></div>
     </div>{% endif %}<div class="app {% if active_view in ['login', 'register'] %}auth-app{% endif %}" id="altairApp">
         {% if active_view not in ['login', 'register'] %}<aside class="sidebar" id="appSidebar"
             aria-label="Main navigation">
@@ -38022,6 +38042,7 @@
      -->
 
                 <!-- ==================== INVENTORY SUBSECTION — PRODUCTS AND SERVICES ==================== -->
+                <!-- INVENTORY PART 1: Products and services saved by the business. -->
                 <section id="productsSection" class="inventory-section active">
 
 
@@ -38336,6 +38357,7 @@
      -->
 
                 <!-- ==================== INVENTORY SUBSECTION — EXPENSES ==================== -->
+                <!-- INVENTORY PART 2: Expenses - money the business has spent. -->
                 <section id="expensesSection" class="inventory-section">
 
 
@@ -38546,6 +38568,7 @@
      -->
 
                 <!-- ==================== INVENTORY SUBSECTION — INVESTMENTS ==================== -->
+                <!-- INVENTORY PART 3: Investments - money put into the business. -->
                 <section id="investmentsSection" class="inventory-section">
 
 
@@ -38788,6 +38811,7 @@
      -->
 
                 <!-- ==================== INVENTORY SUBSECTION — RECURRING PAYMENTS ==================== -->
+                <!-- INVENTORY PART 4: Recurring payments - bills paid again and again. -->
                 <section id="recurringSection" class="inventory-section">
 
 
@@ -39093,6 +39117,7 @@
      -->
 
                 <!-- ==================== INVENTORY SUBSECTION — MONEY OUT RECORDS ==================== -->
+                <!-- INVENTORY PART 5: Money out records - a list of outgoing payments. -->
                 <section id="recordsSection" class="inventory-section">
 
 
@@ -42074,6 +42099,7 @@
                 <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
             </section>{% endif %}
             <!-- ==================== LOGIN SECTION ==================== -->
+            <!-- EASY GUIDE: LOGIN PAGE - sign in to an existing account. -->
             {% if active_view == 'login' %}<section class="unified-view auth-view" id="view-login">
                 <div class="auth-card">
                     <div class="auth-brand">
@@ -42092,6 +42118,7 @@
                 </div>
             </section>{% endif %}
             <!-- ==================== REGISTRATION SECTION ==================== -->
+            <!-- EASY GUIDE: CREATE ACCOUNT PAGE - register a new account. -->
             {% if active_view == 'register' %}<section class="unified-view auth-view" id="view-register">
                 <div class="auth-card">
                     <div class="auth-brand">
@@ -42111,6 +42138,7 @@
                 </div>
             </section>{% endif %}
             <!-- ==================== COMING SOON SECTION ==================== -->
+            <!-- EASY GUIDE: COMING SOON PAGE - information about a module that is not ready yet. -->
             {% if active_view == 'coming_soon' %}<section class="unified-view module-coming-soon">
                 <div class="coming-topbar">
                     <div class="coming-heading-copy">
@@ -45249,19 +45277,92 @@
     </script>
 
 
-    {% if active_view == 'dashboard' %}
+    {% if active_view == 'dashboard' and show_workspace_loader %}
     <script>
-        // Stable navigation: use normal Flask routes instead of hidden iframe page caching.
-        // This avoids blank white workspaces when a cached frame fails or loads incompletely.
-        window.altairPreloadStarted = false;
-        window.altairPreloadComplete = true;
-        window.addEventListener('load', function () {
+        /* WORKSPACE LOADER:
+           This runs once after login. It opens the main pages quietly in the
+           background so the browser can prepare them before you click the menu.
+           The percentage changes when each page finishes loading. */
+        (function () {
             const loader = document.getElementById('dataLoadingScreen');
-            if (loader) {
-                loader.classList.add('is-hidden');
-                window.setTimeout(() => loader.remove(), 400);
+            if (!loader) return;
+
+            const percentText = document.getElementById('dataLoaderPercent');
+            const fill = document.getElementById('dataLoaderFill');
+            const bar = document.getElementById('dataLoaderBar');
+            const message = document.getElementById('dataLoaderMessage');
+
+            // Main pages shown in the left menu. Logout and form actions are not preloaded.
+            const pagesToPrepare = [
+                ['Dashboard', '/'],
+                ['Customers', '/customer'],
+                ['Invoices', '/invoice'],
+                ['Inventory', '/items'],
+                ['Transactions', '/transactions'],
+                ['AI Lead Finder', '/ai-leads'],
+                ['Business Analytics', '/business-analytics'],
+                ['Forecasting', '/forecasting'],
+                ['Employees', '/coming-soon/employees-team'],
+                ['Reports', '/coming-soon/documents-reports'],
+                ['Notifications', '/coming-soon/notifications'],
+                ['Integrations', '/coming-soon/integrations'],
+                ['Subscription Plans', '/coming-soon/subscription-plans'],
+                ['Billing and Payments', '/coming-soon/billing-payments'],
+                ['Billing History', '/coming-soon/billing-history'],
+                ['Usage and Limits', '/coming-soon/usage-limits'],
+                ['Settings', '/settings'],
+                ['Help and Support', '/help-support']
+            ];
+
+            let finished = 0;
+            const total = pagesToPrepare.length;
+            const updateProgress = (done, currentName) => {
+                finished = done;
+                const percent = Math.max(1, Math.min(100, Math.round((finished / total) * 100)));
+                if (percentText) percentText.textContent = percent + '%';
+                if (fill) fill.style.width = percent + '%';
+                if (bar) bar.setAttribute('aria-valuenow', String(percent));
+                if (message) message.textContent = currentName
+                    ? 'Preparing ' + currentName + ' page (' + finished + ' of ' + total + ')...'
+                    : 'Your workspace is ready.';
+            };
+
+            updateProgress(0, 'your dashboard');
+
+            // A small group of requests at a time avoids putting too much load on Render.
+            async function preparePage(page) {
+                try {
+                    const response = await fetch(page[1], {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        cache: 'force-cache',
+                        headers: { 'X-Altair-Page-Preload': '1', 'Accept': 'text/html' },
+                        signal: AbortSignal.timeout(20000)
+                    });
+                    // Read the response body so the browser finishes downloading the page.
+                    await response.text();
+                } catch (error) {
+                    console.warn('Could not prepare ' + page[0] + ' page:', error);
+                } finally {
+                    updateProgress(finished + 1, page[0]);
+                }
             }
-        }, { once: true });
+
+            async function runPreload() {
+                const batchSize = 3;
+                for (let start = 0; start < pagesToPrepare.length; start += batchSize) {
+                    const batch = pagesToPrepare.slice(start, start + batchSize);
+                    await Promise.all(batch.map(preparePage));
+                }
+                updateProgress(total, null);
+                window.setTimeout(() => {
+                    loader.classList.add('is-hidden');
+                    window.setTimeout(() => loader.remove(), 400);
+                }, 350);
+            }
+
+            runPreload();
+        })();
     </script>
     {% endif %}
 
