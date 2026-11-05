@@ -43152,6 +43152,7 @@
                 const revenueValues = result.analysis.revenue_history || [];
                 const expenseValues = result.analysis.expense_history || [];
                 const profitValues = result.analysis.profit_history || [];
+                const principalRecoveryValues = result.analysis.loan_principal_recovery_history || [];
                 const forecastValue = Number(result.analysis.revenue_prediction || 0);
                 const chartCanvas = document.getElementById("revenueChart");
 
@@ -43178,6 +43179,7 @@
                                 { label: "Revenue (paid invoices + loan interest)", data: actualWithGap(revenueValues), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,.08)", borderWidth: 3, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "Money out (expenses + investments)", data: actualWithGap(expenseValues), borderColor: "#f97316", backgroundColor: "rgba(249,115,22,.06)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "Recorded difference (revenue − money out)", data: actualWithGap(profitValues), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,.07)", borderWidth: 2.5, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Loan principal recovered (cash returned)", data: actualWithGap(principalRecoveryValues), borderColor: "#0d9488", backgroundColor: "rgba(13,148,136,.07)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "ML revenue forecast", data: forecastSeries, borderColor: "#a855f7", backgroundColor: "rgba(168,85,247,.08)", borderWidth: 3, borderDash: [7, 5], tension: .25, pointRadius: 5, spanGaps: false }
                             ]
                         },
@@ -43208,9 +43210,16 @@
                             <span class="finance-chip">Recorded difference: R${latestProfit.toLocaleString()}</span>
                             <span class="finance-chip">Monthly recurring: R${Number(finance.estimated_monthly_recurring_cost || 0).toLocaleString()}</span>
                         </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;">
+                            <span class="finance-chip">Loan repayments received: R${Number(result.analysis.loan_repayments_received || 0).toLocaleString()}</span>
+                            <span class="finance-chip">Interest earned: R${Number(result.analysis.interest_collected_from_loans || 0).toLocaleString()}</span>
+                            <span class="finance-chip">Principal recovered: R${Number(principalRecoveryValues.reduce((sum, value) => sum + Number(value || 0), 0)).toLocaleString()}</span>
+                            <span class="finance-chip">Pending loans: R${Number(result.analysis.pending_loan_amount || 0).toLocaleString()}</span>
+                            <span class="finance-chip">Overdue loans: R${Number(result.analysis.overdue_loan_amount || 0).toLocaleString()}</span>
+                        </div>
                         <div>Products: ${Number(finance.products || 0)} · Services: ${Number(finance.services || 0)} · Stock cost value: R${Number(finance.inventory_cost_value || 0).toLocaleString()} · Potential stock selling value: R${Number(finance.inventory_potential_sales_value || 0).toLocaleString()}</div>
                         <div>Investments recorded: R${Number(finance.recorded_investments || 0).toLocaleString()} · Expenses recorded: R${Number(finance.recorded_expenses || 0).toLocaleString()} · Low stock: ${Number(finance.low_stock || 0)} · Out of stock: ${Number(finance.out_of_stock || 0)}</div>
-                        <div style="margin-top:5px;">The chart includes paid invoices plus loan interest actually collected as revenue. Loan principal repayments are capital recovery, not revenue. Money out includes recorded expenses and investments. Stock selling value is an opportunity estimate, not revenue. Recurring schedules are shown as commitments and are not double-counted as actual expenses.</div>
+                        <div style="margin-top:5px;">The revenue line includes paid invoices plus loan interest actually collected. Principal repayments are capital recovery (shown in loan repayments received), not revenue. Money out includes expenses, investments and loan principal disbursed. Stock selling value is an opportunity estimate, not revenue. Recurring schedules are shown as commitments and are not double-counted as actual expenses.</div>
                         <div style="margin-top:4px;">Forecast is a model estimate, not guaranteed income.</div>`;
                 }
 
@@ -43229,7 +43238,7 @@
                 if (transactionsNode) {
                     const rows = result.analysis.recent_transactions || [];
                     if (!rows.length) {
-                        transactionsNode.innerHTML = '<div class="transaction-empty">No invoices or expenses have been recorded yet.</div>';
+                        transactionsNode.innerHTML = '<div class="transaction-empty">No invoices, expenses or loan activity have been recorded yet.</div>';
                     } else {
                         transactionsNode.innerHTML = rows.map(row => {
                             const status = String(row.status || "Recorded");
