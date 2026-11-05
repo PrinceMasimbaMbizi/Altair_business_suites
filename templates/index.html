@@ -35761,7 +35761,7 @@
                         </h2>
 
                         <div class="growth">
-                            Awaiting payment
+                            Awaiting payment · includes unpaid loans
                         </div>
 
                     </div>
@@ -35788,7 +35788,7 @@
                         </h2>
 
                         <div class="growth">
-                            Requires attention
+                            Past due · includes overdue loans
                         </div>
 
                     </div>
@@ -43175,7 +43175,7 @@
                         data: {
                             labels: chartLabels,
                             datasets: [
-                                { label: "Revenue (paid invoices)", data: actualWithGap(revenueValues), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,.08)", borderWidth: 3, tension: .35, pointRadius: 3, spanGaps: false },
+                                { label: "Revenue (paid invoices + loan interest)", data: actualWithGap(revenueValues), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,.08)", borderWidth: 3, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "Money out (expenses + investments)", data: actualWithGap(expenseValues), borderColor: "#f97316", backgroundColor: "rgba(249,115,22,.06)", borderWidth: 2, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "Recorded difference (revenue − money out)", data: actualWithGap(profitValues), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,.07)", borderWidth: 2.5, tension: .35, pointRadius: 3, spanGaps: false },
                                 { label: "ML revenue forecast", data: forecastSeries, borderColor: "#a855f7", backgroundColor: "rgba(168,85,247,.08)", borderWidth: 3, borderDash: [7, 5], tension: .25, pointRadius: 5, spanGaps: false }
@@ -43210,7 +43210,7 @@
                         </div>
                         <div>Products: ${Number(finance.products || 0)} · Services: ${Number(finance.services || 0)} · Stock cost value: R${Number(finance.inventory_cost_value || 0).toLocaleString()} · Potential stock selling value: R${Number(finance.inventory_potential_sales_value || 0).toLocaleString()}</div>
                         <div>Investments recorded: R${Number(finance.recorded_investments || 0).toLocaleString()} · Expenses recorded: R${Number(finance.recorded_expenses || 0).toLocaleString()} · Low stock: ${Number(finance.low_stock || 0)} · Out of stock: ${Number(finance.out_of_stock || 0)}</div>
-                        <div style="margin-top:5px;">The chart uses paid invoices as actual revenue and recorded expenses + investments as money out. Stock selling value is an opportunity estimate, not revenue. Recurring schedules are shown as commitments and are not double-counted as actual expenses.</div>
+                        <div style="margin-top:5px;">The chart includes paid invoices plus loan interest actually collected as revenue. Loan principal repayments are capital recovery, not revenue. Money out includes recorded expenses and investments. Stock selling value is an opportunity estimate, not revenue. Recurring schedules are shown as commitments and are not double-counted as actual expenses.</div>
                         <div style="margin-top:4px;">Forecast is a model estimate, not guaranteed income.</div>`;
                 }
 

@@ -3326,6 +3326,40 @@ def api_business_insights():
             dictionary=True
         )
 
+        # Count unpaid loan accounts alongside unpaid invoices. A loan with
+        # an outstanding balance is pending until its next payment date passes;
+        # after that date it is overdue. Keep the figures isolated by user_id.
+        loan_dashboard_stats = {"pending_count": 0, "overdue_count": 0, "pending_amount": 0.0, "overdue_amount": 0.0, "interest_collected": 0.0}
+        try:
+            cursor.execute("""
+                SELECT
+                    COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
+                        AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE())
+                        AND loan_status IN ('Active','Approved','Overdue') THEN 1 ELSE 0 END), 0) AS pending_count,
+                    COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
+                        AND next_payment_date < CURRENT_DATE() THEN 1 ELSE 0 END), 0) AS overdue_count,
+                    COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
+                        AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE())
+                        AND loan_status IN ('Active','Approved','Overdue') THEN total_outstanding ELSE 0 END), 0) AS pending_amount,
+                    COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
+                        AND next_payment_date < CURRENT_DATE() THEN total_outstanding ELSE 0 END), 0) AS overdue_amount
+                FROM business_loans
+                WHERE user_id = %s
+            """, (user_id,))
+            loan_dashboard_stats.update(cursor.fetchone() or {})
+            cursor.execute("SELECT COALESCE(SUM(interest_paid), 0) AS interest_collected FROM business_loan_repayments WHERE user_id = %s", (user_id,))
+            loan_dashboard_stats["interest_collected"] = (cursor.fetchone() or {}).get("interest_collected", 0)
+        except Exception as loan_dashboard_error:
+            print("LOAN DASHBOARD COUNTS NOT AVAILABLE:", loan_dashboard_error)
+
+        analysis["pending_loan_count"] = int(loan_dashboard_stats.get("pending_count", 0) or 0)
+        analysis["overdue_loan_count"] = int(loan_dashboard_stats.get("overdue_count", 0) or 0)
+        analysis["pending_loan_amount"] = float(loan_dashboard_stats.get("pending_amount", 0) or 0)
+        analysis["overdue_loan_amount"] = float(loan_dashboard_stats.get("overdue_amount", 0) or 0)
+        analysis["interest_collected_from_loans"] = float(loan_dashboard_stats.get("interest_collected", 0) or 0)
+        analysis["pending_invoices"] += analysis["pending_loan_count"]
+        analysis["overdue_invoices"] += analysis["overdue_loan_count"]
+
         
         # MONTHLY REVENUE
         
@@ -3369,6 +3403,22 @@ def api_business_insights():
         revenue_rows = (
             cursor.fetchall() or []
         )
+
+        # Loan interest actually received is business income. Principal
+        # repayments are capital recovery, not revenue, so they are excluded.
+        loan_interest_rows = []
+        try:
+            cursor.execute("""
+                SELECT DATE_FORMAT(payment_date, '%Y-%m') AS month,
+                       COALESCE(SUM(interest_paid), 0) AS interest_income
+                FROM business_loan_repayments
+                WHERE user_id = %s
+                  AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
+                GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+            """, (user_id,))
+            loan_interest_rows = cursor.fetchall() or []
+        except Exception as loan_income_error:
+            print("LOAN INTEREST REVENUE NOT INCLUDED:", loan_income_error)
 
         
         # MONTHLY EXPENSES
@@ -3427,6 +3477,12 @@ def api_business_insights():
             for row in expense_rows
             if row.get("month")
         }
+
+        for row in loan_interest_rows:
+            key = str(row.get("month") or "")
+            if key:
+                revenue_by_month[key] = revenue_by_month.get(key, 0.0) + float(row.get("interest_income", 0) or 0)
+
 
         
         # BUILD A CONTINUOUS 12-MONTH TIMELINE
@@ -3585,6 +3641,25 @@ def api_business_insights():
         )
 
         
+        # LOAN REPAYMENTS RECEIVED (principal recovery + interest cash received).
+        loan_transactions = []
+        try:
+            cursor.execute("""
+                SELECT l.borrower_name AS party,
+                       CONCAT('Loan repayment · ', COALESCE(l.loan_number, CONCAT('#', l.id))) AS reference,
+                       COALESCE(r.amount_received, r.amount_paid, 0) AS amount,
+                       'Loan repayment' AS status,
+                       r.payment_date AS transaction_date
+                FROM business_loan_repayments r
+                INNER JOIN business_loans l ON l.id = r.loan_id AND l.user_id = r.user_id
+                WHERE r.user_id = %s
+                ORDER BY r.payment_date DESC, r.id DESC
+                LIMIT 8
+            """, (user_id,))
+            loan_transactions = cursor.fetchall() or []
+        except Exception as loan_activity_error:
+            print("LOAN REPAYMENT ACTIVITY NOT INCLUDED:", loan_activity_error)
+
         # COMBINE TRANSACTIONS
         
 
@@ -3593,6 +3668,7 @@ def api_business_insights():
         for row in (
             invoice_transactions
             + expense_transactions
+            + loan_transactions
         ):
 
             transaction_date = row.get(
