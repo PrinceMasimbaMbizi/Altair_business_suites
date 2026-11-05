@@ -7110,6 +7110,193 @@ def process_recurring_payments(
 
 
 
+
+
+# ============================================================
+# LOAN MANAGEMENT DATABASE SUPPORT
+# Creates or upgrades the two loan tables without deleting data.
+# ============================================================
+
+def ensure_loan_tables(cursor):
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS business_loans (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            loan_number VARCHAR(60) NOT NULL,
+            borrower_name VARCHAR(180) NOT NULL,
+            id_number VARCHAR(100) NULL,
+            phone VARCHAR(60) NULL,
+            email VARCHAR(180) NULL,
+            address TEXT NULL,
+            amount_requested DECIMAL(15,2) NOT NULL DEFAULT 0,
+            principal DECIMAL(15,2) NOT NULL DEFAULT 0,
+            interest_rate DECIMAL(9,4) NOT NULL DEFAULT 0,
+            interest_type VARCHAR(30) NOT NULL DEFAULT 'Flat',
+            duration_months INT NOT NULL DEFAULT 1,
+            repayment_frequency VARCHAR(30) NOT NULL DEFAULT 'Monthly',
+            total_interest DECIMAL(15,2) NOT NULL DEFAULT 0,
+            total_repayable DECIMAL(15,2) NOT NULL DEFAULT 0,
+            installment_amount DECIMAL(15,2) NOT NULL DEFAULT 0,
+            loan_status VARCHAR(30) NOT NULL DEFAULT 'Pending',
+            application_date DATE NULL,
+            approval_date DATE NULL,
+            first_payment_date DATE NULL,
+            amount_disbursed DECIMAL(15,2) NOT NULL DEFAULT 0,
+            disbursement_date DATE NULL,
+            payment_method VARCHAR(40) NULL,
+            transaction_reference VARCHAR(120) NULL,
+            amount_repaid DECIMAL(15,2) NOT NULL DEFAULT 0,
+            principal_recovered DECIMAL(15,2) NOT NULL DEFAULT 0,
+            interest_collected DECIMAL(15,2) NOT NULL DEFAULT 0,
+            penalty_collected DECIMAL(15,2) NOT NULL DEFAULT 0,
+            principal_outstanding DECIMAL(15,2) NOT NULL DEFAULT 0,
+            interest_outstanding DECIMAL(15,2) NOT NULL DEFAULT 0,
+            total_outstanding DECIMAL(15,2) NOT NULL DEFAULT 0,
+            next_payment_date DATE NULL,
+            notes TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_business_loan_user_number (user_id, loan_number),
+            INDEX idx_business_loan_user_status (user_id, loan_status),
+            INDEX idx_business_loan_due (user_id, next_payment_date)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS business_loan_repayments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            loan_id INT NOT NULL,
+            user_id INT NOT NULL,
+            payment_date DATE NOT NULL,
+            amount_received DECIMAL(15,2) NOT NULL DEFAULT 0,
+            amount_paid DECIMAL(15,2) NOT NULL DEFAULT 0,
+            principal_paid DECIMAL(15,2) NOT NULL DEFAULT 0,
+            interest_paid DECIMAL(15,2) NOT NULL DEFAULT 0,
+            penalty_paid DECIMAL(15,2) NOT NULL DEFAULT 0,
+            payment_method VARCHAR(40) NULL,
+            transaction_reference VARCHAR(120) NULL,
+            payment_reference VARCHAR(120) NULL,
+            notes TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_loan_repayment_user (user_id),
+            INDEX idx_loan_repayment_loan (loan_id),
+            INDEX idx_loan_repayment_date (payment_date)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+
+    # Upgrade tables created by the earlier, smaller loan schema. Existing
+    # records are retained; only missing columns are added.
+    loan_columns = {
+        "loan_number": "VARCHAR(60) NULL",
+        "borrower_name": "VARCHAR(180) NOT NULL DEFAULT ''",
+        "id_number": "VARCHAR(100) NULL",
+        "phone": "VARCHAR(60) NULL",
+        "email": "VARCHAR(180) NULL",
+        "address": "TEXT NULL",
+        "amount_requested": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "principal": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "interest_rate": "DECIMAL(9,4) NOT NULL DEFAULT 0",
+        "interest_type": "VARCHAR(30) NOT NULL DEFAULT 'Flat'",
+        "duration_months": "INT NOT NULL DEFAULT 1",
+        "repayment_frequency": "VARCHAR(30) NOT NULL DEFAULT 'Monthly'",
+        "total_interest": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "total_repayable": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "installment_amount": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "loan_status": "VARCHAR(30) NOT NULL DEFAULT 'Pending'",
+        "application_date": "DATE NULL",
+        "approval_date": "DATE NULL",
+        "first_payment_date": "DATE NULL",
+        "amount_disbursed": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "disbursement_date": "DATE NULL",
+        "payment_method": "VARCHAR(40) NULL",
+        "transaction_reference": "VARCHAR(120) NULL",
+        "amount_repaid": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "principal_recovered": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "interest_collected": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "penalty_collected": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "principal_outstanding": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "interest_outstanding": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "total_outstanding": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "next_payment_date": "DATE NULL",
+        "notes": "TEXT NULL",
+        "updated_at": "TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    }
+    cursor.execute("SHOW COLUMNS FROM business_loans")
+    existing = {(row.get("Field") if isinstance(row, dict) else row[0]) for row in cursor.fetchall()}
+    for column, definition in loan_columns.items():
+        if column not in existing:
+            cursor.execute(f"ALTER TABLE business_loans ADD COLUMN `{column}` {definition}")
+    # Earlier versions used an ENUM that did not include Biweekly.
+    cursor.execute("ALTER TABLE business_loans MODIFY COLUMN repayment_frequency VARCHAR(30) NOT NULL DEFAULT 'Monthly'")
+
+    repayment_columns = {
+        "amount_received": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "amount_paid": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "principal_paid": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "interest_paid": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "penalty_paid": "DECIMAL(15,2) NOT NULL DEFAULT 0",
+        "payment_date": "DATE NULL",
+        "payment_method": "VARCHAR(40) NULL",
+        "transaction_reference": "VARCHAR(120) NULL",
+        "notes": "TEXT NULL"
+    }
+    cursor.execute("SHOW COLUMNS FROM business_loan_repayments")
+    existing = {(row.get("Field") if isinstance(row, dict) else row[0]) for row in cursor.fetchall()}
+    for column, definition in repayment_columns.items():
+        if column not in existing:
+            cursor.execute(f"ALTER TABLE business_loan_repayments ADD COLUMN `{column}` {definition}")
+
+
+def _loan_date(value, fallback=None):
+    value = (value or "").strip()
+    if not value:
+        return fallback
+    return datetime.strptime(value, "%Y-%m-%d").date()
+
+
+def _loan_due_date(start_date, frequency):
+    if not start_date:
+        return None
+    frequency = (frequency or "Monthly").lower()
+    if frequency == "daily":
+        return start_date + timedelta(days=1)
+    if frequency == "weekly":
+        return start_date + timedelta(days=7)
+    if frequency == "biweekly":
+        return start_date + timedelta(days=14)
+    month = start_date.month + 1
+    year = start_date.year + (month - 1) // 12
+    month = (month - 1) % 12 + 1
+    import calendar
+    day = min(start_date.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def _calculate_loan_totals(principal, rate, interest_type, months, frequency):
+    principal = round(float(principal), 2)
+    rate = max(0.0, float(rate))
+    months = max(1, int(months))
+    frequency = (frequency or "Monthly").lower()
+    periods_per_month = {"daily": 30.4375, "weekly": 4.345, "biweekly": 2.1725, "monthly": 1}
+    periods = max(1, round(months * periods_per_month.get(frequency, 1)))
+    if interest_type == "Reducing Balance":
+        annual_rate = rate / 100.0
+        period_rate = annual_rate / {"daily": 365, "weekly": 52, "biweekly": 26, "monthly": 12}.get(frequency, 12)
+        if period_rate == 0:
+            installment = principal / periods
+            total = principal
+        else:
+            installment = principal * period_rate / (1 - (1 + period_rate) ** (-periods))
+            total = installment * periods
+        interest = max(0.0, total - principal)
+    else:
+        interest = principal * rate / 100.0
+        total = principal + interest
+        installment = total / periods
+    return round(interest, 2), round(total, 2), round(installment, 2)
+
+
+
 # INVENTORY + MONEY MANAGEMENT
 
 
@@ -7145,6 +7332,10 @@ def items():
             )
 
         cursor = db.cursor(dictionary=True)
+
+        # Create / upgrade the loan tables before the Loan Management panels load.
+        ensure_loan_tables(cursor)
+        db.commit()
 
         
         # COMPANY
@@ -7474,6 +7665,48 @@ def items():
         total_money_out = money_out_stats.get("total", 0)
 
         
+        # LOAN MANAGEMENT RECORDS
+        cursor.execute("""
+            SELECT l.*,
+                   CASE WHEN l.next_payment_date < CURRENT_DATE()
+                              AND COALESCE(l.total_outstanding, 0) > 0
+                        THEN 'Overdue' ELSE l.loan_status END AS loan_status,
+                   COALESCE(l.principal_outstanding, 0) AS principal_outstanding,
+                   COALESCE(l.interest_outstanding, 0) AS interest_outstanding,
+                   COALESCE(l.total_outstanding, 0) AS total_outstanding
+            FROM business_loans l
+            WHERE l.user_id = %s
+            ORDER BY l.id DESC
+        """, (user_id,))
+        loan_records = cursor.fetchall()
+        loan_applications = [x for x in loan_records if x.get("loan_status") == "Pending"]
+        approved_loans = [x for x in loan_records if x.get("loan_status") in ("Approved", "Active", "Completed", "Overdue")]
+        disbursed_loans = [x for x in loan_records if float(x.get("amount_disbursed") or 0) > 0]
+        overdue_loans = [x for x in loan_records if x.get("loan_status") == "Overdue"]
+
+        cursor.execute("""
+            SELECT r.*, l.loan_number, l.borrower_name
+            FROM business_loan_repayments r
+            INNER JOIN business_loans l ON l.id = r.loan_id AND l.user_id = r.user_id
+            WHERE r.user_id = %s
+            ORDER BY r.payment_date DESC, r.id DESC
+        """, (user_id,))
+        loan_repayments = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT
+                COALESCE(SUM(amount_disbursed), 0) AS total_loans_issued,
+                COALESCE(SUM(principal_recovered), 0) AS total_principal_recovered,
+                COALESCE(SUM(principal_outstanding), 0) AS outstanding_principal,
+                COALESCE(SUM(interest_collected), 0) AS interest_collected_total,
+                COALESCE(SUM(interest_outstanding), 0) AS outstanding_interest,
+                COALESCE(SUM(CASE WHEN next_payment_date < CURRENT_DATE()
+                    AND total_outstanding > 0 THEN total_outstanding ELSE 0 END), 0) AS overdue_amount,
+                SUM(CASE WHEN loan_status = 'Active' AND total_outstanding > 0 THEN 1 ELSE 0 END) AS active_loan_count
+            FROM business_loans WHERE user_id = %s
+        """, (user_id,))
+        loan_stats = cursor.fetchone() or {}
+
         # RENDER PAGE
         
 
@@ -7513,7 +7746,24 @@ def items():
 
             # Money out
             money_out_records=money_out_records,
-            total_money_out=total_money_out
+            total_money_out=total_money_out,
+
+            # Loan management
+            loan_records=loan_records,
+            loan_applications=loan_applications,
+            approved_loans=approved_loans,
+            disbursed_loans=disbursed_loans,
+            loan_repayments=loan_repayments,
+            overdue_loans=overdue_loans,
+            total_loans_issued=loan_stats.get("total_loans_issued", 0),
+            total_principal_recovered=loan_stats.get("total_principal_recovered", 0),
+            outstanding_principal=loan_stats.get("outstanding_principal", 0),
+            interest_collected_total=loan_stats.get("interest_collected_total", 0),
+            outstanding_interest=loan_stats.get("outstanding_interest", 0),
+            overdue_amount=loan_stats.get("overdue_amount", 0),
+            active_loan_count=loan_stats.get("active_loan_count", 0),
+            today_date=date.today().isoformat(),
+            today_date_obj=date.today()
         )
 
     except Exception as e:
@@ -7579,8 +7829,16 @@ def items():
             monthly_recurring=0,
 
             # Money out
-                money_out_records=[],
-            total_money_out=0
+            money_out_records=[],
+            total_money_out=0,
+
+            # Loan management safe defaults
+            loan_records=[], loan_applications=[], approved_loans=[],
+            disbursed_loans=[], loan_repayments=[], overdue_loans=[],
+            total_loans_issued=0, total_principal_recovered=0,
+            outstanding_principal=0, interest_collected_total=0,
+            outstanding_interest=0, overdue_amount=0, active_loan_count=0,
+            today_date=date.today().isoformat(), today_date_obj=date.today()
         )
 
     finally:
@@ -7608,6 +7866,258 @@ def items():
                 )
 
 
+
+
+
+
+
+# ============================================================
+# LOAN MANAGEMENT ACTIONS
+# ============================================================
+
+@app.route("/business-loans/add", methods=["POST"])
+def add_business_loan():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    db = None
+    cursor = None
+    try:
+        borrower_name = request.form.get("borrower_name", "").strip()
+        if not borrower_name:
+            raise ValueError("Borrower's full name is required.")
+        amount_requested = float(request.form.get("amount_requested", "0") or 0)
+        principal = float(request.form.get("principal", "0") or 0)
+        rate = float(request.form.get("interest_rate", "0") or 0)
+        months = int(request.form.get("duration_months", "1") or 1)
+        if amount_requested <= 0 or principal < 0 or rate < 0 or months < 1:
+            raise ValueError("Enter valid loan amounts, interest and duration.")
+        if principal > amount_requested:
+            raise ValueError("Approved principal cannot be greater than the amount requested.")
+        interest_type = request.form.get("interest_type", "Flat")
+        if interest_type not in ("Flat", "Reducing Balance"):
+            interest_type = "Flat"
+        frequency = request.form.get("repayment_frequency", "Monthly")
+        if frequency not in ("Daily", "Weekly", "Biweekly", "Monthly"):
+            frequency = "Monthly"
+        status = request.form.get("loan_status", "Pending")
+        if status not in ("Pending", "Approved", "Active"):
+            status = "Pending"
+        if status != "Pending" and principal <= 0:
+            raise ValueError("Enter the approved principal before approving the loan.")
+        total_interest, total_repayable, installment = _calculate_loan_totals(
+            principal, rate, interest_type, months, frequency
+        )
+        today = date.today()
+        application_date = _loan_date(request.form.get("application_date"), today)
+        approval_date = _loan_date(request.form.get("approval_date"), today if status in ("Approved", "Active") else None)
+        first_payment_date = _loan_date(request.form.get("first_payment_date"), None)
+        amount_disbursed = float(request.form.get("amount_disbursed", "0") or 0)
+        disbursement_date = _loan_date(request.form.get("disbursement_date"), None)
+        if amount_disbursed < 0 or amount_disbursed > principal:
+            raise ValueError("Disbursed amount must be between zero and the approved principal.")
+        if amount_disbursed > 0:
+            if status == "Pending":
+                raise ValueError("Approve the loan before recording a disbursement.")
+            status = "Active"
+            disbursement_date = disbursement_date or today
+            first_payment_date = first_payment_date or _loan_due_date(disbursement_date, frequency)
+        elif status == "Active":
+            status = "Approved"
+        next_payment_date = first_payment_date if amount_disbursed > 0 else None
+        loan_number = "LN-{}-{}".format(user_id, datetime.now().strftime("%y%m%d%H%M%S%f"))
+
+        db = get_db_connection()
+        cursor = db.cursor()
+        ensure_loan_tables(cursor)
+        cursor.execute("""
+            INSERT INTO business_loans (
+                user_id, loan_number, borrower_name, id_number, phone, email, address,
+                amount_requested, principal, interest_rate, interest_type, duration_months,
+                repayment_frequency, total_interest, total_repayable, installment_amount,
+                loan_status, application_date, approval_date, first_payment_date,
+                amount_disbursed, disbursement_date, payment_method, transaction_reference,
+                principal_outstanding, interest_outstanding, total_outstanding,
+                next_payment_date, notes
+            ) VALUES (
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+                %s,%s,%s,%s,%s,%s,%s,%s,%s
+            )
+        """, (
+            user_id, loan_number, borrower_name,
+            request.form.get("id_number", "").strip(),
+            request.form.get("phone", "").strip(),
+            request.form.get("email", "").strip(),
+            request.form.get("address", "").strip(),
+            amount_requested, principal, rate, interest_type, months, frequency,
+            total_interest, total_repayable, installment, status, application_date,
+            approval_date, first_payment_date, amount_disbursed, disbursement_date,
+            request.form.get("payment_method", "").strip(),
+            request.form.get("transaction_reference", "").strip(),
+            principal if amount_disbursed > 0 else 0,
+            total_interest if amount_disbursed > 0 else 0,
+            (principal + total_interest) if amount_disbursed > 0 else 0,
+            next_payment_date, request.form.get("notes", "").strip()
+        ))
+        db.commit()
+        flash("Loan {} saved successfully.".format(loan_number), "success")
+    except ValueError as exc:
+        if db:
+            db.rollback()
+        flash(str(exc), "error")
+    except Exception as exc:
+        if db:
+            db.rollback()
+        app.logger.exception("ADD BUSINESS LOAN ERROR: %s", exc)
+        flash("Could not save the loan. Check the database columns and server logs.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    return redirect(url_for("items") + "#loanManagementTab")
+
+
+@app.route("/business-loans/<int:loan_id>/disburse", methods=["POST"])
+def disburse_business_loan(loan_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    db = None
+    cursor = None
+    try:
+        amount = float(request.form.get("amount_disbursed", "0") or 0)
+        disbursement_date = _loan_date(request.form.get("disbursement_date"), date.today())
+        first_payment_date = _loan_date(request.form.get("first_payment_date"), None)
+        if amount <= 0 or not first_payment_date:
+            raise ValueError("Enter a valid disbursement amount and first payment date.")
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        ensure_loan_tables(cursor)
+        cursor.execute("SELECT * FROM business_loans WHERE id=%s AND user_id=%s FOR UPDATE", (loan_id, user_id))
+        loan = cursor.fetchone()
+        if not loan:
+            raise ValueError("Loan not found for this business.")
+        if loan.get("loan_status") != "Approved":
+            raise ValueError("Only approved loans can be disbursed.")
+        principal = float(loan.get("principal") or 0)
+        if amount > principal:
+            raise ValueError("Disbursement cannot exceed the approved principal.")
+        frequency = loan.get("repayment_frequency") or "Monthly"
+        cursor.execute("""
+            UPDATE business_loans SET loan_status='Active', amount_disbursed=%s,
+                disbursement_date=%s, first_payment_date=%s, next_payment_date=%s,
+                payment_method=%s, transaction_reference=%s,
+                principal_outstanding=%s, interest_outstanding=%s, total_outstanding=%s,
+                updated_at=CURRENT_TIMESTAMP
+            WHERE id=%s AND user_id=%s
+        """, (
+            amount, disbursement_date, first_payment_date, first_payment_date,
+            request.form.get("payment_method", "").strip(),
+            request.form.get("transaction_reference", "").strip(),
+            principal, float(loan.get("total_interest") or 0),
+            principal + float(loan.get("total_interest") or 0), loan_id, user_id
+        ))
+        db.commit()
+        flash("Loan disbursed successfully.", "success")
+    except ValueError as exc:
+        if db:
+            db.rollback()
+        flash(str(exc), "error")
+    except Exception as exc:
+        if db:
+            db.rollback()
+        app.logger.exception("DISBURSE LOAN ERROR: %s", exc)
+        flash("Could not disburse this loan.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    return redirect(url_for("items") + "#loanManagementTab")
+
+
+@app.route("/business-loans/repayments/add", methods=["POST"])
+def add_business_loan_repayment():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    db = None
+    cursor = None
+    try:
+        loan_id = int(request.form.get("loan_id", "0"))
+        payment_date = _loan_date(request.form.get("payment_date"), date.today())
+        amount_received = round(float(request.form.get("amount_received", "0") or 0), 2)
+        principal_paid = round(float(request.form.get("principal_paid", "0") or 0), 2)
+        interest_paid = round(float(request.form.get("interest_paid", "0") or 0), 2)
+        penalty_paid = round(float(request.form.get("penalty_paid", "0") or 0), 2)
+        if amount_received <= 0 or min(principal_paid, interest_paid, penalty_paid) < 0:
+            raise ValueError("Enter valid repayment amounts.")
+        if round(principal_paid + interest_paid + penalty_paid, 2) != amount_received:
+            raise ValueError("Principal, interest and penalty portions must add up to the amount received.")
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        ensure_loan_tables(cursor)
+        cursor.execute("SELECT * FROM business_loans WHERE id=%s AND user_id=%s FOR UPDATE", (loan_id, user_id))
+        loan = cursor.fetchone()
+        if not loan:
+            raise ValueError("Select a valid loan belonging to your business.")
+        if loan.get("loan_status") not in ("Active", "Overdue"):
+            raise ValueError("Repayments can only be recorded against an active loan.")
+        principal_left = round(float(loan.get("principal_outstanding") or 0), 2)
+        interest_left = round(float(loan.get("interest_outstanding") or 0), 2)
+        if principal_paid > principal_left or interest_paid > interest_left:
+            raise ValueError("The repayment allocation cannot exceed the outstanding principal or interest.")
+        cursor.execute("""
+            INSERT INTO business_loan_repayments (
+                loan_id, user_id, payment_date, amount_received, amount_paid,
+                principal_paid, interest_paid, penalty_paid, payment_method,
+                transaction_reference, notes
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            loan_id, user_id, payment_date, amount_received, amount_received,
+            principal_paid, interest_paid, penalty_paid,
+            request.form.get("payment_method", "").strip(),
+            request.form.get("transaction_reference", "").strip(),
+            request.form.get("notes", "").strip()
+        ))
+        new_principal = max(0, round(principal_left - principal_paid, 2))
+        new_interest = max(0, round(interest_left - interest_paid, 2))
+        new_total = round(new_principal + new_interest, 2)
+        new_status = "Completed" if new_total <= 0 else "Active"
+        next_date = None if new_total <= 0 else _loan_due_date(payment_date, loan.get("repayment_frequency"))
+        cursor.execute("""
+            UPDATE business_loans SET
+                amount_repaid=COALESCE(amount_repaid,0)+%s,
+                principal_recovered=COALESCE(principal_recovered,0)+%s,
+                interest_collected=COALESCE(interest_collected,0)+%s,
+                penalty_collected=COALESCE(penalty_collected,0)+%s,
+                principal_outstanding=%s, interest_outstanding=%s,
+                total_outstanding=%s, loan_status=%s, next_payment_date=%s,
+                updated_at=CURRENT_TIMESTAMP
+            WHERE id=%s AND user_id=%s
+        """, (
+            amount_received, principal_paid, interest_paid, penalty_paid,
+            new_principal, new_interest, new_total, new_status, next_date,
+            loan_id, user_id
+        ))
+        db.commit()
+        flash("Repayment recorded successfully. Interest collected is tracked separately.", "success")
+    except (ValueError, TypeError) as exc:
+        if db:
+            db.rollback()
+        flash(str(exc) or "Enter valid repayment details.", "error")
+    except Exception as exc:
+        if db:
+            db.rollback()
+        app.logger.exception("ADD LOAN REPAYMENT ERROR: %s", exc)
+        flash("Could not record the repayment.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    return redirect(url_for("items") + "#loanManagementTab")
 
 
 
@@ -9422,7 +9932,8 @@ def search_ai_leads():
         max_results = 10
 
 
-    # Keep public web search bounded while allowing the UI's 5/10/15/20 options.
+    # The current Google Places text-search request supports up to 20 results.
+    # Keep the server-side limit consistent with the form so the UI never promises more.
     max_results = max(1, min(max_results, 20))
 
 
@@ -10010,6 +10521,19 @@ def search_ai_leads():
 
 
         
+        # GROUP RESULTS so the lead-group filter and badges always match.
+        final_score = int(potential_lead.get("lead_score") or 0)
+        if final_score >= 80:
+            potential_lead["lead_group"] = "High-Intent Lead"
+        elif final_score >= 60:
+            potential_lead["lead_group"] = "Strong Opportunity"
+        elif final_score >= 40:
+            potential_lead["lead_group"] = "Potential Customer"
+        elif final_score >= 20:
+            potential_lead["lead_group"] = "Business Prospect"
+        else:
+            potential_lead["lead_group"] = "Needs Verification"
+
         # ADD RESULT
         
 
@@ -10105,6 +10629,8 @@ def search_ai_leads():
         search_keywords=keywords,
 
         search_prospect_type=prospect_type,
+
+        search_max_results=max_results,
 
         user_name=session.get(
             "user_name"
