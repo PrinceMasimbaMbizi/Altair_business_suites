@@ -3,6 +3,7 @@ import types
 from flask import (Flask,render_template as _flask_render_template,request,redirect,url_for,flash as _flask_flash,session,send_from_directory,abort,jsonify)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeSerializer, BadSignature
 from datetime import datetime, date
 
 import mysql.connector
@@ -1598,6 +1599,18 @@ OTIS_TRAINING_DATA = [
     ("give me a customer summary", "customers"), ("customer information overview", "customers"),
     ("how many clients have I registered", "customers"),
 
+    # Loans and lending
+    ("show my loans", "loans"), ("what is my total outstanding loan balance", "loans"),
+    ("how much principal is left on my loans", "loans"),
+    ("how much interest is still outstanding", "loans"),
+    ("how much loan repayment money have I received", "loans"),
+    ("how much principal have I recovered", "loans"),
+    ("how much interest have I earned from lending", "loans"),
+    ("which loans are overdue", "loans"), ("how many loans are active", "loans"),
+    ("give me a loan and lending summary", "loans"),
+    ("what is pending and overdue in my loans", "loans"),
+    ("how much money have I lent out", "loans"),
+
     # Leads
     ("how many leads do I have", "leads"), ("show me my leads", "leads"),
     ("how are my leads performing", "leads"), ("how many prospects are recorded", "leads"),
@@ -2095,6 +2108,40 @@ def get_business_ai_data(user_id):
         )
 
      
+        # LOANS AND LENDING - only this signed-in user's loan records are included.
+        data["loans"] = {
+            "total_loans": 0, "active_count": 0, "paid_count": 0,
+            "pending_count": 0, "overdue_count": 0,
+            "principal_outstanding": 0, "interest_outstanding": 0,
+            "total_outstanding": 0, "pending_amount": 0,
+            "overdue_amount": 0, "repayments_received": 0,
+            "principal_recovered": 0, "interest_collected": 0
+        }
+        try:
+            cursor.execute("""
+                SELECT COUNT(*) AS total_loans,
+                       COALESCE(SUM(CASE WHEN loan_status IN ('Active','Approved') AND total_outstanding > 0 THEN 1 ELSE 0 END),0) AS active_count,
+                       COALESCE(SUM(CASE WHEN loan_status='Completed' OR total_outstanding <= 0 THEN 1 ELSE 0 END),0) AS paid_count,
+                       COALESCE(SUM(CASE WHEN total_outstanding > 0 AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE()) THEN 1 ELSE 0 END),0) AS pending_count,
+                       COALESCE(SUM(CASE WHEN total_outstanding > 0 AND next_payment_date < CURRENT_DATE() THEN 1 ELSE 0 END),0) AS overdue_count,
+                       COALESCE(SUM(principal_outstanding),0) AS principal_outstanding,
+                       COALESCE(SUM(interest_outstanding),0) AS interest_outstanding,
+                       COALESCE(SUM(total_outstanding),0) AS total_outstanding,
+                       COALESCE(SUM(CASE WHEN total_outstanding > 0 AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE()) THEN total_outstanding ELSE 0 END),0) AS pending_amount,
+                       COALESCE(SUM(CASE WHEN total_outstanding > 0 AND next_payment_date < CURRENT_DATE() THEN total_outstanding ELSE 0 END),0) AS overdue_amount
+                FROM business_loans WHERE user_id=%s
+            """, (user_id,))
+            data["loans"].update(cursor.fetchone() or {})
+            cursor.execute("""
+                SELECT COALESCE(SUM(amount_received),0) AS repayments_received,
+                       COALESCE(SUM(principal_paid),0) AS principal_recovered,
+                       COALESCE(SUM(interest_paid),0) AS interest_collected
+                FROM business_loan_repayments WHERE user_id=%s
+            """, (user_id,))
+            data["loans"].update(cursor.fetchone() or {})
+        except Exception as loan_summary_error:
+            app.logger.info("Otis loan summary is not available yet: %s", loan_summary_error)
+
         # CALCULATED FORECAST
 
         forecast = predict_next_month_revenue(
@@ -2416,6 +2463,25 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
+    # LOANS AND LENDING
+    if intent == "loans":
+        loans = data.get("loans") or {}
+        return (
+            "Here is your loan and lending overview from the records saved for this business:\n\n"
+            f"Total loan records: {count(loans, 'total_loans')}\n"
+            f"Active loans: {count(loans, 'active_count')}\n"
+            f"Completed / paid loans: {count(loans, 'paid_count')}\n"
+            f"Pending loans: {count(loans, 'pending_count')} — {money(number(loans, 'pending_amount'))}\n"
+            f"Overdue loans: {count(loans, 'overdue_count')} — {money(number(loans, 'overdue_amount'))}\n\n"
+            f"Principal still outstanding: {money(number(loans, 'principal_outstanding'))}\n"
+            f"Interest still outstanding: {money(number(loans, 'interest_outstanding'))}\n"
+            f"Total outstanding: {money(number(loans, 'total_outstanding'))}\n\n"
+            f"Repayments received: {money(number(loans, 'repayments_received'))}\n"
+            f"Principal recovered: {money(number(loans, 'principal_recovered'))}\n"
+            f"Interest earned: {money(number(loans, 'interest_collected'))}\n\n"
+            "Accounting note: principal recovered is a return of lent capital, not sales revenue. Interest collected is lending income."
+        )
+
     # CUSTOMERS
     
 
@@ -3034,8 +3100,9 @@ OTIS_APP_KNOWLEDGE = {
     "dashboard": ("Dashboard", "/", "Shows a business overview, performance indicators, forecast information, recent activity, and Otis advice when data is available."),
     "customer": ("Customers", "/customer", "View and manage customer names, emails, phone numbers, company details, addresses, status, notes, and available customer history."),
     "invoice": ("Invoices", "/invoice", "Create and review invoices with invoice number, customer, item description, dates, amount, status, and notes. Otis can summarise paid, pending, and overdue amounts."),
-    "money management": ("Money Management", "/items", "Review recorded expenses, investments, and recurring payments, including categories, amounts, and payment schedules."),
-    "inventory": ("Inventory", "/items", "Inventory records can include item name, SKU, category, type, description, supplier, quantity, low-stock level, cost price, selling price, and status."),
+    "financial management": ("Financial Management", "/items", "Manage products and services, expenses, investments, recurring payments, money-out records, and loans and lending."),
+    "money management": ("Financial Management", "/items", "Manage products and services, expenses, investments, recurring payments, money-out records, and loans and lending."),
+    "inventory": ("Inventory and Products", "/items", "Manage products and stock records inside the Financial Management workspace, including SKU, category, supplier, quantity, low-stock level, cost price, and selling price."),
     "lead": ("AI Lead Finder", "/ai-leads", "Manage potential customers and saved lead details such as company, industry, location, website, email, phone, contact person, source, status, score, and notes."),
     "company profile": ("Company Profile", "/company-setup", "Manage company name, industry, specialisation, description, services/products, contact details, website, address, city, country, and logo."),
     "help support": ("Help & Support", "/help-support", "Submit a support request. For technical troubleshooting, provide the exact error and the page/action that caused it. Never share passwords or API keys."),
@@ -3049,6 +3116,31 @@ def _otis_norm(value):
 
 def _otis_knowledge_answer(message):
     q = _otis_norm(message)
+
+    # Public developer profile: answer only with facts Prince has shared.
+    developer_questions = (
+        "who is your developer", "who developed you", "who created you",
+        "who built you", "who is your creator", "tell me about prince",
+        "who is prince masimba", "what do you know about prince",
+        "what is the name of your developer", "how old is prince",
+        "how old is your developer", "who is the founder",
+        "who made altair", "who founded skies altair"
+    )
+    if any(phrase in q for phrase in developer_questions) or q in {"prince", "prince masimba"}:
+        return (
+            "MY DEVELOPER — PRINCE MASIMBA\n\n"
+            "Prince Masimba is the developer behind Altair Business Suite and the person building Skies Altair Technologies. "
+            "He is 22, a business-minded young software developer, and is pursuing a BTech in Computer Engineering. "
+            "He focuses on turning practical business problems into useful digital products.\n\n"
+            "His publicly shared professional interests and work include:\n"
+            "• Web development, from standard business websites to e-commerce platforms.\n"
+            "• AI integration, business intelligence, and the Otis business-advisor assistant.\n"
+            "• Database design and business data systems using Python, Flask, and MySQL.\n"
+            "• Machine learning, natural-language processing, and practical automation.\n"
+            "• Cloud deployment and DevOps learning, including Docker and AWS.\n\n"
+            "Skies Altair Technologies provides web development, AI integration, and database-related solutions. "
+            "Its working tagline is: ‘Where Intelligence Meets Design.’ I only share the professional details Prince has provided; I do not guess private details or claim achievements that have not been confirmed."
+        )
     general_product_question = any(x in q for x in (
         "what can altair", "what can this app", "what features",
         "what is altair business suite", "what can otis do",
@@ -3065,8 +3157,8 @@ def _otis_knowledge_answer(message):
             "• Dashboard — business overview and recent activity (/)\n"
             "• Customers — customer records (/customer)\n"
             "• Invoices — billing and payment status (/invoice)\n"
-            "• Money Management — expenses, investments, recurring payments (/items)\n"
-            "• Inventory — stock and product records (Inventory area)\n"
+            "• Financial Management — products and services, expenses, investments, recurring payments, money-out records, and loans (/items)\n"
+            "• Inventory — products and stock records inside Financial Management\n"
             "• AI Lead Finder — prospects and lead statuses (/ai-leads)\n"
             "• Company Profile — company details (/company-setup)\n"
             "• Help & Support — support requests (/help-support)\n"
@@ -3326,18 +3418,10 @@ def api_business_insights():
             dictionary=True
         )
 
-        # Make sure loan tables exist before the chart and status queries use them.
-        ensure_loan_tables(cursor)
-        db.commit()
-
         # Count unpaid loan accounts alongside unpaid invoices. A loan with
         # an outstanding balance is pending until its next payment date passes;
         # after that date it is overdue. Keep the figures isolated by user_id.
-        loan_dashboard_stats = {
-            "pending_count": 0, "overdue_count": 0, "completed_count": 0,
-            "pending_amount": 0.0, "overdue_amount": 0.0,
-            "interest_collected": 0.0, "repayments_received": 0.0
-        }
+        loan_dashboard_stats = {"pending_count": 0, "overdue_count": 0, "pending_amount": 0.0, "overdue_amount": 0.0, "interest_collected": 0.0}
         try:
             cursor.execute("""
                 SELECT
@@ -3345,24 +3429,21 @@ def api_business_insights():
                         AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE())
                         AND loan_status IN ('Active','Approved','Overdue') THEN 1 ELSE 0 END), 0) AS pending_count,
                     COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
-                        AND next_payment_date < CURRENT_DATE()
-                        AND loan_status IN ('Active','Approved','Overdue') THEN 1 ELSE 0 END), 0) AS overdue_count,
-                    COALESCE(SUM(CASE WHEN loan_status = 'Completed' THEN 1 ELSE 0 END), 0) AS completed_count,
+                        AND next_payment_date < CURRENT_DATE() THEN 1 ELSE 0 END), 0) AS overdue_count,
                     COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
                         AND (next_payment_date IS NULL OR next_payment_date >= CURRENT_DATE())
                         AND loan_status IN ('Active','Approved','Overdue') THEN total_outstanding ELSE 0 END), 0) AS pending_amount,
                     COALESCE(SUM(CASE WHEN COALESCE(total_outstanding, 0) > 0
-                        AND next_payment_date < CURRENT_DATE()
-                        AND loan_status IN ('Active','Approved','Overdue') THEN total_outstanding ELSE 0 END), 0) AS overdue_amount
+                        AND next_payment_date < CURRENT_DATE() THEN total_outstanding ELSE 0 END), 0) AS overdue_amount
                 FROM business_loans
                 WHERE user_id = %s
             """, (user_id,))
             loan_dashboard_stats.update(cursor.fetchone() or {})
             cursor.execute("""
-                SELECT COALESCE(SUM(interest_paid), 0) AS interest_collected,
-                       COALESCE(SUM(CASE WHEN amount_received > 0 THEN amount_received ELSE amount_paid END), 0) AS repayments_received
-                FROM business_loan_repayments
-                WHERE user_id = %s
+                SELECT COALESCE(SUM(amount_received),0) AS repayments_received,
+                       COALESCE(SUM(principal_paid),0) AS principal_recovered,
+                       COALESCE(SUM(interest_paid),0) AS interest_collected
+                FROM business_loan_repayments WHERE user_id=%s
             """, (user_id,))
             loan_dashboard_stats.update(cursor.fetchone() or {})
         except Exception as loan_dashboard_error:
@@ -3370,19 +3451,13 @@ def api_business_insights():
 
         analysis["pending_loan_count"] = int(loan_dashboard_stats.get("pending_count", 0) or 0)
         analysis["overdue_loan_count"] = int(loan_dashboard_stats.get("overdue_count", 0) or 0)
-        analysis["completed_loan_count"] = int(loan_dashboard_stats.get("completed_count", 0) or 0)
         analysis["pending_loan_amount"] = float(loan_dashboard_stats.get("pending_amount", 0) or 0)
         analysis["overdue_loan_amount"] = float(loan_dashboard_stats.get("overdue_amount", 0) or 0)
         analysis["interest_collected_from_loans"] = float(loan_dashboard_stats.get("interest_collected", 0) or 0)
         analysis["loan_repayments_received"] = float(loan_dashboard_stats.get("repayments_received", 0) or 0)
-        # Counts now include loan accounts in the same status cards as invoices.
-        analysis["paid_invoices"] += analysis["completed_loan_count"]
+        analysis["loan_principal_recovered"] = float(loan_dashboard_stats.get("principal_recovered", 0) or 0)
         analysis["pending_invoices"] += analysis["pending_loan_count"]
         analysis["overdue_invoices"] += analysis["overdue_loan_count"]
-        # The amount cards represent cash actually received and unpaid balances.
-        analysis["paid_amount"] = float(invoice_data.get("paid_amount", 0) or 0) + analysis["loan_repayments_received"]
-        analysis["pending_amount"] = float(invoice_data.get("pending_amount", 0) or 0) + analysis["pending_loan_amount"]
-        analysis["overdue_amount"] = float(invoice_data.get("overdue_amount", 0) or 0) + analysis["overdue_loan_amount"]
 
         
         # MONTHLY REVENUE
@@ -3445,48 +3520,38 @@ def api_business_insights():
             print("LOAN INTEREST REVENUE NOT INCLUDED:", loan_income_error)
 
         
-        # MONTHLY LOAN PRINCIPAL RECOVERY (cash returned, not revenue).
-        loan_recovery_rows = []
-        try:
-            cursor.execute("""
-                SELECT DATE_FORMAT(payment_date, '%Y-%m') AS month,
-                       COALESCE(SUM(principal_paid), 0) AS principal_recovered
-                FROM business_loan_repayments
-                WHERE user_id = %s
-                  AND payment_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
-                GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
-                ORDER BY month ASC
-            """, (user_id,))
-            loan_recovery_rows = cursor.fetchall() or []
-        except Exception as loan_recovery_error:
-            print("LOAN PRINCIPAL RECOVERY HISTORY NOT AVAILABLE:", loan_recovery_error)
-
         # MONTHLY EXPENSES
         
 
         cursor.execute("""
-            SELECT month, SUM(amount) AS expenses
-            FROM (
-                SELECT DATE_FORMAT(expense_date, '%Y-%m') AS month, amount
-                FROM expenses
-                WHERE user_id = %s
-                  AND expense_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
-                UNION ALL
-                SELECT DATE_FORMAT(investment_date, '%Y-%m') AS month, amount
-                FROM investments
-                WHERE user_id = %s
-                  AND investment_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
-                UNION ALL
-                SELECT DATE_FORMAT(disbursement_date, '%Y-%m') AS month, amount_disbursed AS amount
-                FROM business_loans
-                WHERE user_id = %s
-                  AND amount_disbursed > 0
-                  AND disbursement_date >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH)
-            ) AS money_out_rows
-            WHERE month IS NOT NULL
-            GROUP BY month
+            SELECT
+                DATE_FORMAT(
+                    expense_date,
+                    '%Y-%m'
+                ) AS month,
+
+                COALESCE(
+                    SUM(amount),
+                    0
+                ) AS expenses
+
+            FROM expenses
+
+            WHERE user_id = %s
+
+            AND expense_date >= DATE_SUB(
+                CURDATE(),
+                INTERVAL 11 MONTH
+            )
+
+            GROUP BY DATE_FORMAT(
+                expense_date,
+                '%Y-%m'
+            )
+
             ORDER BY month ASC
-        """, (user_id, user_id, user_id))
+
+        """, (user_id,))
 
         expense_rows = (
             cursor.fetchall() or []
@@ -3512,12 +3577,6 @@ def api_business_insights():
             if row.get("month")
         }
 
-        loan_recovery_by_month = {
-            str(row["month"]): float(row.get("principal_recovered", 0) or 0)
-            for row in loan_recovery_rows
-            if row.get("month")
-        }
-
         for row in loan_interest_rows:
             key = str(row.get("month") or "")
             if key:
@@ -3534,7 +3593,6 @@ def api_business_insights():
         revenue_history = []
         expense_history = []
         profit_history = []
-        loan_principal_recovery_history = []
 
         for offset in range(11, -1, -1):
 
@@ -3688,7 +3746,7 @@ def api_business_insights():
             cursor.execute("""
                 SELECT l.borrower_name AS party,
                        CONCAT('Loan repayment · ', COALESCE(l.loan_number, CONCAT('#', l.id))) AS reference,
-                       CASE WHEN COALESCE(r.amount_received, 0) > 0 THEN r.amount_received ELSE COALESCE(r.amount_paid, 0) END AS amount,
+                       COALESCE(r.amount_received, r.amount_paid, 0) AS amount,
                        'Loan repayment' AS status,
                        r.payment_date AS transaction_date
                 FROM business_loan_repayments r
@@ -3698,19 +3756,6 @@ def api_business_insights():
                 LIMIT 8
             """, (user_id,))
             loan_transactions = cursor.fetchall() or []
-            cursor.execute("""
-                SELECT borrower_name AS party,
-                       CONCAT('Loan disbursed · ', COALESCE(loan_number, CONCAT('#', id))) AS reference,
-                       amount_disbursed AS amount,
-                       'Loan disbursement' AS status,
-                       disbursement_date AS transaction_date
-                FROM business_loans
-                WHERE user_id = %s
-                  AND COALESCE(amount_disbursed, 0) > 0
-                ORDER BY disbursement_date DESC, id DESC
-                LIMIT 8
-            """, (user_id,))
-            loan_transactions.extend(cursor.fetchall() or [])
         except Exception as loan_activity_error:
             print("LOAN REPAYMENT ACTIVITY NOT INCLUDED:", loan_activity_error)
 
@@ -5629,6 +5674,72 @@ def create_quotation():
 
 
 
+# Public quotation links are signed so customers can view a quotation without logging in,
+# while random users cannot simply guess an ID and read another customer's document.
+def quotation_share_token(quotation_id):
+    serializer = URLSafeSerializer(app.secret_key, salt="altair-public-quotation-v1")
+    return serializer.dumps({"quotation_id": int(quotation_id)})
+
+
+app.jinja_env.globals["quotation_share_token"] = quotation_share_token
+
+
+@app.route("/shared/quotations/<int:quotation_id>/<token>", methods=["GET"])
+def public_view_quotation(quotation_id, token):
+    try:
+        payload = URLSafeSerializer(app.secret_key, salt="altair-public-quotation-v1").loads(token)
+        if int(payload.get("quotation_id", -1)) != int(quotation_id):
+            abort(404)
+    except (BadSignature, TypeError, ValueError, AttributeError):
+        abort(404)
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM quotations WHERE id=%s LIMIT 1", (quotation_id,))
+        quotation = cursor.fetchone()
+        if not quotation:
+            abort(404)
+        cursor.execute("SELECT * FROM companies WHERE user_id=%s LIMIT 1", (quotation["user_id"],))
+        company = cursor.fetchone()
+        return render_template("view_quotation.html", company=company, quotation=quotation,
+                               user_name="Customer", public_document=True)
+    except Exception as exc:
+        if getattr(exc, "code", None) == 404:
+            raise
+        app.logger.exception("PUBLIC QUOTATION VIEW ERROR: %s", exc)
+        return "Could not load this quotation. Please try again later.", 500
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
+# EASY GUIDE: Quotation download shortcut - opens the quotation preview and its PDF download control.
+@app.route("/quotations/<int:quotation_id>/download", methods=["GET"])
+def download_quotation(quotation_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM quotations WHERE id=%s AND user_id=%s LIMIT 1",
+                       (quotation_id, session["user_id"]))
+        if not cursor.fetchone():
+            return "Quotation not found.", 404
+        return redirect(url_for("view_quotation", quotation_id=quotation_id))
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+
+
 # EASY GUIDE: View quotation - displays one quotation.
 @app.route("/quotations/<int:quotation_id>", methods=["GET"])
 def view_quotation(quotation_id):
@@ -5833,6 +5944,28 @@ def view_invoice(invoice_id):
         if db:
             db.close()
 
+
+
+# EASY GUIDE: Invoice download shortcut - opens the invoice document where its PDF button is available.
+@app.route("/invoice/<int:invoice_id>/download", methods=["GET"])
+def download_invoice(invoice_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM invoices WHERE id=%s AND user_id=%s LIMIT 1",
+                       (invoice_id, session["user_id"]))
+        if not cursor.fetchone():
+            return "Invoice not found.", 404
+        return redirect(url_for("view_invoice", invoice_id=invoice_id))
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 
 # MARK INVOICE AS PAID
@@ -8084,9 +8217,9 @@ def add_business_loan():
             approval_date, first_payment_date, amount_disbursed, disbursement_date,
             request.form.get("payment_method", "").strip(),
             request.form.get("transaction_reference", "").strip(),
-            amount_disbursed if amount_disbursed > 0 else 0,
-            round(total_interest * amount_disbursed / principal, 2) if amount_disbursed > 0 and principal > 0 else 0,
-            round(amount_disbursed + (total_interest * amount_disbursed / principal), 2) if amount_disbursed > 0 and principal > 0 else 0,
+            principal if amount_disbursed > 0 else 0,
+            total_interest if amount_disbursed > 0 else 0,
+            (principal + total_interest) if amount_disbursed > 0 else 0,
             next_payment_date, request.form.get("notes", "").strip()
         ))
         db.commit()
@@ -8145,10 +8278,8 @@ def disburse_business_loan(loan_id):
             amount, disbursement_date, first_payment_date, first_payment_date,
             request.form.get("payment_method", "").strip(),
             request.form.get("transaction_reference", "").strip(),
-            amount,
-            round(float(loan.get("total_interest") or 0) * amount / principal, 2) if principal > 0 else 0,
-            round(amount + (float(loan.get("total_interest") or 0) * amount / principal), 2) if principal > 0 else 0,
-            loan_id, user_id
+            principal, float(loan.get("total_interest") or 0),
+            principal + float(loan.get("total_interest") or 0), loan_id, user_id
         ))
         db.commit()
         flash("Loan disbursed successfully.", "success")
@@ -8216,11 +8347,8 @@ def add_business_loan_repayment():
         new_principal = max(0, round(principal_left - principal_paid, 2))
         new_interest = max(0, round(interest_left - interest_paid, 2))
         new_total = round(new_principal + new_interest, 2)
+        new_status = "Completed" if new_total <= 0 else "Active"
         next_date = None if new_total <= 0 else _loan_due_date(payment_date, loan.get("repayment_frequency"))
-        new_status = (
-            "Completed" if new_total <= 0
-            else ("Overdue" if next_date and next_date < date.today() else "Active")
-        )
         cursor.execute("""
             UPDATE business_loans SET
                 amount_repaid=COALESCE(amount_repaid,0)+%s,
@@ -8254,6 +8382,78 @@ def add_business_loan_repayment():
             db.close()
     return redirect(url_for("items") + "#loanManagementTab")
 
+
+
+# EASY GUIDE: Change loan payment status - marking Paid records the remaining balance as received.
+@app.route("/business-loans/<int:loan_id>/payment-status", methods=["POST"])
+def update_business_loan_payment_status(loan_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    user_id = session["user_id"]
+    selected_status = (request.form.get("payment_status") or "").strip().lower()
+    if selected_status not in {"paid", "not_paid"}:
+        flash("Choose Paid or Not paid.", "error")
+        return redirect(url_for("items") + "#loanManagementTab")
+
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        ensure_loan_tables(cursor)
+        cursor.execute("SELECT * FROM business_loans WHERE id=%s AND user_id=%s FOR UPDATE", (loan_id, user_id))
+        loan = cursor.fetchone()
+        if not loan:
+            raise ValueError("Loan not found in this business account.")
+
+        if selected_status == "paid":
+            principal_left = round(float(loan.get("principal_outstanding") or 0), 2)
+            interest_left = round(float(loan.get("interest_outstanding") or 0), 2)
+            total_left = round(principal_left + interest_left, 2)
+            if total_left <= 0:
+                cursor.execute("UPDATE business_loans SET loan_status='Completed' WHERE id=%s AND user_id=%s", (loan_id, user_id))
+                flash("This loan is already fully paid.", "success")
+            else:
+                cursor.execute("""
+                    INSERT INTO business_loan_repayments
+                    (loan_id,user_id,payment_date,amount_received,amount_paid,principal_paid,interest_paid,penalty_paid,notes)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,0,%s)
+                """, (loan_id, user_id, date.today(), total_left, total_left,
+                      principal_left, interest_left, "Full outstanding balance marked as received by account user."))
+                cursor.execute("""
+                    UPDATE business_loans SET
+                        amount_repaid=COALESCE(amount_repaid,0)+%s,
+                        principal_recovered=COALESCE(principal_recovered,0)+%s,
+                        interest_collected=COALESCE(interest_collected,0)+%s,
+                        principal_outstanding=0, interest_outstanding=0, total_outstanding=0,
+                        loan_status='Completed', next_payment_date=NULL, updated_at=CURRENT_TIMESTAMP
+                    WHERE id=%s AND user_id=%s
+                """, (total_left, principal_left, interest_left, loan_id, user_id))
+                flash("Loan marked Paid. The remaining principal and interest were recorded as a repayment.", "success")
+        else:
+            if float(loan.get("total_outstanding") or 0) <= 0:
+                raise ValueError("A fully paid loan cannot be changed back to Not paid. Create a new loan record if this was recorded by mistake.")
+            due = loan.get("next_payment_date")
+            new_status = "Overdue" if due and due < date.today() else "Active"
+            cursor.execute("UPDATE business_loans SET loan_status=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s AND user_id=%s",
+                           (new_status, loan_id, user_id))
+            flash("Loan remains unpaid. Its outstanding balance has been kept unchanged.", "success")
+        db.commit()
+    except ValueError as exc:
+        if db:
+            db.rollback()
+        flash(str(exc), "error")
+    except Exception as exc:
+        if db:
+            db.rollback()
+        app.logger.exception("UPDATE LOAN PAYMENT STATUS ERROR: %s", exc)
+        flash("Could not update this loan's payment status.", "error")
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
+    return redirect(url_for("items") + "#loanManagementTab")
 
 
 # ADD INVENTORY ITEM
