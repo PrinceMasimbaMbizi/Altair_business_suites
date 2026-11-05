@@ -35479,340 +35479,62 @@
 
     <style id="altair-polish-overrides">
         /* Financial overview: clear, responsive metric cards. */
-        #chartSummary {
-            margin-top: 14px !important;
-            color: inherit !important;
-            font-size: 12px !important;
-        }
-
-        .finance-metric-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 11px;
-            margin: 12px 0 14px;
-        }
-
-        .finance-metric-card {
-            min-width: 0;
-            padding: 14px 15px;
-            border: 1px solid rgba(130, 145, 170, .2);
-            border-radius: 15px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, .94), rgba(245, 247, 252, .92));
-            box-shadow: 0 7px 20px rgba(20, 30, 55, .055);
-        }
-
-        .finance-metric-card span {
-            display: block;
-            color: #697386;
-            font-size: 11px;
-            font-weight: 700;
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-
-        .finance-metric-card strong {
-            display: block;
-            color: #182235;
-            font-size: clamp(15px, 1.7vw, 21px);
-            font-weight: 850;
-            overflow-wrap: anywhere;
-        }
-
-        .finance-metric-card.income {
-            border-top: 3px solid #0d9488;
-        }
-
-        .finance-metric-card.expense {
-            border-top: 3px solid #f97316;
-        }
-
-        .finance-metric-card.profit {
-            border-top: 3px solid #6366f1;
-        }
-
-        .finance-metric-card.recurring {
-            border-top: 3px solid #8b5cf6;
-        }
-
-        .finance-metric-card.loan {
-            border-top: 3px solid #0891b2;
-        }
-
-        .finance-metric-card.pending {
-            border-top: 3px solid #d97706;
-        }
-
-        .finance-metric-card.overdue {
-            border-top: 3px solid #dc2626;
-        }
-
-        .finance-extra-line {
-            padding: 9px 11px;
-            margin-top: 7px;
-            border-radius: 10px;
-            background: rgba(125, 135, 155, .07);
-            color: var(--muted, #667085);
-            line-height: 1.65;
-        }
-
-        .finance-note {
-            margin-top: 10px;
-            color: var(--muted, #737b8c);
-            font-size: 11px;
-            line-height: 1.65;
-        }
-
-        .loan-payment-status-form select {
-            min-width: 112px;
-            padding: 8px 10px;
-            border: 1px solid rgba(120, 130, 150, .3);
-            border-radius: 9px;
-            background: #fff;
-            color: #243047;
-            font-weight: 700;
-            font-size: 11px;
-            cursor: pointer;
-        }
-
+        #chartSummary { margin-top:14px !important; color:inherit !important; font-size:12px !important; }
+        .finance-metric-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; margin:12px 0 14px; }
+        .finance-metric-card { min-width:0; padding:14px 15px; border:1px solid rgba(130,145,170,.2); border-radius:15px; background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(245,247,252,.92)); box-shadow:0 7px 20px rgba(20,30,55,.055); }
+        .finance-metric-card span { display:block; color:#697386; font-size:11px; font-weight:700; line-height:1.4; margin-bottom:8px; }
+        .finance-metric-card strong { display:block; color:#182235; font-size:clamp(15px,1.7vw,21px); font-weight:850; overflow-wrap:anywhere; }
+        .finance-metric-card.income { border-top:3px solid #0d9488; }
+        .finance-metric-card.expense { border-top:3px solid #f97316; }
+        .finance-metric-card.profit { border-top:3px solid #6366f1; }
+        .finance-metric-card.recurring { border-top:3px solid #8b5cf6; }
+        .finance-metric-card.loan { border-top:3px solid #0891b2; }
+        .finance-metric-card.pending { border-top:3px solid #d97706; }
+        .finance-metric-card.overdue { border-top:3px solid #dc2626; }
+        .finance-extra-line { padding:9px 11px; margin-top:7px; border-radius:10px; background:rgba(125,135,155,.07); color:var(--muted,#667085); line-height:1.65; }
+        .finance-note { margin-top:10px; color:var(--muted,#737b8c); font-size:11px; line-height:1.65; }
+        .loan-payment-status-form select { min-width:112px; padding:8px 10px; border:1px solid rgba(120,130,150,.3); border-radius:9px; background:#fff; color:#243047; font-weight:700; font-size:11px; cursor:pointer; }
         /* Otis: full-height app-like chat panel, with its own scrollable conversation. */
-        .altair-ai-overlay {
-            padding: clamp(8px, 2vw, 24px) !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-
-        .altair-ai-window {
-            width: min(1180px, 96vw) !important;
-            height: min(850px, 94vh) !important;
-            max-height: 94vh !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            border-radius: 24px !important;
-        }
-
-        .altair-ai-header {
-            flex: 0 0 72px !important;
-            width: 100%;
-        }
-
-        .altair-ai-main {
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow-y: auto;
-            padding: 22px clamp(14px, 2vw, 26px) !important;
-        }
-
-        .altair-ai-input-area {
-            flex: 0 0 auto;
-            position: relative !important;
-            bottom: auto !important;
-            width: 100%;
-            padding: 14px clamp(14px, 2vw, 24px) 16px !important;
-            border-top: 1px solid rgba(255, 255, 255, .08);
-        }
-
-        .altair-chat-messages {
-            display: flex;
-            flex-direction: column;
-            gap: 13px;
-            padding: 14px 0 8px;
-        }
-
-        .altair-chat-messages .altair-ai-message {
-            align-items: flex-start;
-        }
-
-        .altair-chat-messages .chat-bubble {
-            max-width: min(760px, 90%);
-            padding: 14px 16px;
-            border: 1px solid rgba(0, 240, 255, .13);
-            border-radius: 5px 16px 16px 16px;
-            background: linear-gradient(145deg, rgba(25, 35, 53, .98), rgba(20, 24, 39, .98));
-            color: #edf6ff;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
-            line-height: 1.65;
-        }
-
-        .altair-chat-messages .chat-bubble strong {
-            display: block;
-            margin-bottom: 5px;
-            color: #55e8f4;
-            font-size: 12px;
-        }
-
-        .altair-chat-messages .chat-bubble p {
-            margin: 0;
-            font-size: 13px;
-            white-space: pre-wrap;
-        }
-
-        .otis-message-bubble {
-            max-width: min(760px, 88%);
-            padding: 13px 16px;
-            border-radius: 16px;
-            line-height: 1.65;
-            font-size: 13px;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-            box-shadow: 0 8px 22px rgba(0, 0, 0, .15);
-        }
-
-        .otis-user-bubble {
-            align-self: flex-end;
-            color: #06151b;
-            background: linear-gradient(135deg, #00f0ff, #72f6e7);
-            border-bottom-right-radius: 5px;
-            font-weight: 650;
-        }
-
-        .otis-assistant-bubble {
-            align-self: flex-start;
-            color: #f3f7ff;
-            background: linear-gradient(145deg, #20263a, #171c2d);
-            border: 1px solid rgba(0, 240, 255, .18);
-            border-bottom-left-radius: 5px;
-        }
-
-        .otis-loading-bubble {
-            align-self: flex-start;
-            color: #a8edf4;
-            background: rgba(0, 240, 255, .08);
-            border: 1px dashed rgba(0, 240, 255, .28);
-        }
-
-        .advisor-question-grid button {
-            min-height: 70px;
-            text-align: left;
-            border: 1px solid rgba(0, 240, 255, .14);
-            border-radius: 14px;
-            background: rgba(255, 255, 255, .045);
-            color: #eaf6ff;
-            padding: 12px;
-            transition: transform .18s ease, border-color .18s ease, background .18s ease;
-        }
-
-        .advisor-question-grid button:hover {
-            transform: translateY(-2px);
-            border-color: rgba(0, 240, 255, .45);
-            background: rgba(0, 240, 255, .08);
-        }
-
-        .altair-ai-input-wrapper {
-            border: 1px solid rgba(0, 240, 255, .22) !important;
-            border-radius: 16px !important;
-            background: #171c2b !important;
-            box-shadow: 0 0 0 4px rgba(0, 240, 255, .035);
-        }
-
-        .altair-ai-input-wrapper input {
-            min-height: 48px;
-            color: #fff !important;
-        }
-
-        .altair-send-button {
-            min-height: 42px;
-            border-radius: 12px !important;
-        }
-
-        @media(max-width:850px) {
-            .finance-metric-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .altair-ai-window {
-                width: 100% !important;
-                height: 96vh !important;
-                max-height: 96vh !important;
-                border-radius: 16px !important;
-            }
-
-            .altair-ai-main {
-                padding: 14px !important;
-            }
-        }
-
-        @media(max-width:520px) {
-            .finance-metric-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-
-            .finance-metric-card {
-                padding: 11px;
-            }
-
-            .finance-metric-card strong {
-                font-size: 14px;
-            }
-
-            .altair-ai-overlay {
-                padding: 0 !important;
-            }
-
-            .altair-ai-window {
-                width: 100vw !important;
-                height: 100dvh !important;
-                max-height: 100dvh !important;
-                border-radius: 0 !important;
-            }
-
-            .altair-ai-header {
-                flex-basis: 64px !important;
-            }
-
-            .otis-message-bubble {
-                max-width: 94%;
-            }
-        }
-
-        @media print {
-
-            .module-invoice_view .actions,
-            #actionNotice {
-                display: none !important;
-            }
-
-            .module-invoice_view {
-                padding: 0 !important;
-            }
-
-            .module-invoice_view .paper {
-                box-shadow: none !important;
-                border-radius: 0 !important;
-            }
-        }
+        .altair-ai-overlay { padding:clamp(8px,2vw,24px) !important; align-items:center !important; justify-content:center !important; }
+        .altair-ai-window { width:min(1180px,96vw) !important; height:min(850px,94vh) !important; max-height:94vh !important; display:flex !important; flex-direction:column !important; overflow:hidden !important; border-radius:24px !important; }
+        .altair-ai-header { flex:0 0 72px !important; width:100%; }
+        .altair-ai-main { flex:1 1 auto; min-height:0; overflow-y:auto; padding:22px clamp(14px,2vw,26px) !important; }
+        .altair-ai-input-area { flex:0 0 auto; position:relative !important; bottom:auto !important; width:100%; padding:14px clamp(14px,2vw,24px) 16px !important; border-top:1px solid rgba(255,255,255,.08); }
+        .altair-chat-messages { display:flex; flex-direction:column; gap:13px; padding:14px 0 8px; }
+        .altair-chat-messages .altair-ai-message { align-items:flex-start; }
+        .altair-chat-messages .chat-bubble { max-width:min(760px,90%); padding:14px 16px; border:1px solid rgba(0,240,255,.13); border-radius:5px 16px 16px 16px; background:linear-gradient(145deg,rgba(25,35,53,.98),rgba(20,24,39,.98)); color:#edf6ff; box-shadow:0 8px 24px rgba(0,0,0,.16); line-height:1.65; }
+        .altair-chat-messages .chat-bubble strong { display:block; margin-bottom:5px; color:#55e8f4; font-size:12px; }
+        .altair-chat-messages .chat-bubble p { margin:0; font-size:13px; white-space:pre-wrap; }
+        .otis-message-bubble { max-width:min(760px,88%); padding:13px 16px; border-radius:16px; line-height:1.65; font-size:13px; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 8px 22px rgba(0,0,0,.15); }
+        .otis-user-bubble { align-self:flex-end; color:#06151b; background:linear-gradient(135deg,#00f0ff,#72f6e7); border-bottom-right-radius:5px; font-weight:650; }
+        .otis-assistant-bubble { align-self:flex-start; color:#f3f7ff; background:linear-gradient(145deg,#20263a,#171c2d); border:1px solid rgba(0,240,255,.18); border-bottom-left-radius:5px; }
+        .otis-loading-bubble { align-self:flex-start; color:#a8edf4; background:rgba(0,240,255,.08); border:1px dashed rgba(0,240,255,.28); }
+        .advisor-question-grid button { min-height:70px; text-align:left; border:1px solid rgba(0,240,255,.14); border-radius:14px; background:rgba(255,255,255,.045); color:#eaf6ff; padding:12px; transition:transform .18s ease,border-color .18s ease,background .18s ease; }
+        .advisor-question-grid button:hover { transform:translateY(-2px); border-color:rgba(0,240,255,.45); background:rgba(0,240,255,.08); }
+        .altair-ai-input-wrapper { border:1px solid rgba(0,240,255,.22) !important; border-radius:16px !important; background:#171c2b !important; box-shadow:0 0 0 4px rgba(0,240,255,.035); }
+        .altair-ai-input-wrapper input { min-height:48px; color:#fff !important; }
+        .altair-send-button { min-height:42px; border-radius:12px !important; }
+        @media(max-width:850px) { .finance-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .altair-ai-window { width:100% !important; height:96vh !important; max-height:96vh !important; border-radius:16px !important; } .altair-ai-main { padding:14px !important; } }
+        @media(max-width:520px) { .finance-metric-grid { grid-template-columns:1fr 1fr; gap:8px; } .finance-metric-card { padding:11px; } .finance-metric-card strong { font-size:14px; } .altair-ai-overlay { padding:0 !important; } .altair-ai-window { width:100vw !important; height:100dvh !important; max-height:100dvh !important; border-radius:0 !important; } .altair-ai-header { flex-basis:64px !important; } .otis-message-bubble { max-width:94%; } }
+        @media print { .module-invoice_view .actions, #actionNotice { display:none !important; } .module-invoice_view { padding:0 !important; } .module-invoice_view .paper { box-shadow:none !important; border-radius:0 !important; } }
     </style>
 
 
     <style id="altair-document-layout-overrides">
-        .document-app {
-            display: block !important;
-            min-height: 100vh !important;
-            width: 100% !important;
-        }
-
-        .document-app .main {
-            margin: 0 !important;
-            margin-left: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            min-height: 100vh !important;
-            padding: 28px !important;
-        }
-
-        .document-app .module-invoice_view,
-        .document-app .module-quotation_view {
-            width: min(100%, 1080px);
-            margin: 0 auto;
-        }
+        .document-app { display:block !important; min-height:100vh !important; width:100% !important; }
+        .document-app .main { margin:0 !important; margin-left:0 !important; width:100% !important; max-width:none !important; min-height:100vh !important; padding:28px !important; }
+        .document-app .module-invoice_view, .document-app .module-quotation_view { width:min(100%,1080px); margin:0 auto; }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('open_otis') === '1' && typeof openAltairAI === 'function') {
-                window.setTimeout(openAltairAI, 350);
+            if (params.get('open_otis') === '1') {
+                window.altairOpenOtisAfterLoad = true;
                 window.history.replaceState({}, document.title, window.location.pathname);
+                // On pages without the login preload screen, open Otis immediately.
+                if (!document.getElementById('dataLoadingScreen') && typeof openAltairAI === 'function') {
+                    window.setTimeout(openAltairAI, 180);
+                }
             }
         });
     </script>
@@ -35838,11 +35560,9 @@
         <div class="data-loader-percent" id="dataLoaderPercent">1%</div>
         <div class="data-loader-progress" role="progressbar" aria-label="Workspace loading progress" aria-valuemin="1"
             aria-valuemax="100" aria-valuenow="1" id="dataLoaderBar"><span id="dataLoaderFill"></span></div>
-    </div>{% endif %}<div
-        class="app {% if active_view in ['login', 'register'] %}auth-app{% endif %} {% if active_view in ['invoice_view', 'quotation_view'] %}document-app{% endif %}"
-        id="altairApp">
-        {% if active_view not in ['login', 'register', 'invoice_view', 'quotation_view'] %}<aside class="sidebar"
-            id="appSidebar" aria-label="Main navigation">
+    </div>{% endif %}<div class="app {% if active_view in ['login', 'register'] %}auth-app{% endif %} {% if active_view in ['invoice_view', 'quotation_view'] %}document-app{% endif %}" id="altairApp">
+        {% if active_view not in ['login', 'register', 'invoice_view', 'quotation_view'] %}<aside class="sidebar" id="appSidebar"
+            aria-label="Main navigation">
             <div class="company-brand">
                 {% if company and company.logo %}
                 <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
@@ -35904,7 +35624,8 @@
                 class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting">
                 <span class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
-            <a href="{{ url_for('dashboard', open_otis=1) }}" class="nav-item" title="Open Otis AI Assistant">
+            <a href="{{ url_for('dashboard', open_otis=1) }}" class="nav-item"
+                title="Open Otis AI Assistant">
                 <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
             </a>
 
@@ -36632,8 +36353,7 @@
                                             Outstanding invoices
                                         </button>
 
-                                        <button
-                                            onclick="askAdvisorQuestion('What is my total outstanding loan balance?')">
+                                        <button onclick="askAdvisorQuestion('What is my total outstanding loan balance?')">
                                             <span>💰</span>
                                             Loan position
                                         </button>
@@ -36643,8 +36363,7 @@
                                             Expense trends
                                         </button>
 
-                                        <button
-                                            onclick="askAdvisorQuestion('Who is your developer and what does he build?')">
+                                        <button onclick="askAdvisorQuestion('Who is your developer and what does he build?')">
                                             <span>👨‍💻</span>
                                             About your developer
                                         </button>
@@ -36658,28 +36377,7 @@
 
                                 <div id="altairChatMessages" class="altair-chat-messages">
 
-                                    <div class="altair-ai-message">
-
-                                        <div class="chat-avatar">
-                                            ✦
-                                        </div>
-
-                                        <div class="chat-bubble">
-
-                                            <strong>
-                                                Otis
-                                            </strong>
-
-                                            <p>
-                                                Hi! I'm Otis, your Altair business advisor. I can analyse your saved
-                                                business records, explain what the numbers mean, help you plan next
-                                                steps, and answer questions about my developer, Prince Masimba. What
-                                                would you like to explore?
-                                            </p>
-
-                                        </div>
-
-                                    </div>
+                                    <!-- Otis starts with a clean conversation area; no long welcome paragraph. -->
 
                                 </div>
 
@@ -38253,8 +37951,7 @@
                                             <a href="{{ url_for('view_invoice', invoice_id=item.id) }}" class="action">
                                                 View
                                             </a>
-                                            <a href="{{ url_for('download_invoice', invoice_id=item.id) }}"
-                                                class="action">
+                                            <a href="{{ url_for('download_invoice', invoice_id=item.id) }}" class="action">
                                                 Download PDF
                                             </a>
 
@@ -38461,85 +38158,41 @@
 
             </section>{% endif %}
             <!-- ==================== INVOICE DETAILS / PREVIEW SECTION ==================== -->
-            {% if active_view == 'invoice_view' %}<section class="unified-view module-invoice_view"
-                id="view-invoice_view">
+            {% if active_view == 'invoice_view' %}<section class="unified-view module-invoice_view" id="view-invoice_view">
                 <div id="actionNotice" class="notice" role="status" aria-live="polite"></div>
                 <div class="actions">
                     <a href="{{ url_for('invoice') }}" class="btn secondary" title="Back to invoices">← Back</a>
-                    <button type="button" class="btn secondary" id="printQuotationBtn" title="Print invoice">🖨
-                        Print</button>
-                    <button type="button" class="btn primary" id="downloadPdfBtn" title="Download invoice PDF">⬇
-                        Download PDF</button>
+                    <button type="button" class="btn secondary" id="printQuotationBtn" title="Print invoice">🖨 Print</button>
+                    <button type="button" class="btn primary" id="downloadPdfBtn" title="Download invoice PDF">⬇ Download PDF</button>
                 </div>
-                <article class="paper" id="quotationPaper" data-number="{{ invoice.invoice_number }}"
-                    data-customer="{{ invoice.customer_name }}" data-email="{{ invoice.customer_email or '' }}"
+                <article class="paper" id="quotationPaper"
+                    data-number="{{ invoice.invoice_number }}"
+                    data-customer="{{ invoice.customer_name }}"
+                    data-email="{{ invoice.customer_email or '' }}"
                     data-total="{{ invoice.amount }}"
                     data-company="{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}">
                     <header class="header">
                         <div class="brand">
-                            {% if company and company.logo %}<img src="{{ url_for('company_logo') }}" alt="Company logo"
-                                onerror="this.style.display='none'">{% else %}<div class="placeholder">{{
-                                company.company_name[0]|upper if company and company.company_name else 'A' }}</div>{%
-                            endif %}
+                            {% if company and company.logo %}<img src="{{ url_for('company_logo') }}" alt="Company logo" onerror="this.style.display='none'">{% else %}<div class="placeholder">{{ company.company_name[0]|upper if company and company.company_name else 'A' }}</div>{% endif %}
                             <div>
-                                <h1>{{ company.company_name if company and company.company_name else 'Altair Business
-                                    Suite' }}</h1>
+                                <h1>{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}</h1>
                                 {% if company %}
-                                <p>{% if company.address %}{{ company.address }}{% endif %}{% if company.city %}, {{
-                                    company.city }}{% endif %}{% if company.country %}, {{ company.country }}{% endif %}
-                                </p>
-                                {% if company.email %}<p>{{ company.email }}</p>{% endif %}{% if company.phone %}<p>{{
-                                    company.phone }}</p>{% endif %}
+                                <p>{% if company.address %}{{ company.address }}{% endif %}{% if company.city %}, {{ company.city }}{% endif %}{% if company.country %}, {{ company.country }}{% endif %}</p>
+                                {% if company.email %}<p>{{ company.email }}</p>{% endif %}{% if company.phone %}<p>{{ company.phone }}</p>{% endif %}
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="quote-title">
-                            <h2>INVOICE</h2>
-                            <div class="quote-number">{{ invoice.invoice_number }}</div>
-                            <p class="small">Status: {{ invoice.status }}</p>
-                        </div>
+                        <div class="quote-title"><h2>INVOICE</h2><div class="quote-number">{{ invoice.invoice_number }}</div><p class="small">Status: {{ invoice.status }}</p></div>
                     </header>
                     <section class="details">
-                        <div class="detail">
-                            <h3>Bill To</h3><strong>{{ invoice.customer_name }}</strong>{% if invoice.customer_email %}
-                            <p>{{ invoice.customer_email }}</p>{% endif %}
-                        </div>
-                        <div class="detail">
-                            <h3>Invoice Details</h3>
-                            <p><strong style="display:inline">Invoice date:</strong> {{
-                                invoice.invoice_date.strftime('%d %b %Y') if invoice.invoice_date else '—' }}</p>
-                            <p><strong style="display:inline">Due date:</strong> {{ invoice.due_date.strftime('%d %b
-                                %Y') if invoice.due_date else '—' }}</p>
-                        </div>
+                        <div class="detail"><h3>Bill To</h3><strong>{{ invoice.customer_name }}</strong>{% if invoice.customer_email %}<p>{{ invoice.customer_email }}</p>{% endif %}</div>
+                        <div class="detail"><h3>Invoice Details</h3><p><strong style="display:inline">Invoice date:</strong> {{ invoice.invoice_date.strftime('%d %b %Y') if invoice.invoice_date else '—' }}</p><p><strong style="display:inline">Due date:</strong> {{ invoice.due_date.strftime('%d %b %Y') if invoice.due_date else '—' }}</p></div>
                     </section>
-                    <div class="meta"><span class="pill">Tax invoice</span><span class="pill">Currency: ZAR
-                            (R)</span><span class="pill">{{ invoice.status }}</span></div>
-                    <div class="table-scroll">
-                        <table class="line-table">
-                            <thead>
-                                <tr>
-                                    <th>Description</th>
-                                    <th class="right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{{ invoice.item_name }}</td>
-                                    <td class="right">R{{ '%.2f'|format(invoice.amount|float) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <section class="totals">
-                        <div class="total-row final"><span>Total Due</span><strong>R{{
-                                '%.2f'|format(invoice.amount|float) }}</strong></div>
-                    </section>
-                    {% if invoice.notes %}<section class="notes">
-                        <h3>Notes</h3>
-                        <p>{{ invoice.notes }}</p>
-                    </section>{% endif %}
-                    <div class="footer">Thank you for your business. Please use the invoice number as your payment
-                        reference.</div>
+                    <div class="meta"><span class="pill">Tax invoice</span><span class="pill">Currency: ZAR (R)</span><span class="pill">{{ invoice.status }}</span></div>
+                    <div class="table-scroll"><table class="line-table"><thead><tr><th>Description</th><th class="right">Amount</th></tr></thead><tbody><tr><td>{{ invoice.item_name }}</td><td class="right">R{{ '%.2f'|format(invoice.amount|float) }}</td></tr></tbody></table></div>
+                    <section class="totals"><div class="total-row final"><span>Total Due</span><strong>R{{ '%.2f'|format(invoice.amount|float) }}</strong></div></section>
+                    {% if invoice.notes %}<section class="notes"><h3>Notes</h3><p>{{ invoice.notes }}</p></section>{% endif %}
+                    <div class="footer">Thank you for your business. Please use the invoice number as your payment reference.</div>
                 </article>
             </section>{% endif %}
             <!-- ==================== QUOTATION DETAILS / PREVIEW SECTION ==================== -->
@@ -38547,8 +38200,8 @@
                 id="view-quotation_view">
                 <div id="actionNotice" class="notice" role="status" aria-live="polite"></div>
                 <div class="actions">
-                    {% if not public_document %}<a href="{{ url_for('invoice') }}" class="btn secondary"
-                        aria-label="Back to invoices" title="Back to invoices">
+                    {% if not public_document %}<a href="{{ url_for('invoice') }}" class="btn secondary" aria-label="Back to invoices"
+                        title="Back to invoices">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="m15 18-6-6 6-6"></path>
@@ -39914,7 +39567,7 @@
                             </h2>
 
                             <p class="section-description">
-                                A combined history of money leaving your business.
+                                A combined history of money leaving your business. This list is view-only; records cannot be edited here.
                             </p>
 
                         </div>
@@ -40010,14 +39663,14 @@
                                 <tr>
 
                                     <td>
-                                        {{ record.date or "—" }}
+                                        {{ record.record_date or record.date or "—" }}
                                     </td>
 
 
                                     <td>
 
                                         <div class="item-name">
-                                            {{ record.description or "Money Out" }}
+                                            {{ record.record_name or record.description or "Money Out" }}
                                         </div>
 
                                     </td>
@@ -40030,13 +39683,13 @@
 
                                     <td>
 
-                                        {% if record.type == "Investment" %}
+                                        {% if record.record_type == "Investment" or record.type == "Investment" %}
 
                                         <span class="type service">
                                             Investment
                                         </span>
 
-                                        {% elif record.type == "Recurring" %}
+                                        {% elif record.record_type == "Recurring" or record.type == "Recurring" %}
 
                                         <span class="type">
                                             Recurring
@@ -40491,12 +40144,8 @@
                                         <td>R{{ loan.interest_outstanding|money }}</td>
                                         <td><strong>R{{ loan.total_outstanding|money }}</strong></td>
                                         <td>
-                                            <form method="POST"
-                                                action="{{ url_for('update_business_loan_payment_status', loan_id=loan.id) }}"
-                                                class="loan-payment-status-form"
-                                                onsubmit="return confirm(this.payment_status.value === 'paid' ? 'Mark this loan as fully paid and record the outstanding amount as received?' : 'Keep this loan unpaid and retain its outstanding balance?');">
-                                                <select name="payment_status" aria-label="Loan payment status"
-                                                    onchange="this.form.requestSubmit()">
+                                            <form method="POST" action="{{ url_for('update_business_loan_payment_status', loan_id=loan.id) }}" class="loan-payment-status-form" onsubmit="return confirm(this.payment_status.value === 'paid' ? 'Mark this loan as fully paid and record the outstanding amount as received?' : 'Keep this loan unpaid and retain its outstanding balance?');">
+                                                <select name="payment_status" aria-label="Loan payment status" onchange="this.form.requestSubmit()">
                                                     <option value="not_paid" selected>Not paid</option>
                                                     <option value="paid">Mark as Paid</option>
                                                 </select>
@@ -43519,7 +43168,7 @@
                         <div class="finance-metric-grid">${metricCards.map(([label, value, kind]) => `
                             <div class="finance-metric-card ${kind}">
                                 <span>${label}</span>
-                                <strong>R${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                                <strong>R${Number(value || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</strong>
                             </div>`).join("")}</div>
                         <div class="finance-extra-line">Products: ${Number(finance.products || 0)} · Services: ${Number(finance.services || 0)} · Stock cost value: R${Number(finance.inventory_cost_value || 0).toLocaleString()} · Potential stock selling value: R${Number(finance.inventory_potential_sales_value || 0).toLocaleString()}</div>
                         <div class="finance-extra-line">Investments recorded: R${Number(finance.recorded_investments || 0).toLocaleString()} · Expenses recorded: R${Number(finance.recorded_expenses || 0).toLocaleString()} · Low stock: ${Number(finance.low_stock || 0)} · Out of stock: ${Number(finance.out_of_stock || 0)}</div>
@@ -43769,8 +43418,16 @@
 
             if (overlay) {
 
-                overlay.style.display =
-                    "flex";
+                overlay.style.display = "flex";
+                overlay.classList.add("is-open");
+                overlay.setAttribute("aria-hidden", "false");
+                document.body.classList.add("otis-chat-open");
+
+                // Put the conversation at the latest message and focus the input.
+                const messages = document.getElementById("altairChatMessages");
+                const input = document.getElementById("altairChatInput");
+                if (messages) messages.scrollTop = messages.scrollHeight;
+                window.setTimeout(() => { if (input) input.focus({ preventScroll: true }); }, 120);
 
                 // Refresh the live summary each time Otis is opened.
                 if (typeof loadAltairInsights === "function") {
@@ -43791,8 +43448,10 @@
 
             if (overlay) {
 
-                overlay.style.display =
-                    "none";
+                overlay.style.display = "none";
+                overlay.classList.remove("is-open");
+                overlay.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("otis-chat-open");
 
             }
 
@@ -46395,6 +46054,8 @@
         (function () {
             const loader = document.getElementById('dataLoadingScreen');
             if (!loader) return;
+            window.altairPreloadStarted = true;
+            window.altairPreloadComplete = false;
 
             const percentText = document.getElementById('dataLoaderPercent');
             const fill = document.getElementById('dataLoaderFill');
@@ -46406,7 +46067,7 @@
                 ['Dashboard', '/'],
                 ['Customers', '/customer'],
                 ['Invoices', '/invoice'],
-                ['Inventory', '/items'],
+                ['Financial Management', '/items'],
                 ['Transactions', '/transactions'],
                 ['AI Lead Finder', '/ai-leads'],
                 ['Business Analytics', '/business-analytics'],
@@ -46464,9 +46125,16 @@
                     await Promise.all(batch.map(preparePage));
                 }
                 updateProgress(total, null);
+                window.altairPreloadComplete = true;
                 window.setTimeout(() => {
                     loader.classList.add('is-hidden');
-                    window.setTimeout(() => loader.remove(), 400);
+                    window.setTimeout(() => {
+                        loader.remove();
+                        if (window.altairOpenOtisAfterLoad && typeof openAltairAI === 'function') {
+                            window.altairOpenOtisAfterLoad = false;
+                            openAltairAI();
+                        }
+                    }, 400);
                 }, 350);
             }
 
@@ -47039,6 +46707,176 @@
         }
     </style>
 
+
+    <style id="otis-and-moneyout-final-fixes">
+        /* OTIS — modern, desktop-fitted advisor workspace */
+        #altairAIOverlay {
+            position:fixed !important; inset:0 !important; z-index:100050 !important;
+            display:none; align-items:center !important; justify-content:center !important;
+            padding:clamp(12px,1.8vw,28px) !important;
+            background:radial-gradient(ellipse at 18% 12%,rgba(0,240,255,.13),transparent 34%),
+                       radial-gradient(ellipse at 88% 88%,rgba(157,78,221,.18),transparent 38%),
+                       rgba(3,6,18,.88) !important;
+            backdrop-filter:blur(18px) saturate(135%) !important;
+            -webkit-backdrop-filter:blur(18px) saturate(135%) !important;
+        }
+        #altairAIOverlay.is-open { display:flex !important; animation:otisBackdropIn .22s ease both; }
+        @keyframes otisBackdropIn { from{opacity:0} to{opacity:1} }
+        body.otis-chat-open { overflow:hidden !important; }
+
+        #altairAIOverlay .altair-ai-window {
+            position:relative !important; isolation:isolate;
+            width:min(1500px, calc(100vw - 44px)) !important;
+            height:min(960px, calc(100dvh - 44px)) !important;
+            max-width:1500px !important; max-height:calc(100dvh - 44px) !important;
+            min-height:0 !important; margin:auto !important;
+            display:flex !important; flex-direction:column !important; overflow:hidden !important;
+            border:1px solid rgba(130,190,255,.2) !important;
+            border-radius:26px !important;
+            background:linear-gradient(145deg,rgba(17,24,43,.985),rgba(8,13,29,.99)) !important;
+            box-shadow:0 35px 110px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.035) inset,
+                       0 0 65px rgba(0,210,255,.09) !important;
+            animation:otisWindowIn .28s cubic-bezier(.2,.8,.2,1) both;
+        }
+        @keyframes otisWindowIn { from{opacity:0;transform:translateY(14px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+        #altairAIOverlay .altair-ai-header {
+            flex:0 0 76px !important; min-height:76px !important; padding:0 28px !important;
+            display:flex !important; align-items:center !important; justify-content:space-between !important;
+            border-bottom:1px solid rgba(148,163,184,.13) !important;
+            background:linear-gradient(90deg,rgba(12,22,40,.98),rgba(20,17,43,.96)) !important;
+        }
+        #altairAIOverlay .altair-ai-title { display:flex !important; align-items:center !important; gap:14px !important; }
+        #altairAIOverlay .altair-ai-avatar {
+            width:46px !important; height:46px !important; display:grid !important; place-items:center !important;
+            border-radius:15px !important; color:#07111d !important; font-size:23px !important;
+            background:linear-gradient(135deg,#00f0ff,#8b5cf6 62%,#ff00d4) !important;
+            box-shadow:0 8px 28px rgba(0,220,255,.22) !important;
+        }
+        #altairAIOverlay .altair-ai-title h2 { margin:0 !important; color:#f8fbff !important; font-size:21px !important; font-weight:800 !important; letter-spacing:-.5px; }
+        #altairAIOverlay .altair-ai-title p { margin:3px 0 0 !important; color:#91a4bf !important; font-size:12px !important; }
+        #altairAIOverlay .altair-ai-status { color:#b9c8dc !important; font-size:12px !important; }
+        #altairAIOverlay .altair-ai-status span { box-shadow:0 0 10px #35e6a1 !important; }
+        #altairAIOverlay .altair-ai-close {
+            width:40px !important; height:40px !important; margin-left:12px !important; border-radius:13px !important;
+            border:1px solid rgba(148,163,184,.18) !important; background:rgba(255,255,255,.055) !important;
+            color:#dce8f8 !important; font-size:25px !important; transition:.2s ease;
+        }
+        #altairAIOverlay .altair-ai-close:hover { background:rgba(255,70,110,.16) !important; border-color:rgba(255,90,120,.45) !important; transform:rotate(90deg); }
+
+        #altairAIOverlay .altair-ai-stats {
+            flex:0 0 auto !important; display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+            gap:12px !important; padding:17px 24px !important;
+            background:rgba(7,13,27,.72) !important; border-bottom:1px solid rgba(148,163,184,.12) !important;
+        }
+        #altairAIOverlay .altair-ai-stat {
+            min-width:0 !important; display:flex !important; align-items:center !important; gap:12px !important;
+            padding:13px 15px !important; border:1px solid rgba(148,163,184,.13) !important;
+            border-radius:16px !important; background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018)) !important;
+        }
+        #altairAIOverlay .stat-icon { width:39px !important; height:39px !important; flex:0 0 39px !important; display:grid !important; place-items:center !important; border-radius:12px !important; }
+        #altairAIOverlay .altair-ai-stat span { display:block !important; color:#8fa2bd !important; font-size:11px !important; }
+        #altairAIOverlay .altair-ai-stat strong { display:block !important; margin-top:4px !important; color:#f5f8ff !important; font-size:17px !important; font-weight:800 !important; overflow-wrap:anywhere; }
+
+        #altairAIOverlay .altair-ai-body {
+            flex:1 1 auto !important; min-height:0 !important; display:grid !important;
+            grid-template-columns:minmax(0,1fr) 310px !important; gap:0 !important; overflow:hidden !important;
+        }
+        #altairAIOverlay .altair-ai-main {
+            min-width:0 !important; min-height:0 !important; overflow-y:auto !important;
+            padding:22px 26px 24px !important; scrollbar-width:thin; scrollbar-color:rgba(0,220,255,.3) transparent;
+        }
+        #altairAIOverlay .advisor-welcome {
+            display:flex !important; align-items:center !important; gap:15px !important;
+            padding:17px 20px !important; border:1px solid rgba(0,220,255,.17) !important;
+            border-radius:18px !important; background:linear-gradient(110deg,rgba(0,220,255,.085),rgba(139,92,246,.09),rgba(255,0,212,.035)) !important;
+        }
+        #altairAIOverlay .advisor-welcome-icon { width:42px !important; height:42px !important; flex:0 0 42px !important; display:grid !important; place-items:center !important; border-radius:14px !important; background:rgba(0,220,255,.13) !important; color:#54eaff !important; font-size:22px !important; }
+        #altairAIOverlay .advisor-welcome h3 { margin:0 0 5px !important; color:#f4f8ff !important; font-size:16px !important; }
+        #altairAIOverlay .advisor-welcome p { margin:0 !important; color:#9bacc4 !important; font-size:12px !important; line-height:1.6 !important; }
+        #altairAIOverlay .advisor-recommendation, #altairAIOverlay .advisor-questions { margin-top:17px !important; }
+        #altairAIOverlay .advisor-recommendation { padding:16px 18px !important; border:1px solid rgba(148,163,184,.13) !important; border-radius:17px !important; background:rgba(255,255,255,.028) !important; }
+        #altairAIOverlay .advisor-section-title, #altairAIOverlay .advisor-section-heading { color:#e9f2ff !important; }
+        #altairAIOverlay #advisorRecommendation { color:#aab9ce !important; font-size:12px !important; line-height:1.7 !important; }
+        #altairAIOverlay .advisor-question-grid { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:10px !important; }
+        #altairAIOverlay .advisor-question-grid button {
+            min-width:0 !important; min-height:76px !important; padding:12px !important; display:flex !important;
+            flex-direction:column !important; align-items:flex-start !important; justify-content:center !important; gap:7px !important;
+            border:1px solid rgba(133,160,196,.17) !important; border-radius:15px !important;
+            background:linear-gradient(145deg,rgba(29,42,67,.72),rgba(17,26,46,.82)) !important;
+            color:#dce8f8 !important; font-size:11px !important; text-align:left !important; line-height:1.35 !important;
+            transition:transform .18s ease,border-color .18s ease,background .18s ease !important;
+        }
+        #altairAIOverlay .advisor-question-grid button span { font-size:18px !important; }
+        #altairAIOverlay .advisor-question-grid button:hover { transform:translateY(-3px) !important; border-color:rgba(0,230,255,.55) !important; background:rgba(0,220,255,.09) !important; }
+        #altairAIOverlay .altair-chat-messages {
+            min-height:190px !important; max-height:none !important; margin-top:18px !important; padding:17px !important;
+            display:flex !important; flex-direction:column !important; gap:13px !important;
+            border:1px solid rgba(148,163,184,.12) !important; border-radius:18px !important;
+            background:rgba(3,9,22,.48) !important; overflow-y:auto !important;
+        }
+        #altairAIOverlay .otis-message-bubble { max-width:min(78%,720px) !important; padding:13px 16px !important; border-radius:15px !important; line-height:1.65 !important; font-size:13px !important; }
+        #altairAIOverlay .otis-user-bubble { align-self:flex-end !important; background:linear-gradient(120deg,#087f9b,#5141a7) !important; color:#fff !important; border:1px solid rgba(0,230,255,.22) !important; }
+        #altairAIOverlay .otis-loading-bubble { align-self:flex-start !important; background:rgba(35,49,73,.8) !important; color:#b8c9df !important; }
+
+        #altairAIOverlay .altair-ai-side {
+            min-width:0 !important; min-height:0 !important; overflow-y:auto !important; padding:22px 18px !important;
+            border-left:1px solid rgba(148,163,184,.12) !important; background:rgba(5,11,25,.52) !important;
+        }
+        #altairAIOverlay .advisor-side-card { margin-bottom:14px !important; padding:17px !important; border:1px solid rgba(148,163,184,.14) !important; border-radius:17px !important; background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.018)) !important; }
+        #altairAIOverlay .advisor-side-title { margin-bottom:15px !important; color:#eaf3ff !important; font-size:13px !important; font-weight:750 !important; }
+        #altairAIOverlay .advisor-intelligence > div { padding:11px 0 !important; border-bottom:1px solid rgba(148,163,184,.1) !important; }
+        #altairAIOverlay .advisor-intelligence > div:last-child { border-bottom:0 !important; }
+        #altairAIOverlay .advisor-intelligence span { color:#91a4bd !important; font-size:11px !important; }
+        #altairAIOverlay .advisor-intelligence strong { color:#f1f6ff !important; font-size:16px !important; }
+        #altairAIOverlay .focus-item { display:flex !important; gap:11px !important; padding:12px 0 !important; border-bottom:1px solid rgba(148,163,184,.1) !important; }
+        #altairAIOverlay .focus-item > span { color:#42dff4 !important; font-weight:800 !important; }
+        #altairAIOverlay .focus-item strong { color:#e8f0fc !important; font-size:12px !important; }
+        #altairAIOverlay .focus-item p { color:#91a4bd !important; font-size:11px !important; line-height:1.55 !important; }
+
+        #altairAIOverlay .altair-ai-input-area {
+            flex:0 0 auto !important; position:relative !important; bottom:auto !important; width:100% !important;
+            padding:15px 26px 17px !important; border-top:1px solid rgba(148,163,184,.14) !important;
+            background:rgba(8,14,29,.98) !important;
+        }
+        #altairAIOverlay .altair-ai-input-wrapper {
+            min-height:58px !important; display:flex !important; align-items:center !important; gap:12px !important;
+            padding:5px 7px 5px 17px !important; border:1px solid rgba(0,220,255,.28) !important;
+            border-radius:17px !important; background:#111b30 !important; box-shadow:0 0 0 4px rgba(0,220,255,.035) !important;
+        }
+        #altairAIOverlay .altair-ai-input-wrapper input { flex:1 1 auto !important; min-width:0 !important; min-height:44px !important; border:0 !important; outline:0 !important; background:transparent !important; color:#f5f8ff !important; font-size:13px !important; }
+        #altairAIOverlay .altair-ai-input-wrapper input::placeholder { color:#71839e !important; }
+        #altairAIOverlay .altair-send-button { min-height:44px !important; padding:0 20px !important; border:0 !important; border-radius:12px !important; background:linear-gradient(110deg,#00bfd5,#6550d8) !important; color:#fff !important; font-weight:750 !important; box-shadow:0 7px 20px rgba(0,190,220,.17) !important; }
+        #altairAIOverlay .altair-ai-input-area small { display:block !important; margin:8px 4px 0 !important; color:#71839e !important; font-size:10px !important; }
+
+        @media(max-width:1100px) {
+            #altairAIOverlay .altair-ai-body { grid-template-columns:minmax(0,1fr) 260px !important; }
+            #altairAIOverlay .advisor-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+        }
+        @media(max-width:760px) {
+            #altairAIOverlay { padding:0 !important; }
+            #altairAIOverlay .altair-ai-window { width:100vw !important; height:100dvh !important; max-height:100dvh !important; border-radius:0 !important; border:0 !important; }
+            #altairAIOverlay .altair-ai-header { flex-basis:65px !important; min-height:65px !important; padding:0 16px !important; }
+            #altairAIOverlay .altair-ai-stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; padding:10px !important; }
+            #altairAIOverlay .altair-ai-stat { padding:9px !important; gap:8px !important; }
+            #altairAIOverlay .stat-icon { width:32px !important; height:32px !important; flex-basis:32px !important; }
+            #altairAIOverlay .altair-ai-stat strong { font-size:14px !important; }
+            #altairAIOverlay .altair-ai-body { display:block !important; overflow-y:auto !important; }
+            #altairAIOverlay .altair-ai-main { padding:14px !important; overflow:visible !important; }
+            #altairAIOverlay .altair-ai-side { display:none !important; }
+            #altairAIOverlay .advisor-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+            #altairAIOverlay .altair-chat-messages { min-height:170px !important; max-height:32vh !important; }
+            #altairAIOverlay .altair-ai-input-area { padding:10px 12px 13px !important; }
+            #altairAIOverlay .otis-message-bubble { max-width:92% !important; }
+        }
+        @media(max-width:420px) {
+            #altairAIOverlay .altair-ai-title h2 { font-size:18px !important; }
+            #altairAIOverlay .altair-ai-status { display:none !important; }
+            #altairAIOverlay .advisor-welcome { padding:13px !important; }
+            #altairAIOverlay .advisor-question-grid button { min-height:66px !important; padding:9px !important; }
+            #altairAIOverlay .altair-send-button { padding:0 13px !important; }
+        }
+    </style>
 </body>
 
 </html>
