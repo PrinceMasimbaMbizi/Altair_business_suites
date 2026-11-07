@@ -35913,31 +35913,49 @@
             </a>
 
             <div class="menu-title">Business Management</div>
-            <a href="{{ url_for('employees_team') }}" class="nav-item" title="Employees & Team">
+            <a href="{{ url_for('employees_team') }}"
+                class="nav-item {% if request.endpoint == 'employees_team' %}active{% endif %}" {% if
+                request.endpoint=='employees_team' %}aria-current="page" {% endif %} title="Employees & Team">
                 <span class="nav-icon">🧑‍💼</span><span>Employees &amp; Team</span>
             </a>
-            <a href="{{ url_for('documents_reports') }}" class="nav-item" title="Documents & Reports">
+            <a href="{{ url_for('documents_reports') }}"
+                class="nav-item {% if request.endpoint == 'documents_reports' %}active{% endif %}" {% if
+                request.endpoint=='documents_reports' %}aria-current="page" {% endif %} title="Documents & Reports">
                 <span class="nav-icon">📄</span><span>Documents &amp; Reports</span>
             </a>
-            <a href="{{ url_for('notifications') }}" class="nav-item" title="Notifications">
+            <a href="{{ url_for('notifications') }}"
+                class="nav-item {% if request.endpoint == 'notifications' %}active{% endif %}" {% if
+                request.endpoint=='notifications' %}aria-current="page" {% endif %} title="Notifications">
                 <span class="nav-icon">🔔</span><span>Notifications</span>
             </a>
-            <a href="{{ url_for('integrations') }}" class="nav-item" title="Integrations">
+            <a href="{{ url_for('integrations') }}"
+                class="nav-item {% if request.endpoint == 'integrations' %}active{% endif %}" {% if
+                request.endpoint=='integrations' %}aria-current="page" {% endif %} title="Integrations">
                 <span class="nav-icon">🔗</span><span>Integrations</span>
             </a>
             <div class="menu-title">Account &amp; Billing</div>
-            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}" class="nav-item"
-                title="Subscription Plans">
+            <a href="{{ url_for('coming_soon', feature='subscription-plans') }}"
+                class="nav-item {% if request.view_args and request.view_args.get('feature') == 'subscription-plans' %}active{% endif %}"
+                {% if request.view_args and request.view_args.get('feature')=='subscription-plans' %}aria-current="page"
+                {% endif %} title="Subscription Plans">
                 <span class="nav-icon">👑</span><span>Subscription Plans</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='billing-payments') }}" class="nav-item"
-                title="Billing & Payments">
+            <a href="{{ url_for('coming_soon', feature='billing-payments') }}"
+                class="nav-item {% if request.view_args and request.view_args.get('feature') == 'billing-payments' %}active{% endif %}"
+                {% if request.view_args and request.view_args.get('feature')=='billing-payments' %}aria-current="page"
+                {% endif %} title="Billing & Payments">
                 <span class="nav-icon">💰</span><span>Billing &amp; Payments</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='billing-history') }}" class="nav-item" title="Billing History">
+            <a href="{{ url_for('coming_soon', feature='billing-history') }}"
+                class="nav-item {% if request.view_args and request.view_args.get('feature') == 'billing-history' %}active{% endif %}"
+                {% if request.view_args and request.view_args.get('feature')=='billing-history' %}aria-current="page" {%
+                endif %} title="Billing History">
                 <span class="nav-icon">🧾</span><span>Billing History</span>
             </a>
-            <a href="{{ url_for('coming_soon', feature='usage-limits') }}" class="nav-item" title="Usage & Limits">
+            <a href="{{ url_for('coming_soon', feature='usage-limits') }}"
+                class="nav-item {% if request.view_args and request.view_args.get('feature') == 'usage-limits' %}active{% endif %}"
+                {% if request.view_args and request.view_args.get('feature')=='usage-limits' %}aria-current="page" {%
+                endif %} title="Usage & Limits">
                 <span class="nav-icon">📊</span><span>Usage &amp; Limits</span>
             </a>
 
@@ -43096,9 +43114,11 @@
                                 <p>Values retrieved from your account</p>
                             </div>
                         </div>
-                        <div class="metric-row"><span>Total paid invoices</span><strong>{{ total_paid|money }}</strong>
+                        <div class="metric-row"><span>Paid-invoice revenue (12 months)</span><strong>{{ total_paid|money
+                                }}</strong>
                         </div>
-                        <div class="metric-row"><span>Total recorded expenses</span><strong>{{ total_expenses|money
+                        <div class="metric-row"><span>Recorded expenses (12 months)</span><strong>{{
+                                total_expenses|money
                                 }}</strong></div>
                         <div class="metric-row"><span>Overdue invoices</span><strong
                                 class="{% if overdue > 0 %}negative{% endif %}">{{ overdue|money }}</strong></div>
@@ -43740,70 +43760,215 @@
                     </div>
                 </div>
             </section>{% endif %}
-            <!-- ==================== BILLING AND PAYMENTS SECTION ==================== -->
-            {% if active_view == 'billing_payments' %}<section class="unified-view module-billing_payments"
-                id="view-billing_payments">
-                <div class="coming-topbar">
+            <!-- ==================== SUBSCRIPTION PLANS ==================== -->
+            {% if active_view == 'subscription_plans' %}
+            <section class="unified-view abs-module billing-workspace" id="view-subscription_plans">
+                <div class="abs-head">
                     <div>
-                        <div class="coming-eyebrow">ACCOUNT & BILLING</div>
-                        <h1>💰 Billing & Payments</h1>
-                        <p class="coming-subtitle">Your workspace, ready for what’s next.</p>
+                        <div class="coming-eyebrow">ACCOUNT &amp; BILLING</div>
+                        <h1>👑 Subscription Plans</h1>
+                        <p class="abs-muted">Choose the workspace tier that matches the way your business operates.</p>
                     </div>
-                    <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+                    <a class="coming-back" href="{{ url_for('dashboard') }}">← Dashboard</a>
                 </div>
-                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
-                <section class="coming-card">
-                    <div class="coming-icon">💰</div>
-                    <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
-                    <h2>Billing & Payments is under construction</h2>
-                    <p>Manage your Altair subscription billing details and payment methods from one convenient place.
-                    </p>
-                    <div class="coming-divider"></div>
-                    <div class="coming-note">
-                        <span class="coming-note-icon">🚧</span>
-                        <div>
-                            <strong>This service is still under construction</strong>
-                            <small>We’re working on this feature. It is not available yet, but your existing Altair
-                                Business
-                                Suite dashboard and current business records remain available.</small>
-                        </div>
+                <div class="billing-hero">
+                    <div><span class="billing-kicker">ALTAIR WORKSPACE MEMBERSHIP</span>
+                        <h2>More clarity. More control. One business workspace.</h2>
+                        <p>Plan requests are saved to your account. Pricing and payment activation can be confirmed with
+                            the Altair team before any charge is made.</p>
                     </div>
-                    <a href="{{ url_for('dashboard') }}" class="coming-primary">Return to Dashboard</a>
-                </section>
-                <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
-            </section>{% endif %}
-            <!-- ==================== BILLING HISTORY SECTION ==================== -->
-            {% if active_view == 'billing_history' %}<section class="unified-view module-billing_history"
-                id="view-billing_history">
-                <div class="coming-topbar">
+                    <div class="billing-current"><span>Current selection</span>
+                        <strong>{{ subscription.plan_name if subscription else 'No plan selected' }}</strong>
+                        <small>{{ subscription.status if subscription else 'Choose a plan to submit a request'
+                            }}</small>
+                    </div>
+                </div>
+                <div class="billing-plan-grid">
+                    {% for plan in [
+                    {'name':'Starter','tag':'For getting organised','icon':'🌱','desc':'Core tools for a small business
+                    building consistent records.','features':['Business dashboard','Customer and invoice
+                    management','Financial records and transactions','Standard business insights']},
+                    {'name':'Growth','tag':'For growing teams','icon':'🚀','desc':'A broader operating workspace for
+                    teams managing more activity.','features':['Everything in Starter','Employees and task
+                    management','Documents and business reports','Notifications and integrations directory']},
+                    {'name':'Professional','tag':'For advanced operations','icon':'💎','desc':'A complete operating view
+                    for businesses with more complex workflows.','features':['Everything in Growth','Forecasting and
+                    scenario planning','Advanced business intelligence','Priority onboarding discussion']}
+                    ] %}
+                    <article
+                        class="billing-plan-card {% if subscription and subscription.plan_name == plan.name %}is-selected{% endif %}">
+                        <div class="billing-plan-icon">{{ plan.icon }}</div><span class="billing-plan-tag">{{ plan.tag
+                            }}</span>
+                        <h3>{{ plan.name }}</h3>
+                        <p>{{ plan.desc }}</p>
+                        <ul>{% for feature_line in plan.features %}<li><span>✓</span>{{ feature_line }}</li>{% endfor %}
+                        </ul>
+                        <form method="post" action="{{ url_for('coming_soon', feature='subscription-plans') }}">
+                            <input type="hidden" name="action" value="request_plan"><input type="hidden"
+                                name="plan_name" value="{{ plan.name }}">
+                            <label class="billing-cycle-label">Billing preference</label>
+                            <select name="billing_cycle">
+                                <option>Monthly</option>
+                                <option>Annual</option>
+                            </select>
+                            <button class="abs-btn" type="submit">{% if subscription and subscription.plan_name ==
+                                plan.name %}Update request{% else %}Request this plan{% endif %}</button>
+                        </form>
+                    </article>
+                    {% endfor %}
+                </div>
+                <p class="billing-footnote">No card is charged and no subscription is activated by selecting a plan.
+                    Final pricing, terms and activation must be confirmed separately.</p>
+            </section>
+            {% endif %}
+
+            <!-- ==================== BILLING AND PAYMENTS ==================== -->
+            {% if active_view == 'billing_payments' %}
+            <section class="unified-view abs-module billing-workspace" id="view-billing_payments">
+                <div class="abs-head">
                     <div>
-                        <div class="coming-eyebrow">ACCOUNT & BILLING</div>
+                        <div class="coming-eyebrow">ACCOUNT &amp; BILLING</div>
+                        <h1>💰 Billing &amp; Payments</h1>
+                        <p class="abs-muted">Submit a payment reference and keep verification status visible.</p>
+                    </div>
+                    <a class="coming-back" href="{{ url_for('coming_soon', feature='billing-history') }}">View billing
+                        history →</a>
+                </div>
+                <div class="billing-summary-grid">
+                    <article><span>Selected plan</span><strong>{{ subscription.plan_name if subscription else 'Not
+                            selected' }}</strong><small>{{ subscription.billing_cycle if subscription else 'Choose a
+                            plan first' }}</small></article>
+                    <article><span>Plan status</span><strong>{{ subscription.status if subscription else 'No active
+                            plan' }}</strong><small>Activation requires confirmation</small></article>
+                    <article><span>Payment handling</span><strong>Manual verification</strong><small>No payment gateway
+                            is connected yet</small></article>
+                </div>
+                <div class="billing-form-panel">
+                    <div>
+                        <h2>Submit payment details</h2>
+                        <p>Use this form after making a payment through a method approved by Altair. The record will
+                            remain pending until an administrator verifies it.</p>
+                    </div>
+                    <form method="post" action="{{ url_for('coming_soon', feature='billing-payments') }}"
+                        class="abs-form">
+                        <input type="hidden" name="action" value="submit_payment">
+                        <div><label>Amount paid *</label><input name="amount" type="number" min="0.01" step="0.01"
+                                required placeholder="0.00"></div>
+                        <div><label>Currency *</label><select name="currency">
+                                <option value="ZAR">ZAR — South African Rand</option>
+                                <option value="USD">USD — US Dollar</option>
+                                <option value="INR">INR — Indian Rupee</option>
+                                <option value="GBP">GBP — Pound Sterling</option>
+                            </select></div>
+                        <div><label>Payment method *</label><select name="payment_method" required>
+                                <option value="">Select method</option>
+                                <option>Bank transfer</option>
+                                <option>Card payment</option>
+                                <option>Mobile money</option>
+                                <option>Other approved method</option>
+                            </select></div>
+                        <div><label>Payment reference *</label><input name="payment_reference" required maxlength="180"
+                                placeholder="Bank / transaction reference"></div>
+                        <div class="abs-full"><label>Notes (optional)</label><textarea name="notes"
+                                placeholder="Add payment date or other context"></textarea></div>
+                        <div class="abs-full"><button class="abs-btn" type="submit">Submit for verification</button>
+                        </div>
+                    </form>
+                </div>
+                <p class="billing-footnote">Submitting a reference is not proof of cleared funds. Do not enter card
+                    numbers, PINs, passwords or banking login details here.</p>
+            </section>
+            {% endif %}
+
+            <!-- ==================== BILLING HISTORY ==================== -->
+            {% if active_view == 'billing_history' %}
+            <section class="unified-view abs-module billing-workspace" id="view-billing_history">
+                <div class="abs-head">
+                    <div>
+                        <div class="coming-eyebrow">ACCOUNT &amp; BILLING</div>
                         <h1>🧾 Billing History</h1>
-                        <p class="coming-subtitle">Your workspace, ready for what’s next.</p>
+                        <p class="abs-muted">A clear audit trail of payment references submitted for this workspace.</p>
                     </div>
-                    <a class="coming-back" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+                    <a class="coming-back" href="{{ url_for('coming_soon', feature='billing-payments') }}">Submit
+                        payment →</a>
                 </div>
-                <!-- ==================== PLACEHOLDER CONTENT — FEATURE COMING SOON ==================== -->
-                <section class="coming-card">
-                    <div class="coming-icon">🧾</div>
-                    <span class="coming-pill"><span class="coming-dot"></span>Service Under Construction</span>
-                    <h2>Billing History is under construction</h2>
-                    <p>View your subscription invoices, receipts, and previous payment records in one organised place.
-                    </p>
-                    <div class="coming-divider"></div>
-                    <div class="coming-note">
-                        <span class="coming-note-icon">🚧</span>
-                        <div>
-                            <strong>This service is still under construction</strong>
-                            <small>We’re working on this feature. It is not available yet, but your existing Altair
-                                Business
-                                Suite dashboard and current business records remain available.</small>
-                        </div>
+                <div class="billing-summary-grid">
+                    <article><span>Records submitted</span><strong>{{ billing_records|length }}</strong><small>All
+                            recorded payment submissions</small></article>
+                    <article><span>Awaiting verification</span><strong>{{
+                            billing_records|selectattr('status','equalto','Pending Verification')|list|length
+                            }}</strong><small>Not yet confirmed by Altair</small></article>
+                    <article><span>Verified records</span><strong>{{
+                            billing_records|selectattr('status','equalto','Verified')|list|length
+                            }}</strong><small>Marked verified by an administrator</small></article>
+                </div>
+                <div class="abs-panel">
+                    <h2>Payment activity</h2>
+                    <div class="abs-table-wrap">
+                        <table class="abs-table">
+                            <thead>
+                                <tr>
+                                    <th>Date submitted</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Reference</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in billing_records %}<tr>
+                                    <td>{{ item.submitted_at }}</td>
+                                    <td><strong>{{ item.currency }} {{ item.amount|money }}</strong></td>
+                                    <td>{{ item.payment_method }}</td>
+                                    <td>{{ item.payment_reference }}</td>
+                                    <td><span class="billing-status">{{ item.status }}</span></td>
+                                </tr>
+                                {% else %}<tr>
+                                    <td colspan="5" class="abs-empty">No payment submissions yet. Submitted payment
+                                        references will appear here.</td>
+                                </tr>{% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <a href="{{ url_for('dashboard') }}" class="coming-primary">Return to Dashboard</a>
-                </section>
-                <p class="coming-footer">ALTAIR BUSINESS SUITE <span>•</span> Where Intelligence Meets Design</p>
-            </section>{% endif %}
+                </div>
+                <p class="billing-footnote">Only payment submissions stored in Altair appear here. This is not a tax
+                    invoice or bank statement.</p>
+            </section>
+            {% endif %}
+
+            <!-- ==================== USAGE AND LIMITS ==================== -->
+            {% if active_view == 'usage_limits' %}
+            <section class="unified-view abs-module billing-workspace" id="view-usage_limits">
+                <div class="abs-head">
+                    <div>
+                        <div class="coming-eyebrow">ACCOUNT &amp; BILLING</div>
+                        <h1>📊 Usage &amp; Limits</h1>
+                        <p class="abs-muted">Understand the volume of records currently stored in your business
+                            workspace.</p>
+                    </div>
+                    <a class="coming-back" href="{{ url_for('coming_soon', feature='subscription-plans') }}">Explore
+                        plans →</a>
+                </div>
+                <div class="billing-hero usage-hero">
+                    <div><span class="billing-kicker">WORKSPACE ACTIVITY</span>
+                        <h2>Your business, at a glance.</h2>
+                        <p>These figures are live record counts. No artificial quota or plan limit is shown until Altair
+                            publishes and assigns one to your account.</p>
+                    </div>
+                    <div class="billing-current"><span>Assigned plan</span><strong>{{ subscription.plan_name if
+                            subscription else 'Not selected' }}</strong>
+                        <small>{{ subscription.status if subscription else 'No plan request recorded' }}</small>
+                    </div>
+                </div>
+                <div class="usage-grid">{% for item in usage %}<article class="usage-card">
+                        <div>{{ item.icon }}</div><span>{{ item.label }}</span><strong>{{ item.count
+                            }}</strong><small>Records in this workspace</small>
+                    </article>{% endfor %}</div>
+                <p class="billing-footnote">Usage is counted from saved database records belonging to your signed-in
+                    account. It does not include deleted or external provider data.</p>
+            </section>
+            {% endif %}
+
             <!-- ==================== INTEGRATIONS SECTION ==================== -->
             {% if active_view == 'integrations' %}
             <section class="unified-view abs-module" id="view-integrations">
@@ -47333,7 +47498,7 @@
         const ctx = document.getElementById('forecastChart');
         const chartData = ctx ? ctx.dataset : {};
         const forecastLabels = (chartData.chartLabels || '').split('~').filter(Boolean);
-        const parseSeries = (value) => (value || '').split(',').filter(Boolean).map(Number);
+        const parseSeries = (value) => (value || '').split(',').map(v => v.trim() === '' ? null : Number(v));
         const revenueHistory = parseSeries(chartData.revenueHistory);
         const expenseHistory = parseSeries(chartData.expenseHistory);
         const revenueForecast = parseSeries(chartData.revenueForecast);
@@ -47394,10 +47559,10 @@
                 ['AI Lead Finder', '/ai-leads'],
                 ['Business Analytics', '/business-analytics'],
                 ['Forecasting', '/forecasting'],
-                ['Employees', '/coming-soon/employees-team'],
-                ['Reports', '/coming-soon/documents-reports'],
-                ['Notifications', '/coming-soon/notifications'],
-                ['Integrations', '/coming-soon/integrations'],
+                ['Employees', '/employees-team'],
+                ['Reports', '/documents-reports'],
+                ['Notifications', '/notifications'],
+                ['Integrations', '/integrations'],
                 ['Subscription Plans', '/coming-soon/subscription-plans'],
                 ['Billing and Payments', '/coming-soon/billing-payments'],
                 ['Billing History', '/coming-soon/billing-history'],
@@ -48585,6 +48750,659 @@
             }
         }
     </style>
+
+    <style id="altair-professional-module-refresh">
+        /* Shared polished module system */
+        .abs-module {
+            max-width: 1320px !important;
+            margin: 0 auto !important;
+            padding-bottom: 28px;
+        }
+
+        .abs-head {
+            padding: 24px 26px !important;
+            border: 1px solid var(--altair-line, #e7e8f1) !important;
+            border-radius: 22px !important;
+            background: linear-gradient(120deg, var(--altair-surface, #fff), rgba(124, 58, 237, .045)) !important;
+            box-shadow: 0 12px 34px rgba(28, 25, 55, .055) !important;
+            margin-bottom: 22px !important;
+        }
+
+        .abs-head h1 {
+            font-size: clamp(23px, 2.4vw, 31px) !important;
+            letter-spacing: -.7px;
+        }
+
+        .abs-muted {
+            line-height: 1.65 !important;
+        }
+
+        .abs-panel {
+            border: 1px solid var(--altair-line, #e7e8f1) !important;
+            border-radius: 19px !important;
+            box-shadow: 0 10px 28px rgba(25, 25, 50, .055) !important;
+            padding: 23px !important;
+        }
+
+        .abs-panel h2 {
+            font-size: 16px !important;
+            letter-spacing: -.2px;
+        }
+
+        .abs-btn {
+            min-height: 43px;
+            padding: 11px 18px !important;
+            border-radius: 11px !important;
+            box-shadow: 0 7px 17px rgba(99, 64, 190, .16);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .abs-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 11px 22px rgba(99, 64, 190, .23);
+        }
+
+        .abs-form input:focus,
+        .abs-form select:focus,
+        .abs-form textarea:focus,
+        .billing-plan-card select:focus {
+            outline: 0;
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, .12);
+        }
+
+        .abs-table {
+            min-width: 680px !important;
+        }
+
+        .abs-table th {
+            padding-top: 14px !important;
+            padding-bottom: 14px !important;
+        }
+
+        .abs-table tbody tr:hover {
+            background: rgba(124, 58, 237, .035);
+        }
+
+        .abs-chip,
+        .billing-status {
+            border-radius: 999px;
+            padding: 5px 10px;
+            background: rgba(124, 58, 237, .10);
+            color: #6941c6;
+            font-size: 10px;
+            font-weight: 750;
+            white-space: nowrap;
+        }
+
+        .abs-item {
+            padding: 15px 0 !important;
+        }
+
+        .coming-back {
+            border-radius: 10px !important;
+            padding: 10px 13px !important;
+            background: rgba(124, 58, 237, .08) !important;
+        }
+
+        .nav-item.active {
+            position: relative;
+            background: linear-gradient(100deg, rgba(139, 92, 246, .24), rgba(139, 92, 246, .09)) !important;
+            color: #fff !important;
+            border-left: 3px solid #a78bfa !important;
+            box-shadow: inset 0 0 0 1px rgba(167, 139, 250, .16), 0 5px 15px rgba(0, 0, 0, .12);
+        }
+
+        .nav-item.active::after {
+            content: "OPEN";
+            margin-left: auto;
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: .6px;
+            color: #ddd6fe;
+            background: rgba(139, 92, 246, .24);
+        }
+
+        .nav-item[aria-current="page"] {
+            font-weight: 750 !important;
+        }
+
+        .billing-workspace {
+            --bill-accent: #7654d6;
+        }
+
+        .billing-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+            padding: 30px;
+            border-radius: 23px;
+            margin-bottom: 22px;
+            color: #f7f7ff;
+            background: radial-gradient(circle at 88% 12%, rgba(0, 240, 255, .23), transparent 30%),
+                linear-gradient(125deg, #17152d, #29214a 58%, #17415a);
+            box-shadow: 0 18px 42px rgba(36, 25, 77, .18);
+        }
+
+        .billing-kicker {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #9eeef5;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .billing-hero h2 {
+            max-width: 650px;
+            margin: 0 0 9px;
+            font-size: clamp(22px, 2.5vw, 31px);
+            line-height: 1.2;
+        }
+
+        .billing-hero p {
+            max-width: 690px;
+            margin: 0;
+            color: #c6c8dd;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .billing-current {
+            min-width: 190px;
+            padding: 17px 19px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .08);
+        }
+
+        .billing-current span,
+        .billing-current small {
+            display: block;
+            color: #b9bdd3;
+            font-size: 10px;
+        }
+
+        .billing-current strong {
+            display: block;
+            margin: 7px 0;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .billing-plan-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .billing-plan-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 23px;
+            border: 1px solid var(--altair-line, #e7e8f1);
+            border-radius: 20px;
+            background: var(--altair-surface, #fff);
+            box-shadow: 0 10px 30px rgba(24, 24, 48, .055);
+            transition: transform .2s ease, border-color .2s ease;
+        }
+
+        .billing-plan-card:hover {
+            transform: translateY(-4px);
+            border-color: #a78bfa;
+        }
+
+        .billing-plan-card.is-selected {
+            border: 2px solid #8b5cf6;
+            background: linear-gradient(160deg, rgba(139, 92, 246, .07), var(--altair-surface, #fff) 48%);
+        }
+
+        .billing-plan-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: rgba(139, 92, 246, .12);
+            font-size: 23px;
+        }
+
+        .billing-plan-tag {
+            margin-top: 17px;
+            color: #8b5cf6;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+        }
+
+        .billing-plan-card h3 {
+            margin: 7px 0;
+            font-size: 23px;
+        }
+
+        .billing-plan-card>p {
+            min-height: 42px;
+            color: var(--altair-muted, #77788a);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .billing-plan-card ul {
+            display: grid;
+            gap: 11px;
+            list-style: none;
+            margin: 18px 0 22px;
+            padding: 0;
+        }
+
+        .billing-plan-card li {
+            display: flex;
+            gap: 9px;
+            color: var(--altair-text, #29293a);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .billing-plan-card li span {
+            color: #16a36a;
+            font-weight: 900;
+        }
+
+        .billing-plan-card form {
+            display: grid;
+            gap: 9px;
+            margin-top: auto;
+        }
+
+        .billing-cycle-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--altair-muted, #77788a);
+        }
+
+        .billing-plan-card select {
+            min-height: 40px;
+            padding: 8px 10px;
+            border: 1px solid var(--altair-line, #dedee8);
+            border-radius: 10px;
+            background: var(--altair-surface, #fff);
+            color: var(--altair-text, #222);
+        }
+
+        .billing-footnote {
+            margin: 17px 0 0;
+            color: var(--altair-muted, #77788a);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .billing-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .billing-summary-grid article {
+            display: grid;
+            gap: 7px;
+            padding: 19px;
+            border: 1px solid var(--altair-line, #e7e8f1);
+            border-radius: 17px;
+            background: var(--altair-surface, #fff);
+            box-shadow: 0 8px 22px rgba(25, 25, 50, .045);
+        }
+
+        .billing-summary-grid span,
+        .billing-summary-grid small {
+            color: var(--altair-muted, #77788a);
+            font-size: 10px;
+        }
+
+        .billing-summary-grid strong {
+            color: var(--altair-text, #202033);
+            font-size: 18px;
+            overflow-wrap: anywhere;
+        }
+
+        .billing-form-panel {
+            display: grid;
+            grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr);
+            gap: 24px;
+            padding: 25px;
+            border: 1px solid var(--altair-line, #e7e8f1);
+            border-radius: 20px;
+            background: var(--altair-surface, #fff);
+            box-shadow: 0 10px 28px rgba(25, 25, 50, .05);
+        }
+
+        .billing-form-panel h2 {
+            margin: 0 0 9px;
+            font-size: 18px;
+        }
+
+        .billing-form-panel p {
+            color: var(--altair-muted, #77788a);
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .usage-card {
+            display: grid;
+            gap: 7px;
+            padding: 20px;
+            border: 1px solid var(--altair-line, #e7e8f1);
+            border-radius: 18px;
+            background: var(--altair-surface, #fff);
+            box-shadow: 0 8px 24px rgba(25, 25, 50, .045);
+        }
+
+        .usage-card>div {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, .11);
+            font-size: 19px;
+        }
+
+        .usage-card span {
+            margin-top: 6px;
+            color: var(--altair-muted, #77788a);
+            font-size: 11px;
+        }
+
+        .usage-card strong {
+            font-size: 27px;
+            color: var(--altair-text, #202033);
+        }
+
+        .usage-card small {
+            color: var(--altair-muted, #77788a);
+            font-size: 10px;
+        }
+
+        .usage-hero {
+            margin-bottom: 20px;
+        }
+
+        /* Forecasting: clearer hierarchy and readable chart area */
+        .module-forecasting {
+            max-width: 1320px !important;
+        }
+
+        .module-forecasting .forecast-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 22px;
+            padding: 27px;
+            border-radius: 21px;
+            background: linear-gradient(120deg, #19152e, #30235a 60%, #17485a);
+            color: #fff;
+            box-shadow: 0 14px 35px rgba(35, 25, 75, .14);
+        }
+
+        .module-forecasting .forecast-hero h2 {
+            font-size: 27px;
+            margin: 8px 0;
+        }
+
+        .module-forecasting .forecast-hero p {
+            color: #d0cce2;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .module-forecasting .forecast-cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .module-forecasting .forecast-card,
+        .module-forecasting .panel {
+            border: 1px solid var(--altair-line, #e7e8f1);
+            border-radius: 18px;
+            background: var(--altair-surface, #fff);
+            box-shadow: 0 8px 25px rgba(25, 25, 50, .05);
+        }
+
+        .module-forecasting .forecast-card {
+            position: relative;
+            padding: 19px;
+        }
+
+        .module-forecasting .forecast-card h3 {
+            font-size: 23px;
+            margin: 15px 0 7px;
+            overflow-wrap: anywhere;
+        }
+
+        .module-forecasting .forecast-card p,
+        .module-forecasting .panel p {
+            color: var(--altair-muted, #77788a);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .module-forecasting .chart-box {
+            height: 350px;
+            padding: 12px;
+        }
+
+        .module-forecasting .panel {
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        .module-forecasting .two-col {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .module-forecasting .metric-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 0;
+            border-bottom: 1px solid var(--altair-line, #eee);
+            font-size: 12px;
+        }
+
+        .module-forecasting .scenario-result {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .module-forecasting .scenario-result>div {
+            display: grid;
+            gap: 7px;
+            padding: 15px;
+            border-radius: 13px;
+            background: rgba(139, 92, 246, .07);
+        }
+
+        .module-forecasting .scenario-result span {
+            color: var(--altair-muted, #77788a);
+            font-size: 10px;
+        }
+
+        .module-forecasting .scenario-result strong {
+            font-size: 17px;
+        }
+
+        .module-forecasting .forecast-disclaimer {
+            margin: 14px 0;
+            color: var(--altair-muted, #77788a);
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        /* Otis: let the chat area use the available window height without forcing the whole modal to scroll */
+        #altairAIOverlay .altair-ai-window {
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+
+        #altairAIOverlay .altair-ai-body {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 310px !important;
+            overflow: hidden !important;
+        }
+
+        #altairAIOverlay .altair-ai-main {
+            min-width: 0 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            padding: 22px 26px !important;
+        }
+
+        #altairAIOverlay .altair-chat-messages {
+            min-height: 180px !important;
+            max-height: 36vh !important;
+            flex: 1 1 240px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-area {
+            flex: 0 0 auto !important;
+            position: relative !important;
+            bottom: auto !important;
+        }
+
+        #altairAIOverlay .otis-message-bubble {
+            width: fit-content;
+            max-width: min(82%, 720px) !important;
+            white-space: pre-wrap !important;
+            overflow-wrap: anywhere !important;
+        }
+
+        #altairAIOverlay .otis-assistant-bubble {
+            background: linear-gradient(145deg, rgba(34, 47, 70, .98), rgba(20, 29, 47, .98)) !important;
+            border: 1px solid rgba(120, 180, 230, .18) !important;
+            color: #f2f6ff !important;
+        }
+
+        #altairAIOverlay .otis-user-bubble {
+            background: linear-gradient(120deg, #0e9eb5, #6650d8) !important;
+            color: #fff !important;
+        }
+
+        #altairAIOverlay .advisor-welcome {
+            border: 1px solid rgba(0, 220, 255, .15) !important;
+            border-radius: 18px !important;
+        }
+
+        #altairAIOverlay .advisor-recommendation {
+            border: 1px solid rgba(148, 163, 184, .13) !important;
+            border-radius: 17px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-area {
+            padding: 14px 24px 17px !important;
+        }
+
+        @media(max-width:900px) {
+            .billing-plan-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .module-forecasting .forecast-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .billing-form-panel {
+                grid-template-columns: 1fr;
+            }
+
+            #altairAIOverlay .altair-ai-body {
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            #altairAIOverlay .altair-ai-side {
+                display: none !important;
+            }
+        }
+
+        @media(max-width:700px) {
+            .nav-item.active::after {
+                display: none !important;
+            }
+        }
+
+        @media(max-width:650px) {
+            .abs-head {
+                padding: 18px !important;
+            }
+
+            .billing-hero {
+                display: grid;
+                padding: 22px;
+            }
+
+            .billing-current {
+                min-width: 0;
+            }
+
+            .billing-plan-grid,
+            .billing-summary-grid,
+            .usage-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .module-forecasting .forecast-hero {
+                display: grid;
+            }
+
+            .module-forecasting .forecast-cards,
+            .module-forecasting .two-col,
+            .module-forecasting .scenario-result {
+                grid-template-columns: 1fr;
+            }
+
+            .module-forecasting .chart-box {
+                height: 270px;
+            }
+
+            #altairAIOverlay .altair-ai-main {
+                padding: 14px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stats {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            #altairAIOverlay .altair-chat-messages {
+                max-height: 34vh !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-area {
+                padding: 10px 12px 13px !important;
+            }
+        }
+    </style>
+
 </body>
 
 </html>

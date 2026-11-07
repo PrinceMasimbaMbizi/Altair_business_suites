@@ -4206,6 +4206,40 @@ def ensure_business_management_tables(cursor):
     """)
 
 
+def ensure_billing_tables(cursor):
+    """Create ABS subscription and payment-ledger tables. No payment is auto-confirmed."""
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_subscriptions (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            plan_name VARCHAR(80) NOT NULL,
+            billing_cycle VARCHAR(30) NOT NULL DEFAULT 'Monthly',
+            status VARCHAR(40) NOT NULL DEFAULT 'Plan requested',
+            requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_abs_subscription_company (company_id, user_id),
+            INDEX idx_abs_subscription_user (user_id, company_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_billing_payments (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            amount DECIMAL(14,2) NOT NULL,
+            currency VARCHAR(8) NOT NULL DEFAULT 'ZAR',
+            payment_method VARCHAR(60) NOT NULL,
+            payment_reference VARCHAR(180) NOT NULL,
+            notes TEXT NULL,
+            status VARCHAR(40) NOT NULL DEFAULT 'Pending Verification',
+            submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            verified_at DATETIME NULL,
+            INDEX idx_abs_billing_payment_company (company_id, user_id, submitted_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+
+
 def get_company_context_or_redirect():
     """Return the signed-in user's company, or send them to setup."""
     if not session.get("user_id"):
@@ -4509,10 +4543,125 @@ def integrations():
 
 
 # EASY GUIDE: Coming soon pages - show a message for unfinished modules.
-@app.route("/coming-soon/<feature>")
+@app.route("/coming-soon/<feature>", methods=["GET", "POST"])
 def coming_soon(feature):
     if "user_id" not in session:
         return redirect(url_for("login"))
+
+    billing_views = {
+        "subscription-plans": "subscription_plans",
+        "billing-payments": "billing_payments",
+        "billing-history": "billing_history",
+        "usage-limits": "usage_limits",
+    }
+    if feature in billing_views:
+        company, response = get_company_context_or_redirect()
+        if response:
+            return response
+        db = get_db_connection()
+        cur = db.cursor(dictionary=True)
+        try:
+            ensure_business_management_tables(cur)
+            ensure_billing_tables(cur)
+
+            if request.method == "POST":
+                action = request.form.get("action", "").strip()
+                if feature == "subscription-plans" and action == "request_plan":
+                    plan_name = request.form.get("plan_name", "").strip()
+                    billing_cycle = request.form.get("billing_cycle", "Monthly").strip()
+                    allowed_plans = {"Starter", "Growth", "Professional"}
+                    if plan_name not in allowed_plans or billing_cycle not in {"Monthly", "Annual"}:
+                        flash("Choose a valid plan and billing cycle.", "error")
+                    else:
+                        cur.execute("""
+                            INSERT INTO abs_subscriptions
+                                (user_id, company_id, plan_name, billing_cycle, status)
+                            VALUES (%s, %s, %s, %s, 'Plan requested')
+                            ON DUPLICATE KEY UPDATE
+                                plan_name=VALUES(plan_name),
+                                billing_cycle=VALUES(billing_cycle),
+                                status='Plan requested',
+                                updated_at=CURRENT_TIMESTAMP
+                        """, (session["user_id"], company["id"], plan_name, billing_cycle))
+                        db.commit()
+                        flash("Your plan request has been saved. No payment has been taken.", "success")
+                    return redirect(url_for("coming_soon", feature=feature))
+
+                if feature == "billing-payments" and action == "submit_payment":
+                    try:
+                        amount = float(request.form.get("amount", "0"))
+                    except (TypeError, ValueError):
+                        amount = 0
+                    currency = request.form.get("currency", "ZAR").strip().upper()
+                    method = request.form.get("payment_method", "").strip()
+                    reference = request.form.get("payment_reference", "").strip()
+                    notes = request.form.get("notes", "").strip() or None
+                    if amount <= 0 or amount > 1000000000 or len(currency) > 8 or not method or not reference:
+                        flash("Enter a valid amount, currency, payment method and reference.", "error")
+                    else:
+                        cur.execute("""
+                            INSERT INTO abs_billing_payments
+                                (user_id, company_id, amount, currency, payment_method,
+                                 payment_reference, notes, status)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, 'Pending Verification')
+                        """, (session["user_id"], company["id"], amount, currency,
+                              method, reference, notes))
+                        db.commit()
+                        flash("Payment details submitted for verification. Your payment is not marked as paid yet.", "success")
+                    return redirect(url_for("coming_soon", feature=feature))
+
+            cur.execute("""
+                SELECT * FROM abs_subscriptions
+                WHERE user_id=%s AND company_id=%s LIMIT 1
+            """, (session["user_id"], company["id"]))
+            subscription = cur.fetchone()
+
+            context = {
+                "company": company,
+                "user_name": session.get("user_name"),
+                "user_email": session.get("user_email"),
+                "subscription": subscription,
+                "active_view": billing_views[feature],
+            }
+
+            if feature == "billing-history":
+                cur.execute("""
+                    SELECT * FROM abs_billing_payments
+                    WHERE user_id=%s AND company_id=%s
+                    ORDER BY submitted_at DESC, id DESC
+                """, (session["user_id"], company["id"]))
+                context["billing_records"] = cur.fetchall()
+
+            elif feature == "usage-limits":
+                cur.execute("SELECT COUNT(*) AS n FROM customers WHERE user_id=%s", (session["user_id"],))
+                customers_count = (cur.fetchone() or {}).get("n", 0)
+                cur.execute("SELECT COUNT(*) AS n FROM invoices WHERE user_id=%s", (session["user_id"],))
+                invoices_count = (cur.fetchone() or {}).get("n", 0)
+                cur.execute("SELECT COUNT(*) AS n FROM abs_employees WHERE user_id=%s AND company_id=%s",
+                            (session["user_id"], company["id"]))
+                employees_count = (cur.fetchone() or {}).get("n", 0)
+                cur.execute("SELECT COUNT(*) AS n FROM abs_documents WHERE user_id=%s AND company_id=%s",
+                            (session["user_id"], company["id"]))
+                documents_count = (cur.fetchone() or {}).get("n", 0)
+                cur.execute("SELECT COUNT(*) AS n FROM abs_integrations WHERE user_id=%s AND company_id=%s",
+                            (session["user_id"], company["id"]))
+                integrations_count = (cur.fetchone() or {}).get("n", 0)
+                cur.execute("SELECT COUNT(*) AS n FROM leads WHERE user_id=%s", (session["user_id"],))
+                leads_count = (cur.fetchone() or {}).get("n", 0)
+                context["usage"] = [
+                    {"label": "Customers", "count": customers_count, "icon": "👥"},
+                    {"label": "Invoices", "count": invoices_count, "icon": "🧾"},
+                    {"label": "Team members", "count": employees_count, "icon": "🧑‍💼"},
+                    {"label": "Documents", "count": documents_count, "icon": "📄"},
+                    {"label": "Integrations", "count": integrations_count, "icon": "🔗"},
+                    {"label": "Leads", "count": leads_count, "icon": "🎯"},
+                ]
+
+            return _flask_render_template("index.html", **context)
+        finally:
+            cur.close()
+            db.close()
+
     functional_routes = {
         "employees-team": "employees_team",
         "documents-reports": "documents_reports",
@@ -4523,61 +4672,20 @@ def coming_soon(feature):
         return redirect(url_for(functional_routes[feature]))
 
     features = {
-        "subscription-plans": {"title": "Subscription Plans", "icon": "👑", "category": "ACCOUNT & BILLING", "description": "Explore subscription tiers and choose the features that fit your business.", "status": "Coming Soon"},
-        "billing-payments": {"title": "Billing & Payments", "icon": "💰", "category": "ACCOUNT & BILLING", "description": "Manage your Altair subscription payments and billing details in one place.", "status": "Coming Soon"},
-        "billing-history": {"title": "Billing History", "icon": "🧾", "category": "ACCOUNT & BILLING", "description": "Review previous subscription invoices, receipts, and payment records.", "status": "Coming Soon"},
-        "usage-limits": {"title": "Usage & Limits", "icon": "📊", "category": "ACCOUNT & BILLING", "description": "Track plan usage, limits, and available allowances for your account.", "status": "Coming Soon"},
-        "employees-team": {"title": "Employees & Team", "icon": "🧑‍💼", "category": "BUSINESS MANAGEMENT", "description": "Invite teammates, organise roles, and manage access to your company workspace.", "status": "Coming Soon"},
-        "documents-reports": {"title": "Documents & Reports", "icon": "📄", "category": "BUSINESS MANAGEMENT", "description": "Keep important business documents and downloadable reports organised.", "status": "Coming Soon"},
-        "notifications": {"title": "Notifications", "icon": "🔔", "category": "BUSINESS MANAGEMENT", "description": "Control business alerts, reminders, and important account notifications.", "status": "Coming Soon"},
-        "integrations": {"title": "Integrations", "icon": "🔗", "category": "BUSINESS MANAGEMENT", "description": "Connect Altair with the tools and services your business already uses.", "status": "Coming Soon"},
         "facebook-analytics": {"title": "Facebook Analytics", "icon": "📘", "category": "BUSINESS INTELLIGENCE", "description": "Connect Facebook Page insights and review audience engagement, reach, and lead activity.", "status": "Under Construction"},
         "whatsapp-analytics": {"title": "WhatsApp Analytics", "icon": "💬", "category": "BUSINESS INTELLIGENCE", "description": "WhatsApp business messaging analytics and conversation insights are being prepared.", "status": "Under Construction"},
-        "altair-ai-assistant": {"title": "Altair AI Assistant", "icon": "✨", "category": "BUSINESS INTELLIGENCE", "description": "A dedicated Altair AI Assistant workspace is being prepared. You can continue using Otis from the dashboard in the meantime.", "status": "Under Construction"},
+        "altair-ai-assistant": {"title": "Altair AI Assistant", "icon": "✨", "category": "BUSINESS INTELLIGENCE", "description": "Use Otis from the dashboard to ask questions about your business.", "status": "Available"},
     }
-
     feature_data = features.get(feature)
     if not feature_data:
         abort(404)
-
-    db = None
-    cursor = None
-    company = None
-    try:
-        db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
-        cursor.execute(
-            "SELECT * FROM companies WHERE user_id = %s LIMIT 1",
-            (session["user_id"],)
-        )
-        company = cursor.fetchone()
-    finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
-
-    if company is None:
-        return redirect(url_for("company_setup"))
-
-    template_by_feature = {
-        "subscription-plans": "subscription_plans.html",
-        "billing-payments": "billing_payments.html",
-        "billing-history": "billing_history.html",
-        "usage-limits": "usage_limits.html",
-        "employees-team": "employees_team.html",
-        "documents-reports": "documents_reports.html",
-        "notifications": "notifications.html",
-        "integrations": "integrations.html",
-    }
-
-    return render_template(
-        template_by_feature.get(feature, "subscription_plans.html"),
-        company=company,
-        feature=feature_data,
-        feature_slug=feature,
-        user_name=session.get("user_name"),
-        user_email=session.get("user_email"),
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    return _flask_render_template(
+        "index.html", active_view="coming_soon", company=company,
+        feature=feature_data, feature_slug=feature,
+        user_name=session.get("user_name"), user_email=session.get("user_email")
     )
 
 
@@ -4593,37 +4701,176 @@ def coming_soon(feature):
 # EASY GUIDE: Forecasting page - shows predicted business income and costs.
 @app.route("/forecasting", methods=["GET", "POST"])
 def forecasting():
+    """Build a transparent planning forecast from this company's recorded invoices and expenses."""
     if "user_id" not in session:
         return redirect(url_for("login"))
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
 
-    # The forecast interface is being completed. Show a useful branded placeholder
-    # instead of redirecting the user back to the dashboard or returning a 405.
-    feature = {
-        "title": "Forecasting Centre",
-        "icon": "🔮",
-        "category": "BUSINESS INTELLIGENCE",
-        "description": "Forecasting charts and scenario planning are being prepared for your business workspace.",
-        "status": "Under Construction",
-    }
-    db = None
-    cursor = None
-    company = None
     try:
-        db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (session["user_id"],))
-        company = cursor.fetchone()
-    except Exception:
-        app.logger.exception("FORECASTING PLACEHOLDER COMPANY LOOKUP FAILED")
+        period = int(request.values.get("period", 3))
+    except (TypeError, ValueError):
+        period = 3
+    if period not in (3, 6, 12):
+        period = 3
+    try:
+        revenue_change = float(request.values.get("revenue_change", 0))
+        expense_change = float(request.values.get("expense_change", 0))
+    except (TypeError, ValueError):
+        revenue_change, expense_change = 0.0, 0.0
+    revenue_change = max(-50.0, min(100.0, revenue_change))
+    expense_change = max(-50.0, min(100.0, expense_change))
+
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute("""
+            SELECT invoice_date, created_at, amount, status
+            FROM invoices WHERE user_id=%s
+        """, (session["user_id"],))
+        invoice_rows = cur.fetchall()
+
+        cur.execute("""
+            SELECT expense_date, amount
+            FROM expenses WHERE user_id=%s
+        """, (session["user_id"],))
+        expense_rows = cur.fetchall()
+
+        cur.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM invoices WHERE user_id=%s
+              AND LOWER(COALESCE(status,'')) IN ('pending','unpaid','sent','draft','overdue','late')
+        """, (session["user_id"],))
+        outstanding = float((cur.fetchone() or {}).get("total") or 0)
+
+        cur.execute("""
+            SELECT COALESCE(SUM(amount), 0) AS total
+            FROM invoices WHERE user_id=%s
+              AND LOWER(COALESCE(status,'')) IN ('overdue','late')
+        """, (session["user_id"],))
+        overdue = float((cur.fetchone() or {}).get("total") or 0)
     finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
-    if company is None:
-        return redirect(url_for("company_setup"))
-    return render_template("subscription_plans.html", company=company, feature=feature, feature_slug="forecasting",
-                           user_name=session.get("user_name"), user_email=session.get("user_email"))
+        cur.close()
+        db.close()
+
+    today = date.today()
+    history_months = []
+    for offset in range(11, -1, -1):
+        y, m = today.year, today.month - offset
+        while m <= 0:
+            y -= 1
+            m += 12
+        history_months.append(date(y, m, 1))
+
+    def as_day(value):
+        if not value:
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        try:
+            return datetime.fromisoformat(str(value)[:10]).date()
+        except (TypeError, ValueError):
+            return None
+
+    revenue_map = {d.strftime("%Y-%m"): 0.0 for d in history_months}
+    expense_map = {d.strftime("%Y-%m"): 0.0 for d in history_months}
+    paid_statuses = {"paid", "complete", "completed"}
+
+    for row in invoice_rows:
+        day = as_day(row.get("invoice_date") or row.get("created_at"))
+        status = str(row.get("status") or "").strip().lower()
+        if day and day.strftime("%Y-%m") in revenue_map and status in paid_statuses:
+            revenue_map[day.strftime("%Y-%m")] += float(row.get("amount") or 0)
+
+    for row in expense_rows:
+        day = as_day(row.get("expense_date"))
+        if day and day.strftime("%Y-%m") in expense_map:
+            expense_map[day.strftime("%Y-%m")] += float(row.get("amount") or 0)
+
+    revenue_history = [round(revenue_map[d.strftime("%Y-%m")], 2) for d in history_months]
+    expense_history = [round(expense_map[d.strftime("%Y-%m")], 2) for d in history_months]
+    data_months = sum(1 for i in range(12) if revenue_history[i] or expense_history[i])
+
+    def forecast_series(values, steps):
+        """Linear trend when enough observations exist; otherwise use a cautious mean baseline."""
+        nonzero = [v for v in values if v > 0]
+        if not nonzero:
+            return [0.0] * steps, "No recorded history"
+        if len(nonzero) >= 3:
+            model = LinearRegression()
+            x = np.arange(len(values)).reshape(-1, 1)
+            model.fit(x, np.asarray(values, dtype=float))
+            future_x = np.arange(len(values), len(values) + steps).reshape(-1, 1)
+            preds = model.predict(future_x)
+            method = "Linear trend across the last 12 calendar months"
+        else:
+            baseline = float(np.mean(nonzero))
+            preds = np.repeat(baseline, steps)
+            method = "Average of months with recorded activity (limited history)"
+        return [round(max(0.0, float(v)), 2) for v in preds], method
+
+    revenue_base, revenue_method = forecast_series(revenue_history, period)
+    expense_base, expense_method = forecast_series(expense_history, period)
+    revenue_forecast = [round(v * (1 + revenue_change / 100), 2) for v in revenue_base]
+    expense_forecast = [round(v * (1 + expense_change / 100), 2) for v in expense_base]
+
+    forecast_revenue_total = round(sum(revenue_forecast), 2)
+    forecast_expense_total = round(sum(expense_forecast), 2)
+    forecast_net_total = round(forecast_revenue_total - forecast_expense_total, 2)
+
+    future_months = []
+    y, m = today.year, today.month
+    for _ in range(period):
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+        future_months.append(date(y, m, 1))
+    chart_labels = [d.strftime("%b %y") for d in history_months + future_months]
+    revenue_chart = revenue_history + [None] * period
+    expense_chart = expense_history + [None] * period
+    forecast_revenue_chart = [None] * 12 + revenue_forecast
+    forecast_expense_chart = [None] * 12 + expense_forecast
+
+    insights = []
+    if data_months == 0:
+        insights.append("There is not enough recorded financial activity yet. Add paid invoices and expenses to establish a useful baseline.")
+    elif data_months < 4:
+        insights.append("Only a small number of the last 12 months contain financial activity. Treat this estimate as an early planning guide.")
+    else:
+        insights.append(f"The model found recorded activity in {data_months} of the last 12 calendar months.")
+    if forecast_net_total < 0:
+        insights.append("The selected scenario projects expenses above paid-invoice revenue. Review costs and consider ways to improve collections.")
+    else:
+        insights.append("The selected scenario projects paid-invoice revenue above recorded expenses. Keep monitoring actual results against the estimate.")
+    if outstanding > 0:
+        insights.append(f"Outstanding invoices total {outstanding:,.2f}. This is not included as received revenue in the forecast.")
+    if revenue_change or expense_change:
+        insights.append(f"What-if scenario applied: revenue {revenue_change:+.0f}% and expenses {expense_change:+.0f}% versus the baseline.")
+
+    data_quality = "No history yet" if data_months == 0 else ("Limited history" if data_months < 4 else "Based on recorded data")
+    data_note = "Only records saved in this Altair account are included. Missing or incorrectly dated records can affect the estimate."
+    total_paid = round(sum(revenue_history), 2)
+    total_expenses = round(sum(expense_history), 2)
+
+    return _flask_render_template(
+        "index.html", active_view="forecasting", company=company,
+        user_name=session.get("user_name"), user_email=session.get("user_email"),
+        period=period, revenue_change=revenue_change, expense_change=expense_change,
+        forecast_revenue_total=forecast_revenue_total,
+        forecast_expense_total=forecast_expense_total,
+        forecast_net_total=forecast_net_total, outstanding=outstanding, overdue=overdue,
+        chart_labels=chart_labels, revenue_chart=revenue_chart,
+        expense_chart=expense_chart, forecast_revenue_chart=forecast_revenue_chart,
+        forecast_expense_chart=forecast_expense_chart, insights=insights,
+        data_quality=data_quality, data_note=data_note,
+        total_paid=total_paid, total_expenses=total_expenses,
+        data_months=data_months, revenue_method=revenue_method,
+        expense_method=expense_method,
+    )
 
 # CUSTOMERS ROUTE COMPATIBILITY FIX
 # Some templates still call url_for("customers"), while the main route endpoint
