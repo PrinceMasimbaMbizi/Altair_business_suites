@@ -66,8 +66,9 @@ if not app.secret_key:
 
 # Login sessions are browser-session-only (not remembered permanently).
 app.config.update(
-    SESSION_PERMANENT=False,
-    SESSION_REFRESH_EACH_REQUEST=False,
+    SESSION_PERMANENT=True,
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+    SESSION_REFRESH_EACH_REQUEST=True,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("RENDER", "").strip().lower() == "true",
@@ -105,7 +106,7 @@ _TEMPLATE_VIEW_MAP = {
     "integrations.html": "integrations",
     "subscription_plans.html": "coming_soon",
     "usage_limits.html": "coming_soon",
-    "notifications.html": "coming_soon",
+    "notifications.html": "notifications",
 }
 
 def render_template(template_name, **context):
@@ -719,18 +720,17 @@ def register():
 
         db.commit()
 
-        app.logger.info(
-            "New user account created successfully."
-        )
+        new_user_id = cursor.lastrowid
+        session.clear()
+        session.permanent = True
+        session["show_workspace_loader"] = True
+        session["user_id"] = new_user_id
+        session["user_name"] = name
+        session["user_email"] = email
 
-        flash(
-            "Account created successfully. Please log in.",
-            "success"
-        )
-
-        return redirect(
-            url_for("login")
-        )
+        app.logger.info("New user account created and signed in.")
+        flash("Account created. First, set up your company.", "success")
+        return redirect(url_for("company_setup"))
 
     except Exception as e:
 
@@ -799,6 +799,23 @@ def register():
 )
 def login():
 
+    # If the browser still has a valid remembered session, skip the login form.
+    if request.method == "GET" and session.get("user_id"):
+        db_existing = None
+        cur_existing = None
+        try:
+            db_existing = get_db_connection()
+            cur_existing = db_existing.cursor(dictionary=True)
+            cur_existing.execute("SELECT id FROM companies WHERE user_id=%s LIMIT 1", (session["user_id"],))
+            return redirect(url_for("dashboard") if cur_existing.fetchone() else url_for("company_setup"))
+        except Exception:
+            session.clear()
+        finally:
+            if cur_existing:
+                cur_existing.close()
+            if db_existing:
+                db_existing.close()
+
     if request.method == "POST":
 
         email = request.form.get(
@@ -851,7 +868,7 @@ def login():
             ):
                 # Start a clean authenticated session after login.
                 session.clear()
-                session.permanent = False
+                session.permanent = True
                 session["show_workspace_loader"] = True
                 session["user_id"] = user["id"]
 
@@ -859,14 +876,14 @@ def login():
 
                 session["user_email"] = user["email"]
 
-                flash(
-                    "Welcome back!",
-                    "success"
+                # Existing accounts go straight into their workspace.
+                cursor.execute(
+                    "SELECT id FROM companies WHERE user_id = %s LIMIT 1",
+                    (user["id"],)
                 )
-
-                return redirect(
-                    url_for("dashboard")
-                )
+                has_company = cursor.fetchone()
+                flash("Welcome back!", "success")
+                return redirect(url_for("dashboard") if has_company else url_for("company_setup"))
 
             flash(
                 "Invalid email or password.",
@@ -985,6 +1002,19 @@ def company_setup():
     user_id = session["user_id"]
 
     if request.method == "GET":
+        db_check = None
+        cur_check = None
+        try:
+            db_check = get_db_connection()
+            cur_check = db_check.cursor(dictionary=True)
+            cur_check.execute("SELECT id FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
+            if cur_check.fetchone():
+                return redirect(url_for("dashboard"))
+        finally:
+            if cur_check:
+                cur_check.close()
+            if db_check:
+                db_check.close()
         return render_template("company_setup.html")
 
     print("========== COMPANY SETUP POST STARTED ==========")
@@ -4079,6 +4109,400 @@ def dashboard():
 
 
 
+
+
+# =====================================================================
+# BUSINESS MANAGEMENT MODULES: TEAM, DOCUMENTS, NOTIFICATIONS, INTEGRATIONS
+# All records are scoped to the signed-in user's company.
+# =====================================================================
+
+def ensure_business_management_tables(cursor):
+    """Create the additional ABS business-management tables when needed."""
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_employees (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            full_name VARCHAR(180) NOT NULL,
+            email VARCHAR(254) NULL,
+            phone VARCHAR(60) NULL,
+            job_title VARCHAR(120) NULL,
+            department VARCHAR(120) NULL,
+            role VARCHAR(40) NOT NULL DEFAULT 'Employee',
+            employment_status VARCHAR(30) NOT NULL DEFAULT 'Active',
+            start_date DATE NULL,
+            address TEXT NULL,
+            emergency_contact VARCHAR(180) NULL,
+            notes TEXT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_abs_emp_company (company_id, user_id),
+            UNIQUE KEY uq_abs_emp_email_company (company_id, email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_employee_tasks (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            employee_id BIGINT NULL,
+            title VARCHAR(220) NOT NULL,
+            description TEXT NULL,
+            priority VARCHAR(20) NOT NULL DEFAULT 'Normal',
+            status VARCHAR(30) NOT NULL DEFAULT 'To Do',
+            due_date DATE NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at DATETIME NULL,
+            INDEX idx_abs_task_company (company_id, user_id),
+            CONSTRAINT fk_abs_task_employee FOREIGN KEY (employee_id)
+                REFERENCES abs_employees(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_documents (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            title VARCHAR(220) NOT NULL,
+            document_type VARCHAR(80) NOT NULL DEFAULT 'General',
+            description TEXT NULL,
+            file_url TEXT NULL,
+            reference_number VARCHAR(100) NULL,
+            document_date DATE NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_abs_docs_company (company_id, user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_notifications (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            title VARCHAR(220) NOT NULL,
+            message TEXT NOT NULL,
+            category VARCHAR(50) NOT NULL DEFAULT 'General',
+            priority VARCHAR(20) NOT NULL DEFAULT 'Normal',
+            source_type VARCHAR(50) NULL,
+            source_id BIGINT NULL,
+            due_at DATETIME NULL,
+            is_read TINYINT(1) NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_abs_notif_user (user_id, company_id, is_read, created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS abs_integrations (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            company_id BIGINT NOT NULL,
+            integration_name VARCHAR(120) NOT NULL,
+            provider VARCHAR(120) NOT NULL,
+            description TEXT NULL,
+            connection_url TEXT NULL,
+            status VARCHAR(30) NOT NULL DEFAULT 'Not connected',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_abs_integrations_company (company_id, user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+
+
+def get_company_context_or_redirect():
+    """Return the signed-in user's company, or send them to setup."""
+    if not session.get("user_id"):
+        return None, redirect(url_for("login"))
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        cur.execute("SELECT * FROM companies WHERE user_id=%s LIMIT 1", (session["user_id"],))
+        company = cur.fetchone()
+    finally:
+        cur.close()
+        db.close()
+    if not company:
+        return None, redirect(url_for("company_setup"))
+    return company, None
+
+
+def _management_page(view_name, **context):
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    context["company"] = company
+    context["user_name"] = session.get("user_name")
+    context["user_email"] = session.get("user_email")
+    context["active_view"] = view_name
+    return _flask_render_template("index.html", **context)
+
+
+@app.route("/employees-team", methods=["GET", "POST"])
+def employees_team():
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        ensure_business_management_tables(cur)
+        if request.method == "POST":
+            action = request.form.get("action", "add_employee")
+            if action == "add_employee":
+                full_name = request.form.get("full_name", "").strip()
+                if not full_name:
+                    flash("Enter the employee's name.", "error")
+                else:
+                    cur.execute("""INSERT INTO abs_employees
+                        (user_id,company_id,full_name,email,phone,job_title,department,role,
+                         employment_status,start_date,address,emergency_contact,notes)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                        (session["user_id"], company["id"], full_name,
+                         request.form.get("email","").strip() or None,
+                         request.form.get("phone","").strip() or None,
+                         request.form.get("job_title","").strip() or None,
+                         request.form.get("department","").strip() or None,
+                         request.form.get("role","Employee"),
+                         request.form.get("employment_status","Active"),
+                         request.form.get("start_date") or None,
+                         request.form.get("address","").strip() or None,
+                         request.form.get("emergency_contact","").strip() or None,
+                         request.form.get("notes","").strip() or None))
+                    db.commit()
+                    flash("Employee added successfully.", "success")
+            elif action == "add_task":
+                title = request.form.get("title","").strip()
+                if not title:
+                    flash("Enter a task title.", "error")
+                else:
+                    employee_id = request.form.get("employee_id") or None
+                    if employee_id:
+                        cur.execute("SELECT id FROM abs_employees WHERE id=%s AND user_id=%s AND company_id=%s",
+                                    (employee_id, session["user_id"], company["id"]))
+                        if not cur.fetchone():
+                            employee_id = None
+                    cur.execute("""INSERT INTO abs_employee_tasks
+                        (user_id,company_id,employee_id,title,description,priority,status,due_date)
+                        VALUES (%s,%s,%s,%s,%s,%s,'To Do',%s)""",
+                        (session["user_id"], company["id"], employee_id, title,
+                         request.form.get("description","").strip() or None,
+                         request.form.get("priority","Normal"),
+                         request.form.get("due_date") or None))
+                    db.commit()
+                    flash("Task assigned successfully.", "success")
+            elif action == "update_task":
+                task_id = request.form.get("task_id")
+                status = request.form.get("status","To Do")
+                if status not in ("To Do","In Progress","Blocked","Completed"):
+                    status = "To Do"
+                cur.execute("""UPDATE abs_employee_tasks SET status=%s,
+                    completed_at=CASE WHEN %s='Completed' THEN NOW() ELSE NULL END
+                    WHERE id=%s AND user_id=%s AND company_id=%s""",
+                    (status,status,task_id,session["user_id"],company["id"]))
+                db.commit()
+                flash("Task status updated.", "success")
+            return redirect(url_for("employees_team"))
+        cur.execute("SELECT * FROM abs_employees WHERE user_id=%s AND company_id=%s ORDER BY created_at DESC",
+                    (session["user_id"],company["id"]))
+        employees = cur.fetchall()
+        cur.execute("""SELECT t.*, e.full_name AS employee_name FROM abs_employee_tasks t
+            LEFT JOIN abs_employees e ON e.id=t.employee_id
+            WHERE t.user_id=%s AND t.company_id=%s ORDER BY
+            (t.status='Completed'), t.due_date IS NULL, t.due_date ASC, t.created_at DESC""",
+            (session["user_id"],company["id"]))
+        tasks = cur.fetchall()
+        return _flask_render_template("index.html", active_view="employees_team",
+            company=company, employees=employees, tasks=tasks,
+            user_name=session.get("user_name"), user_email=session.get("user_email"))
+    finally:
+        cur.close()
+        db.close()
+
+
+@app.route("/documents-reports", methods=["GET", "POST"])
+def documents_reports():
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        ensure_business_management_tables(cur)
+        if request.method == "POST":
+            title = request.form.get("title","").strip()
+            if title:
+                cur.execute("""INSERT INTO abs_documents
+                    (user_id,company_id,title,document_type,description,file_url,reference_number,document_date)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
+                    (session["user_id"],company["id"],title,
+                     request.form.get("document_type","General"),
+                     request.form.get("description","").strip() or None,
+                     request.form.get("file_url","").strip() or None,
+                     request.form.get("reference_number","").strip() or None,
+                     request.form.get("document_date") or None))
+                db.commit()
+                flash("Document record saved.", "success")
+            else:
+                flash("Enter a document title.", "error")
+            return redirect(url_for("documents_reports"))
+        cur.execute("SELECT * FROM abs_documents WHERE user_id=%s AND company_id=%s ORDER BY created_at DESC",
+                    (session["user_id"],company["id"]))
+        documents = cur.fetchall()
+        return _flask_render_template("index.html", active_view="documents_reports",
+            company=company, documents=documents, user_name=session.get("user_name"),
+            user_email=session.get("user_email"))
+    finally:
+        cur.close()
+        db.close()
+
+
+@app.route("/notifications", methods=["GET", "POST"])
+def notifications():
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        ensure_business_management_tables(cur)
+        if request.method == "POST":
+            action = request.form.get("action")
+            if action == "mark_read":
+                cur.execute("UPDATE abs_notifications SET is_read=1 WHERE id=%s AND user_id=%s AND company_id=%s",
+                            (request.form.get("notification_id"),session["user_id"],company["id"]))
+            elif action == "mark_all_read":
+                cur.execute("UPDATE abs_notifications SET is_read=1 WHERE user_id=%s AND company_id=%s",
+                            (session["user_id"],company["id"]))
+            db.commit()
+            return redirect(url_for("notifications"))
+
+        # Generate fresh alerts from current financial records (idempotent by source/type).
+        cur.execute("""SELECT id, invoice_number, customer_name, amount, due_date, status
+            FROM invoices WHERE user_id=%s AND status IN ('Pending','Overdue') AND due_date IS NOT NULL""",
+            (session["user_id"],))
+        for inv in cur.fetchall():
+            due = inv.get("due_date")
+            overdue = due and due < date.today()
+            title = ("Invoice overdue: " if overdue else "Invoice awaiting payment: ") + str(inv.get("invoice_number") or inv["id"])
+            msg = f"{inv.get('customer_name') or 'Customer'} — amount {inv.get('amount') or 0}; due {due}."
+            cur.execute("""SELECT id FROM abs_notifications WHERE user_id=%s AND company_id=%s
+                AND source_type='invoice' AND source_id=%s LIMIT 1""",
+                (session["user_id"],company["id"],inv["id"]))
+            existing_alert = cur.fetchone()
+            if existing_alert:
+                cur.execute("""UPDATE abs_notifications SET title=%s,message=%s,priority=%s,due_at=%s
+                    WHERE id=%s AND user_id=%s AND company_id=%s""",
+                    (title,msg,"High" if overdue else "Normal",
+                     datetime.combine(due, datetime.min.time()) if due else None,
+                     existing_alert["id"],session["user_id"],company["id"]))
+            else:
+                cur.execute("""INSERT INTO abs_notifications
+                    (user_id,company_id,title,message,category,priority,source_type,source_id,due_at)
+                    VALUES (%s,%s,%s,%s,'Invoice',%s,'invoice',%s,%s)""",
+                    (session["user_id"],company["id"],title,msg,"High" if overdue else "Normal",
+                     inv["id"],datetime.combine(due, datetime.min.time()) if due else None))
+        # Loan alerts use the existing ABS business_loans table and its current loan status.
+        cur.execute("""SELECT id, loan_number, borrower_name, total_repayable, loan_status,
+            first_payment_date FROM business_loans
+            WHERE user_id=%s AND loan_status IN ('Pending','Overdue')""", (session["user_id"],))
+        for loan in cur.fetchall():
+            due = loan.get("first_payment_date")
+            overdue = due and due < date.today()
+            title = ("Loan repayment overdue: " if overdue else "Loan awaiting action: ") + str(loan.get("loan_number") or loan["id"])
+            msg = f"{loan.get('borrower_name') or 'Borrower'} — expected repayment {loan.get('total_repayable') or 0}; due {due or 'date not set'}."
+            cur.execute("""SELECT id FROM abs_notifications WHERE user_id=%s AND company_id=%s
+                AND source_type='loan' AND source_id=%s LIMIT 1""",
+                (session["user_id"],company["id"],loan["id"]))
+            existing_alert = cur.fetchone()
+            if existing_alert:
+                cur.execute("""UPDATE abs_notifications SET title=%s,message=%s,priority=%s,due_at=%s
+                    WHERE id=%s AND user_id=%s AND company_id=%s""",
+                    (title,msg,"High" if overdue else "Normal",
+                     datetime.combine(due, datetime.min.time()) if due else None,
+                     existing_alert["id"],session["user_id"],company["id"]))
+            else:
+                cur.execute("""INSERT INTO abs_notifications
+                    (user_id,company_id,title,message,category,priority,source_type,source_id,due_at)
+                    VALUES (%s,%s,%s,%s,'Loan',%s,'loan',%s,%s)""",
+                    (session["user_id"],company["id"],title,msg,"High" if overdue else "Normal",
+                     loan["id"],datetime.combine(due, datetime.min.time()) if due else None))
+        # Team tasks that are due today or already late also appear here.
+        cur.execute("""SELECT id,title,due_date,status FROM abs_employee_tasks
+            WHERE user_id=%s AND company_id=%s AND status <> 'Completed'
+            AND due_date IS NOT NULL AND due_date <= CURDATE()""",
+            (session["user_id"],company["id"]))
+        for task in cur.fetchall():
+            task_due = task.get("due_date")
+            task_title = ("Task overdue: " if task_due and task_due < date.today() else "Task due today: ") + task["title"]
+            cur.execute("""SELECT id FROM abs_notifications WHERE user_id=%s AND company_id=%s
+                AND source_type='team_task' AND source_id=%s LIMIT 1""",
+                (session["user_id"],company["id"],task["id"]))
+            existing_task_alert = cur.fetchone()
+            task_message = f"Task status: {task['status']}; due date: {task_due}."
+            if existing_task_alert:
+                cur.execute("""UPDATE abs_notifications SET title=%s,message=%s,priority='High',due_at=%s
+                    WHERE id=%s AND user_id=%s AND company_id=%s""",
+                    (task_title,task_message,datetime.combine(task_due,datetime.min.time()),
+                     existing_task_alert["id"],session["user_id"],company["id"]))
+            else:
+                cur.execute("""INSERT INTO abs_notifications
+                    (user_id,company_id,title,message,category,priority,source_type,source_id,due_at)
+                    VALUES (%s,%s,%s,%s,'Team task','High','team_task',%s,%s)""",
+                    (session["user_id"],company["id"],task_title,task_message,task["id"],
+                     datetime.combine(task_due,datetime.min.time())))
+        db.commit()
+        cur.execute("""SELECT * FROM abs_notifications WHERE user_id=%s AND company_id=%s
+            ORDER BY is_read ASC, COALESCE(due_at,created_at) ASC, created_at DESC""",
+            (session["user_id"],company["id"]))
+        notification_rows = cur.fetchall()
+        unread_count = sum(1 for n in notification_rows if not n["is_read"])
+        return _flask_render_template("index.html", active_view="notifications",
+            company=company, notifications=notification_rows, unread_count=unread_count,
+            user_name=session.get("user_name"), user_email=session.get("user_email"))
+    finally:
+        cur.close()
+        db.close()
+
+
+@app.route("/integrations", methods=["GET", "POST"])
+def integrations():
+    company, response = get_company_context_or_redirect()
+    if response:
+        return response
+    db = get_db_connection()
+    cur = db.cursor(dictionary=True)
+    try:
+        ensure_business_management_tables(cur)
+        if request.method == "POST":
+            action = request.form.get("action","save")
+            if action == "delete":
+                cur.execute("DELETE FROM abs_integrations WHERE id=%s AND user_id=%s AND company_id=%s",
+                            (request.form.get("integration_id"),session["user_id"],company["id"]))
+                db.commit()
+                flash("Integration entry removed.", "success")
+            else:
+                name = request.form.get("integration_name","").strip()
+                provider = request.form.get("provider","").strip()
+                if name and provider:
+                    cur.execute("""INSERT INTO abs_integrations
+                        (user_id,company_id,integration_name,provider,description,connection_url,status)
+                        VALUES (%s,%s,%s,%s,%s,%s,'Not connected')""",
+                        (session["user_id"],company["id"],name,provider,
+                         request.form.get("description","").strip() or None,
+                         request.form.get("connection_url","").strip() or None))
+                    db.commit()
+                    flash("Integration details saved. Connect credentials through the provider's secure setup before enabling it.", "success")
+                else:
+                    flash("Enter an integration name and provider.", "error")
+            return redirect(url_for("integrations"))
+        cur.execute("SELECT * FROM abs_integrations WHERE user_id=%s AND company_id=%s ORDER BY created_at DESC",
+                    (session["user_id"],company["id"]))
+        integration_rows = cur.fetchall()
+        return _flask_render_template("index.html", active_view="integrations",
+            company=company, integrations=integration_rows, user_name=session.get("user_name"),
+            user_email=session.get("user_email"))
+    finally:
+        cur.close()
+        db.close()
+
+
 # COMING SOON: ACCOUNT, BILLING, AND BUSINESS MANAGEMENT MODULES
 
 
@@ -4089,6 +4513,14 @@ def dashboard():
 def coming_soon(feature):
     if "user_id" not in session:
         return redirect(url_for("login"))
+    functional_routes = {
+        "employees-team": "employees_team",
+        "documents-reports": "documents_reports",
+        "notifications": "notifications",
+        "integrations": "integrations",
+    }
+    if feature in functional_routes:
+        return redirect(url_for(functional_routes[feature]))
 
     features = {
         "subscription-plans": {"title": "Subscription Plans", "icon": "👑", "category": "ACCOUNT & BILLING", "description": "Explore subscription tiers and choose the features that fit your business.", "status": "Coming Soon"},
