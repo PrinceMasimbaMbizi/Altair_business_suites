@@ -3115,12 +3115,26 @@ def altair_response_engine(intent, business_data, analysis):
     return altair_response_engine_legacy(intent, business_data, analysis)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # PART 27 - OTIS CHAT ROUTE: receive a question from the chat window and return an answer.
-
-
-
-
-
 # ALTAIR AI CHAT API
 
 

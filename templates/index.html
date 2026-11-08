@@ -35806,6 +35806,299 @@
             width: min(100%, 1080px);
             margin: 0 auto;
         }
+
+        /* =====================================================
+   OTIS AI CHATBOT - NEW RESPONSIVE DESIGN
+   ===================================================== */
+
+        #altairAIOverlay .altair-ai-window {
+            width: min(1240px, 94vw) !important;
+            height: min(820px, 90vh) !important;
+            max-height: 90vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            border-radius: 20px !important;
+            margin: auto !important;
+        }
+
+
+        /* OTIS HEADER */
+
+        #altairAIOverlay .altair-ai-header {
+            flex: 0 0 auto !important;
+            min-height: 66px !important;
+            padding: 12px 20px !important;
+        }
+
+
+        /* OTIS STATISTICS */
+
+        #altairAIOverlay .altair-ai-stats {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+            padding: 10px 18px !important;
+        }
+
+        #altairAIOverlay .altair-ai-stat {
+            padding: 10px !important;
+            min-width: 0 !important;
+        }
+
+
+        /* MAIN CHAT AREA */
+
+        #altairAIOverlay .altair-ai-body {
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 270px !important;
+            gap: 14px !important;
+            padding: 14px !important;
+            overflow: hidden !important;
+        }
+
+
+        /* LEFT CHAT COLUMN */
+
+        #altairAIOverlay .altair-ai-main {
+            display: flex !important;
+            flex-direction: column !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            gap: 10px !important;
+            overflow: hidden !important;
+        }
+
+
+        /* WELCOME MESSAGE */
+
+        #altairAIOverlay .advisor-welcome {
+            flex: 0 0 auto !important;
+            padding: 13px 15px !important;
+            margin: 0 !important;
+        }
+
+
+        /* RECOMMENDATION BOX */
+
+        #altairAIOverlay .advisor-recommendation {
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            padding: 10px 14px !important;
+        }
+
+
+        /* QUICK QUESTIONS */
+
+        #altairAIOverlay .advisor-questions {
+            flex: 0 0 auto !important;
+            margin: 0 !important;
+            padding: 8px 0 !important;
+        }
+
+        #altairAIOverlay .advisor-question-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+        }
+
+        #altairAIOverlay .advisor-question-grid button {
+            min-width: 0 !important;
+            padding: 9px 10px !important;
+            font-size: 11px !important;
+        }
+
+
+        /* CHAT MESSAGES - USE AVAILABLE SPACE */
+
+        #altairAIOverlay #altairChatMessages {
+            flex: 1 1 180px !important;
+            min-height: 150px !important;
+            max-height: none !important;
+            height: auto !important;
+            overflow-y: auto !important;
+            padding: 12px !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            scroll-behavior: smooth !important;
+        }
+
+
+        /* MESSAGE BUBBLES */
+
+        #altairAIOverlay .otis-message-bubble {
+            max-width: 90% !important;
+            width: fit-content !important;
+            padding: 11px 14px !important;
+            margin: 0 !important;
+            font-size: 12px !important;
+            line-height: 1.6 !important;
+            overflow-wrap: anywhere !important;
+            word-break: normal !important;
+        }
+
+        #altairAIOverlay .otis-assistant-bubble {
+            align-self: flex-start !important;
+        }
+
+        #altairAIOverlay .otis-user-bubble {
+            align-self: flex-end !important;
+        }
+
+
+        /* RIGHT INFORMATION PANEL */
+
+        #altairAIOverlay .altair-ai-side {
+            width: auto !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            padding: 12px !important;
+        }
+
+
+        /* MESSAGE INPUT - FIXED AT BOTTOM */
+
+        #altairAIOverlay .altair-ai-input-area {
+            flex: 0 0 auto !important;
+            width: 100% !important;
+            padding: 12px 18px !important;
+            margin: 0 !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            min-height: 46px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper input,
+        #altairAIOverlay .altair-ai-input-wrapper textarea {
+            min-height: 44px !important;
+            font-size: 13px !important;
+            padding: 10px 14px !important;
+        }
+
+        #altairAIOverlay .altair-send-button {
+            min-width: 44px !important;
+            min-height: 44px !important;
+        }
+
+
+        /* TABLET SCREENS */
+
+        @media (max-width: 1000px) {
+
+            #altairAIOverlay .altair-ai-body {
+                grid-template-columns: minmax(0, 1fr) 220px !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+        }
+
+
+        /* MOBILE SCREENS */
+
+        @media (max-width: 760px) {
+
+            #altairAIOverlay .altair-ai-window {
+                width: 96vw !important;
+                height: calc(100dvh - 16px) !important;
+                max-height: calc(100dvh - 16px) !important;
+                border-radius: 15px !important;
+            }
+
+            #altairAIOverlay .altair-ai-header {
+                padding: 10px 13px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 7px !important;
+                padding: 8px 12px !important;
+            }
+
+            #altairAIOverlay .altair-ai-body {
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 10px !important;
+                gap: 8px !important;
+            }
+
+            #altairAIOverlay .altair-ai-side {
+                display: none !important;
+            }
+
+            #altairAIOverlay .altair-ai-main {
+                flex: 1 1 auto !important;
+                width: 100% !important;
+            }
+
+            #altairAIOverlay .advisor-welcome {
+                padding: 10px !important;
+            }
+
+            #altairAIOverlay .advisor-recommendation {
+                padding: 8px 10px !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 6px !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid button {
+                font-size: 10px !important;
+                padding: 8px !important;
+            }
+
+            #altairAIOverlay #altairChatMessages {
+                flex: 1 1 150px !important;
+                min-height: 120px !important;
+            }
+
+            #altairAIOverlay .otis-message-bubble {
+                max-width: 95% !important;
+                font-size: 12px !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-area {
+                padding: 9px 10px !important;
+            }
+
+        }
+
+
+        /* VERY SMALL MOBILE SCREENS */
+
+        @media (max-width: 420px) {
+
+            #altairAIOverlay .altair-ai-header {
+                min-height: 54px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stat {
+                padding: 7px !important;
+            }
+
+            #altairAIOverlay .advisor-welcome {
+                font-size: 12px !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-wrapper input,
+            #altairAIOverlay .altair-ai-input-wrapper textarea {
+                font-size: 12px !important;
+            }
+
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
