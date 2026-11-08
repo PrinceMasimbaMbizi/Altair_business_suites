@@ -36159,7 +36159,9 @@
 
             <div class="menu-title">Main</div>
             <a href="{{ url_for('dashboard') }}"
-                class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" title="Dashboard">
+                class="nav-item {% if request.endpoint == 'dashboard' and request.args.get('open_otis') != '1' %}active{% endif %}"
+                {% if request.endpoint=='dashboard' and request.args.get('open_otis') !='1' %}aria-current="page" {%
+                endif %} title="Dashboard">
                 <span class="nav-icon">📊</span><span>Dashboard</span>
             </a>
             <a href="{{ url_for('customer') }}"
@@ -36201,7 +36203,10 @@
                 class="nav-item {% if request.endpoint == 'forecasting' %}active{% endif %}" title="Forecasting">
                 <span class="nav-icon">🔮</span><span>Forecasting</span>
             </a>
-            <a href="{{ url_for('dashboard', open_otis=1) }}" class="nav-item" title="Open Otis AI Assistant">
+            <a href="{{ url_for('dashboard', open_otis=1) }}"
+                class="nav-item {% if request.endpoint == 'dashboard' and request.args.get('open_otis') == '1' %}active{% endif %}"
+                {% if request.endpoint=='dashboard' and request.args.get('open_otis')=='1' %}aria-current="page" {%
+                endif %} title="Open Otis AI Assistant">
                 <span class="nav-icon">✨</span><span>Altair AI Assistant</span>
             </a>
 
@@ -45198,6 +45203,15 @@
 
             if (overlay) {
 
+                // Keep Otis outside the dashboard/main content wrappers. Those
+                // wrappers can establish a containing block and clip fixed overlays.
+                // Appending to body makes the assistant cover the full browser viewport.
+                if (overlay.parentElement !== document.body) {
+                    document.body.appendChild(overlay);
+                }
+
+                overlay.style.position = "fixed";
+                overlay.style.inset = "0";
                 overlay.style.display = "flex";
                 overlay.classList.add("is-open");
                 overlay.setAttribute("aria-hidden", "false");
