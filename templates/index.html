@@ -2,6 +2,7 @@
 <html lang="en" data-theme="light" data-theme-choice="light" data-accent="purple">
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
@@ -49706,6 +49707,484 @@
 
             #altairAIOverlay .altair-ai-input-area {
                 padding: 10px 12px 13px !important;
+            }
+        }
+
+        /* =========================================================
+           ALTAIR BUSINESS SUITE — PREMIUM MOBILE EXPERIENCE
+           Inspired by the responsive layout of the personal website:
+           glass-style floating navigation, compact spacing, single
+           column content, touch-friendly controls and safe-area support.
+           Desktop layout and existing page functionality are preserved.
+        ========================================================= */
+
+        @media (max-width: 700px) {
+
+            html,
+            body {
+                width: 100%;
+                min-height: 100%;
+                height: auto;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-text-size-adjust: 100%;
+            }
+
+            body {
+                overscroll-behavior-x: none;
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            #altairApp,
+            .app {
+                display: block !important;
+                width: 100% !important;
+                min-height: 100svh !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* Floating mobile navigation dock */
+            #appSidebar,
+            .sidebar {
+                position: fixed !important;
+                left: 10px !important;
+                right: 10px !important;
+                bottom: max(9px, env(safe-area-inset-bottom)) !important;
+                top: auto !important;
+                z-index: 5000 !important;
+                width: auto !important;
+                height: 76px !important;
+                min-height: 76px !important;
+                max-height: 76px !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 4px !important;
+                padding: 7px 9px !important;
+                margin: 0 !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                white-space: nowrap !important;
+                border: 1px solid rgba(155, 140, 255, .28) !important;
+                border-radius: 21px !important;
+                background: rgba(12, 16, 34, .94) !important;
+                box-shadow: 0 14px 45px rgba(0, 0, 0, .32),
+                    0 0 28px rgba(98, 229, 239, .08) !important;
+                backdrop-filter: blur(24px) saturate(145%) !important;
+                -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
+                transform: none !important;
+                scrollbar-width: none !important;
+            }
+
+            #appSidebar::-webkit-scrollbar,
+            .sidebar::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            #appSidebar .company-brand,
+            #appSidebar .menu-title,
+            #appSidebar .logout-link {
+                display: none !important;
+            }
+
+            #appSidebar .nav-item,
+            .sidebar .nav-item {
+                flex: 0 0 67px !important;
+                width: 67px !important;
+                min-width: 67px !important;
+                max-width: 67px !important;
+                height: 60px !important;
+                min-height: 60px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 5px !important;
+                margin: 0 !important;
+                padding: 7px 3px !important;
+                border: 1px solid transparent !important;
+                border-radius: 14px !important;
+                color: #aab1cb !important;
+                background: transparent !important;
+                text-align: center !important;
+                white-space: normal !important;
+                line-height: 1.1 !important;
+                font-size: 9px !important;
+                overflow: hidden !important;
+            }
+
+            #appSidebar .nav-item.active,
+            .sidebar .nav-item.active {
+                color: #10142a !important;
+                background: linear-gradient(135deg, #b0a1ff, #70e5ec) !important;
+                border-color: transparent !important;
+                box-shadow: 0 5px 18px rgba(98, 229, 239, .16) !important;
+            }
+
+            #appSidebar .nav-icon,
+            .sidebar .nav-icon {
+                display: block !important;
+                width: auto !important;
+                min-width: 0 !important;
+                font-size: 17px !important;
+                line-height: 1 !important;
+            }
+
+            #appSidebar .nav-item>span:last-child,
+            .sidebar .nav-item>span:last-child {
+                display: block !important;
+                max-width: 64px !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                font-size: 8px !important;
+                font-weight: 700 !important;
+            }
+
+            /* Full-width content with room for the bottom dock */
+            #mainContent,
+            .main {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                height: auto !important;
+                min-height: 100svh !important;
+                margin: 0 !important;
+                padding: 18px 14px calc(112px + env(safe-area-inset-bottom)) !important;
+                overflow: visible !important;
+            }
+
+            .unified-view,
+            .dashboard-unified-view,
+            .module-customer,
+            .module-invoice,
+            .module-items,
+            .module-transactions {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            /* Compact, clear page headings */
+            .topbar {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 14px !important;
+                margin-bottom: 20px !important;
+            }
+
+            .welcome h1,
+            .page-title,
+            .abs-head h1 {
+                font-size: clamp(21px, 6vw, 28px) !important;
+                line-height: 1.2 !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            .welcome p,
+            .page-subtitle,
+            .abs-muted {
+                font-size: 12px !important;
+                line-height: 1.65 !important;
+            }
+
+            .top-actions,
+            .topbar-right {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: wrap !important;
+                gap: 9px !important;
+                width: 100% !important;
+            }
+
+            /* Responsive grids: no squeezed desktop columns */
+            .stats,
+            .stats-grid,
+            .dashboard-grid,
+            .dashboard-layout,
+            .two-col,
+            .three-col,
+            .four-col,
+            .forecast-cards,
+            .forecast-grid,
+            .billing-plan-grid,
+            .billing-summary-grid,
+            .usage-grid,
+            .abs-grid,
+            .abs-stats,
+            .form-grid,
+            .detail-grid,
+            .chart-grid,
+            .analytics-grid,
+            .cards-grid {
+                grid-template-columns: minmax(0, 1fr) !important;
+                gap: 12px !important;
+            }
+
+            .stat-card,
+            .card,
+            .panel,
+            .abs-panel,
+            .glass-card,
+            .chart-card,
+            .billing-hero {
+                min-width: 0 !important;
+                max-width: 100% !important;
+                border-radius: 17px !important;
+            }
+
+            .card,
+            .stat-card,
+            .abs-panel {
+                padding: 16px !important;
+            }
+
+            .stat-value,
+            .stat-card h2 {
+                font-size: clamp(20px, 6vw, 27px) !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            /* Forms and buttons are comfortable to tap */
+            input:not([type="checkbox"]):not([type="radio"]),
+            select,
+            textarea {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                min-height: 44px;
+                font-size: 16px !important;
+                border-radius: 11px !important;
+            }
+
+            textarea {
+                min-height: 100px;
+            }
+
+            button,
+            .btn,
+            .action-btn,
+            .filter-btn {
+                min-height: 42px;
+                max-width: 100%;
+                touch-action: manipulation;
+            }
+
+            .toolbar,
+            .filter-bar,
+            .form-actions,
+            .action-buttons,
+            .button-group {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                width: 100% !important;
+            }
+
+            .toolbar>*,
+            .filter-bar>* {
+                min-width: 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Tables stay readable and scroll horizontally */
+            .table-responsive,
+            .table-wrapper,
+            .table-container,
+            .transactions-table-wrap,
+            .data-table-wrap,
+            .overflow-x-auto {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 12px;
+            }
+
+            table {
+                min-width: 620px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th,
+            td {
+                white-space: nowrap;
+                padding: 11px 10px !important;
+                font-size: 11px !important;
+            }
+
+            /* Chart sizes and dashboard transaction rows */
+            .chart-container,
+            .chart-box,
+            .chart-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 245px !important;
+                min-height: 220px !important;
+            }
+
+            .transaction {
+                grid-template-columns: minmax(125px, 1.4fr) repeat(3, minmax(75px, 1fr)) !important;
+                min-width: 470px;
+                gap: 8px !important;
+            }
+
+            .transactions {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Modals fit the phone and scroll internally */
+            .modal,
+            .modal-overlay {
+                align-items: flex-end !important;
+                padding: 8px !important;
+            }
+
+            .modal-content,
+            .modal-dialog {
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 92svh !important;
+                overflow-y: auto !important;
+                border-radius: 20px 20px 14px 14px !important;
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 15px !important;
+            }
+
+            /* Otis mobile app-like full-screen assistant */
+            #altairAIOverlay {
+                padding: 0 !important;
+                align-items: stretch !important;
+            }
+
+            #altairAIOverlay .altair-ai-window {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100svh !important;
+                max-height: 100svh !important;
+                min-height: 100svh !important;
+                border-radius: 0 !important;
+                border-left: 0 !important;
+                border-right: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            #altairAIOverlay .altair-ai-header {
+                flex: 0 0 auto !important;
+                min-height: 62px !important;
+                padding: 8px 13px !important;
+            }
+
+            #altairAIOverlay .altair-ai-body {
+                display: flex !important;
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            #altairAIOverlay .altair-ai-main {
+                width: 100% !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                padding: 12px !important;
+                overflow-y: auto !important;
+            }
+
+            #altairAIOverlay .altair-ai-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 7px !important;
+                padding: 9px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stat {
+                min-width: 0 !important;
+                padding: 8px !important;
+                gap: 6px !important;
+            }
+
+            #altairAIOverlay .altair-chat-messages,
+            #altairAIOverlay #altairChatMessages {
+                flex: 1 1 auto !important;
+                min-height: 130px !important;
+                max-height: none !important;
+                overflow-y: auto !important;
+            }
+
+            #altairAIOverlay .otis-message-bubble {
+                max-width: 94% !important;
+                font-size: 13px !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-area {
+                flex: 0 0 auto !important;
+                padding: 9px 10px calc(10px + env(safe-area-inset-bottom)) !important;
+            }
+
+            /* Prevent long words, URLs and cards from widening the screen */
+            .card *,
+            .stat-card *,
+            .abs-panel *,
+            .topbar *,
+            .modal-content * {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            #mainContent,
+            .main {
+                padding-left: 11px !important;
+                padding-right: 11px !important;
+            }
+
+            .card,
+            .stat-card,
+            .abs-panel {
+                padding: 13px !important;
+            }
+
+            .sidebar .nav-item,
+            #appSidebar .nav-item {
+                flex-basis: 61px !important;
+                width: 61px !important;
+                min-width: 61px !important;
+            }
+
+            .card-header {
+                gap: 8px !important;
+                flex-wrap: wrap !important;
+            }
+
+            .page-title {
+                font-size: 21px !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            #appSidebar,
+            .sidebar,
+            .nav-item,
+            .card,
+            .stat-card,
+            button {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
             }
         }
     </style>
