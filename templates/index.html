@@ -36115,6 +36115,277 @@
         });
     </script>
 
+
+    <style id="abs-clickable-modules-and-otis-polish">
+        /* Modal panels for inventory and expense actions */
+        .module-items .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10050;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            background: rgba(8, 10, 20, .68);
+            backdrop-filter: blur(7px);
+        }
+
+        .module-items .modal.show {
+            display: flex !important;
+        }
+
+        .module-items .modal-box {
+            width: min(720px, 96vw);
+            max-height: 90vh;
+            overflow: auto;
+            border: 1px solid rgba(124, 58, 237, .18);
+            border-radius: 20px;
+            background: #fff;
+            color: #171722;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .3);
+        }
+
+        .module-items .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 24px;
+            border-bottom: 1px solid #ececf3;
+        }
+
+        .module-items .modal-header h2 {
+            font-size: 20px;
+            margin: 0 0 5px;
+        }
+
+        .module-items .modal-header p {
+            color: #777789;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .module-items .modal-body {
+            padding: 22px 24px;
+        }
+
+        .module-items .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .module-items .form-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            color: #343448;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 0;
+        }
+
+        .module-items .form-grid input,
+        .module-items .form-grid select,
+        .module-items .form-grid textarea {
+            width: 100%;
+            min-height: 43px;
+            border: 1px solid #dedee8;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fff;
+            color: #171722;
+            font: inherit;
+            font-weight: 400;
+            outline: none;
+        }
+
+        .module-items .form-grid input:focus,
+        .module-items .form-grid select:focus,
+        .module-items .form-grid textarea:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px #7c3aed18;
+        }
+
+        .module-items .form-grid .full-width {
+            grid-column: 1/-1;
+        }
+
+        .module-items .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 20px;
+        }
+
+        .module-items .inventory-tab,
+        .module-items .btn,
+        .module-items .action-btn {
+            cursor: pointer;
+        }
+
+        body.modal-open {
+            overflow: hidden !important;
+        }
+
+        /* Larger, balanced desktop chat window with a dedicated conversation area */
+        #altairAIOverlay {
+            z-index: 20000 !important;
+            padding: 22px !important;
+        }
+
+        #altairAIOverlay .altair-ai-window {
+            width: min(1360px, 96vw) !important;
+            height: min(900px, 94vh) !important;
+            max-height: 94vh !important;
+            border-radius: 24px !important;
+        }
+
+        #altairAIOverlay .altair-ai-header {
+            min-height: 76px !important;
+            padding: 14px 24px !important;
+        }
+
+        #altairAIOverlay .altair-ai-avatar {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 22px !important;
+        }
+
+        #altairAIOverlay .altair-ai-title h2 {
+            font-size: 20px !important;
+        }
+
+        #altairAIOverlay .altair-ai-title p {
+            font-size: 12px !important;
+        }
+
+        #altairAIOverlay .altair-ai-body {
+            grid-template-columns: minmax(0, 1fr) 290px !important;
+            padding: 18px 22px !important;
+            gap: 18px !important;
+        }
+
+        #altairAIOverlay .advisor-welcome {
+            padding: 17px 18px !important;
+        }
+
+        #altairAIOverlay .advisor-welcome h3 {
+            font-size: 15px !important;
+        }
+
+        #altairAIOverlay .advisor-welcome p,
+        #altairAIOverlay .advisor-recommendation p {
+            font-size: 13px !important;
+            line-height: 1.7 !important;
+        }
+
+        #altairAIOverlay .advisor-recommendation {
+            padding: 16px 18px !important;
+        }
+
+        #altairAIOverlay .advisor-question-grid button {
+            min-height: 44px !important;
+            padding: 11px 12px !important;
+            font-size: 12px !important;
+        }
+
+        #altairAIOverlay #altairChatMessages {
+            flex: 1 1 240px !important;
+            min-height: 220px !important;
+            padding: 16px !important;
+            border: 1px solid rgba(255, 255, 255, .07) !important;
+            border-radius: 16px !important;
+            background: rgba(0, 0, 0, .13) !important;
+        }
+
+        #altairAIOverlay .otis-message-bubble {
+            max-width: 84% !important;
+            padding: 13px 16px !important;
+            font-size: 13px !important;
+            line-height: 1.7 !important;
+            border-radius: 15px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-area {
+            padding: 15px 22px 18px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper {
+            min-height: 54px !important;
+            border-radius: 15px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper input {
+            min-height: 48px !important;
+            font-size: 14px !important;
+        }
+
+        #altairAIOverlay .altair-send-button {
+            min-height: 44px !important;
+            padding: 0 18px !important;
+            font-size: 12px !important;
+        }
+
+        @media(max-width:760px) {
+            .module-items .modal {
+                padding: 10px !important;
+                align-items: flex-end !important;
+            }
+
+            .module-items .modal-box {
+                width: 100% !important;
+                max-height: 92vh !important;
+                border-radius: 18px 18px 12px 12px !important;
+            }
+
+            .module-items .modal-header,
+            .module-items .modal-body {
+                padding: 16px !important;
+            }
+
+            .module-items .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .module-items .form-grid .full-width {
+                grid-column: auto !important;
+            }
+
+            #altairAIOverlay {
+                padding: 0 !important;
+            }
+
+            #altairAIOverlay .altair-ai-window {
+                width: 100vw !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                border-radius: 0 !important;
+            }
+
+            #altairAIOverlay .altair-ai-body {
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 10px !important;
+                overflow: hidden !important;
+            }
+
+            #altairAIOverlay .altair-ai-main {
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+            }
+
+            #altairAIOverlay .altair-ai-side {
+                display: none !important;
+            }
+
+            #altairAIOverlay #altairChatMessages {
+                min-height: 140px !important;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -39428,7 +39699,91 @@
 
                 </section>
 
+                <!-- INVENTORY MODALS: these were missing while the buttons called their open functions. -->
+                <div class="modal" id="addModal" aria-hidden="true" role="dialog" aria-modal="true"
+                    aria-labelledby="addItemModalTitle">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <div>
+                                <h2 id="addItemModalTitle">Add Product or Service</h2>
+                                <p>Save an item to your business catalogue.</p>
+                            </div>
+                            <button type="button" class="altair-ai-close" aria-label="Close"
+                                onclick="closeAddModal()">×</button>
+                        </div>
+                        <form method="POST" action="/items/add" class="modal-body">
+                            <div class="form-grid">
+                                <label>Item name<input name="item_name" type="text" required
+                                        placeholder="e.g. Website development"></label>
+                                <label>Type<select name="item_type" id="addItemType" onchange="toggleAddItemFields()">
+                                        <option>Product</option>
+                                        <option>Service</option>
+                                    </select></label>
+                                <label>SKU<input name="sku" type="text" placeholder="Optional"></label>
+                                <label>Category<input name="category" type="text" placeholder="e.g. Technology"></label>
+                                <label id="addQuantityGroup">Quantity<input name="quantity" type="number" min="0"
+                                        step="1" value="0"></label>
+                                <label id="addLowStockGroup">Low stock alert<input name="low_stock_level" type="number"
+                                        min="0" step="1" value="5"></label>
+                                <label>Cost price<input name="cost_price" type="number" min="0" step="0.01"
+                                        value="0"></label>
+                                <label>Selling price<input name="selling_price" type="number" min="0" step="0.01"
+                                        value="0"></label>
+                                <label>Supplier<input name="supplier" type="text"></label>
+                                <label>Status<select name="status">
+                                        <option>Active</option>
+                                        <option>Paused</option>
+                                        <option>Completed</option>
+                                        <option>Inactive</option>
+                                    </select></label>
+                                <label class="full-width">Description<textarea name="description"
+                                        rows="3"></textarea></label>
+                            </div>
+                            <div class="modal-footer"><button type="button" class="btn"
+                                    onclick="closeAddModal()">Cancel</button><button type="submit"
+                                    class="btn btn-primary">Save Item</button></div>
+                        </form>
+                    </div>
+                </div>
 
+                <div class="modal" id="editModal" aria-hidden="true" role="dialog" aria-modal="true"
+                    aria-labelledby="editItemModalTitle">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <h2 id="editItemModalTitle">Edit Product or Service</h2><button type="button"
+                                class="altair-ai-close" aria-label="Close" onclick="closeEditModal()">×</button>
+                        </div>
+                        <form method="POST" id="editForm" action="/items/edit" class="modal-body">
+                            <div class="form-grid">
+                                <label>Item name<input id="editItemName" name="item_name" required></label>
+                                <label>Type<select id="editItemType" name="item_type" onchange="toggleEditItemFields()">
+                                        <option>Product</option>
+                                        <option>Service</option>
+                                    </select></label>
+                                <label>SKU<input id="editSKU" name="sku"></label><label>Category<input id="editCategory"
+                                        name="category"></label>
+                                <label id="editQuantityGroup">Quantity<input id="editQuantity" name="quantity"
+                                        type="number" min="0"></label><label id="editLowStockGroup">Low stock
+                                    alert<input id="editLowStock" name="low_stock_level" type="number" min="0"></label>
+                                <label>Cost price<input id="editCost" name="cost_price" type="number" min="0"
+                                        step="0.01"></label><label>Selling price<input id="editPrice"
+                                        name="selling_price" type="number" min="0" step="0.01"></label>
+                                <label>Supplier<input id="editSupplier" name="supplier"></label><label>Status<select
+                                        id="editStatus" name="status">
+                                        <option>Active</option>
+                                        <option>Paused</option>
+                                        <option>Completed</option>
+                                        <option>Inactive</option>
+                                    </select></label>
+                                <label class="full-width">Description<textarea id="editDescription" name="description"
+                                        rows="3"></textarea></label>
+                            </div>
+                            <div class="modal-footer"><button type="button" class="btn"
+                                    onclick="closeEditModal()">Cancel</button><button type="submit"
+                                    class="btn btn-primary">Update Item</button></div>
+                        </form>
+                    </div>
+                </div>
 
                 <!-- 
          EXPENSES
@@ -39640,6 +39995,49 @@
                 </section>
 
 
+
+                <div class="modal" id="expenseModal" aria-hidden="true" role="dialog" aria-modal="true"
+                    aria-labelledby="expenseModalTitle">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <div>
+                                <h2 id="expenseModalTitle">Add Business Expense</h2>
+                                <p>Record money spent by your business.</p>
+                            </div><button type="button" class="altair-ai-close" aria-label="Close"
+                                onclick="closeExpenseModal()">×</button>
+                        </div>
+                        <form method="POST" action="/expenses/add" class="modal-body">
+                            <div class="form-grid">
+                                <label>Expense name<input name="expense_name" type="text" required
+                                        placeholder="e.g. Office supplies"></label>
+                                <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label>
+                                <label>Category<select name="category">
+                                        <option>Other</option>
+                                        <option>Office</option>
+                                        <option>Transport</option>
+                                        <option>Utilities</option>
+                                        <option>Marketing</option>
+                                        <option> salaries</option>
+                                        <option>Equipment</option>
+                                        <option>Rent</option>
+                                    </select></label>
+                                <label>Date<input id="expenseDate" name="expense_date" type="date" required></label>
+                                <label>Payment method<select name="payment_method">
+                                        <option>Cash</option>
+                                        <option>Bank Transfer</option>
+                                        <option>Card</option>
+                                        <option>Mobile Money</option>
+                                        <option>Other</option>
+                                    </select></label>
+                                <label>Description<input name="description" type="text"
+                                        placeholder="Optional details"></label>
+                            </div>
+                            <div class="modal-footer"><button type="button" class="btn"
+                                    onclick="closeExpenseModal()">Cancel</button><button type="submit"
+                                    class="btn btn-primary">Save Expense</button></div>
+                        </form>
+                    </div>
+                </div>
 
                 <!-- 
          INVESTMENTS
@@ -46683,6 +47081,7 @@
                 .forEach(function (element) {
 
                     element.classList.remove("active");
+                    element.setAttribute("aria-hidden", "true");
 
                 });
 
@@ -46703,7 +47102,11 @@
             if (selectedSection) {
 
                 selectedSection.classList.add("active");
+                selectedSection.setAttribute("aria-hidden", "false");
 
+            } else {
+                console.warn("ABS section was not found:", section + "Section");
+                return;
             }
 
 
