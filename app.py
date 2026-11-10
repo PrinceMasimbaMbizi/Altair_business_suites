@@ -8624,6 +8624,12 @@ def items():
         # LOAN MANAGEMENT RECORDS
         cursor.execute("""
             SELECT l.*,
+                   COALESCE(l.disbursement_date, l.application_date) AS loan_taken_date,
+                   CASE
+                       WHEN l.disbursement_date IS NOT NULL
+                       THEN DATE_ADD(l.disbursement_date, INTERVAL GREATEST(COALESCE(l.duration_months, 1), 1) MONTH)
+                       ELSE NULL
+                   END AS loan_return_date,
                    CASE WHEN l.next_payment_date < CURRENT_DATE()
                               AND COALESCE(l.total_outstanding, 0) > 0
                         THEN 'Overdue' ELSE l.loan_status END AS loan_status,
@@ -8662,6 +8668,61 @@ def items():
             FROM business_loans WHERE user_id = %s
         """, (user_id,))
         loan_stats = cursor.fetchone() or {}
+
+        # MONTHLY INTEREST REPORT: totals are based on interest actually
+        # received in repayments (interest_paid), grouped by payment month.
+        today = date.today()
+        default_interest_start = date(today.year, 1, 1)
+        interest_start = default_interest_start
+        interest_end = today
+        try:
+            requested_start = (request.args.get("interest_start") or "").strip()
+            requested_end = (request.args.get("interest_end") or "").strip()
+            if requested_start:
+                interest_start = date.fromisoformat(requested_start)
+            if requested_end:
+                interest_end = date.fromisoformat(requested_end)
+            if interest_start > interest_end:
+                interest_start, interest_end = interest_end, interest_start
+        except (TypeError, ValueError):
+            interest_start = default_interest_start
+            interest_end = today
+
+        cursor.execute("""
+            SELECT DATE_FORMAT(payment_date, '%Y-%m') AS month_key,
+                   COALESCE(SUM(interest_paid), 0) AS monthly_interest
+            FROM business_loan_repayments
+            WHERE user_id = %s
+              AND payment_date >= %s
+              AND payment_date <= %s
+            GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+            ORDER BY month_key ASC
+        """, (user_id, interest_start, interest_end))
+        interest_month_rows = cursor.fetchall() or []
+        interest_month_map = {
+            row["month_key"]: float(row.get("monthly_interest") or 0)
+            for row in interest_month_rows
+        }
+
+        # Include months with zero collections so the selected period is clear.
+        monthly_interest_report = []
+        month_pointer = date(interest_start.year, interest_start.month, 1)
+        last_month = date(interest_end.year, interest_end.month, 1)
+        while month_pointer <= last_month:
+            month_key = month_pointer.strftime("%Y-%m")
+            monthly_interest_report.append({
+                "month_key": month_key,
+                "month_label": month_pointer.strftime("%B %Y"),
+                "monthly_interest": interest_month_map.get(month_key, 0.0)
+            })
+            if month_pointer.month == 12:
+                month_pointer = date(month_pointer.year + 1, 1, 1)
+            else:
+                month_pointer = date(month_pointer.year, month_pointer.month + 1, 1)
+
+        monthly_interest_total = sum(
+            row["monthly_interest"] for row in monthly_interest_report
+        )
 
         # RENDER PAGE
         
@@ -8716,6 +8777,10 @@ def items():
             outstanding_principal=loan_stats.get("outstanding_principal", 0),
             interest_collected_total=loan_stats.get("interest_collected_total", 0),
             outstanding_interest=loan_stats.get("outstanding_interest", 0),
+            monthly_interest_report=monthly_interest_report,
+            monthly_interest_total=monthly_interest_total,
+            interest_start=interest_start.isoformat(),
+            interest_end=interest_end.isoformat(),
             overdue_amount=loan_stats.get("overdue_amount", 0),
             active_loan_count=loan_stats.get("active_loan_count", 0),
             today_date=date.today().isoformat(),
@@ -8794,6 +8859,9 @@ def items():
             total_loans_issued=0, total_principal_recovered=0,
             outstanding_principal=0, interest_collected_total=0,
             outstanding_interest=0, overdue_amount=0, active_loan_count=0,
+            monthly_interest_report=[], monthly_interest_total=0,
+            interest_start=date(date.today().year, 1, 1).isoformat(),
+            interest_end=date.today().isoformat(),
             today_date=date.today().isoformat(), today_date_obj=date.today()
         )
 

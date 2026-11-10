@@ -40728,6 +40728,62 @@
                             <div><span>Interest still outstanding</span><strong>R{{ outstanding_interest|money
                                     }}</strong></div>
                         </div>
+
+                        <!-- MONTHLY INTEREST REPORT AND DATE-RANGE FILTER -->
+                        <div class="monthly-interest-report">
+                            <div class="monthly-interest-report-heading">
+                                <div>
+                                    <h4>Monthly interest collection</h4>
+                                    <p>See the interest actually received each month. Choose any start and end date.</p>
+                                </div>
+                                <div class="monthly-interest-total">
+                                    <span>Total for selected period</span>
+                                    <strong>R{{ monthly_interest_total|default(0)|money }}</strong>
+                                </div>
+                            </div>
+                            <form method="GET" action="{{ url_for('items') }}" class="interest-date-filter"
+                                onsubmit="localStorage.setItem('absOpenLoanPanel','interest')">
+                                <label>From date
+                                    <input type="date" name="interest_start" value="{{ interest_start }}" required>
+                                </label>
+                                <label>To date
+                                    <input type="date" name="interest_end" value="{{ interest_end }}" required>
+                                </label>
+                                <button type="submit">Calculate interest</button>
+                                <a href="{{ url_for('items') }}#loansSection"
+                                    onclick="localStorage.setItem('absOpenLoanPanel','interest')">Reset period</a>
+                            </form>
+                            <div class="table-container loan-table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>Interest received</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for month in monthly_interest_report %}
+                                        <tr>
+                                            <td>{{ month.month_label }}</td>
+                                            <td><strong>R{{ month.monthly_interest|money }}</strong></td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="2" class="loan-empty">No monthly interest data for this period.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total interest received</th>
+                                            <th>R{{ monthly_interest_total|default(0)|money }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
                         <div class="table-container loan-table-wrap">
                             <table>
                                 <thead>
@@ -40768,9 +40824,9 @@
                                 <thead>
                                     <tr>
                                         <th>Borrower / Loan</th>
-                                        <th>Original principal</th>
-                                        <th>Principal recovered</th>
-                                        <th>Principal left</th>
+                                        <th>Loan amount</th>
+                                        <th>Date taken</th>
+                                        <th>Return date</th>
                                         <th>Interest left</th>
                                         <th>Total outstanding</th>
                                         <th>Payment status</th>
@@ -40780,9 +40836,11 @@
                                     {% for loan in loan_records if loan.total_outstanding > 0 %}<tr>
                                         <td>{{ loan.borrower_name }}<small class="loan-muted">{{ loan.loan_number
                                                 }}</small></td>
-                                        <td>R{{ loan.principal|money }}</td>
-                                        <td>R{{ loan.principal_recovered|money }}</td>
-                                        <td>R{{ loan.principal_outstanding|money }}</td>
+                                        <td>R{{ loan.amount_disbursed|default(loan.principal, true)|money }}</td>
+                                        <td>{{ loan.loan_taken_date.strftime('%d %b %Y') if loan.loan_taken_date else
+                                            '—' }}</td>
+                                        <td>{{ loan.loan_return_date.strftime('%d %b %Y') if loan.loan_return_date else
+                                            'Not disbursed' }}</td>
                                         <td>R{{ loan.interest_outstanding|money }}</td>
                                         <td><strong>R{{ loan.total_outstanding|money }}</strong></td>
                                         <td>
@@ -45217,6 +45275,9 @@
                 overlay.classList.add("is-open");
                 overlay.setAttribute("aria-hidden", "false");
                 document.body.classList.add("otis-chat-open");
+                overlay.onclick = function (event) {
+                    if (event.target === overlay) closeAltairAI();
+                };
 
                 // Put the conversation at the latest message and focus the input.
                 const messages = document.getElementById("altairChatMessages");
@@ -46662,6 +46723,20 @@
             if (target) target.classList.add("active");
             if (button) button.classList.add("active");
         }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const requestedLoanPanel = new URLSearchParams(window.location.search).get("loan_panel");
+            const rememberedLoanPanel = localStorage.getItem("absOpenLoanPanel");
+            const panelToOpen = requestedLoanPanel || (window.location.search.includes("interest_start=") ? "interest" : rememberedLoanPanel);
+            if (panelToOpen === "interest") {
+                const interestTab = Array.from(document.querySelectorAll(".loan-subtab")).find(function (button) {
+                    return button.textContent.toLowerCase().includes("interest");
+                });
+                showLoanPanel("interest", interestTab || null);
+                localStorage.setItem("absOpenLoanPanel", "interest");
+            }
+        });
 
 
         /* 
@@ -50185,6 +50260,206 @@
                 scroll-behavior: auto !important;
                 animation-duration: .01ms !important;
                 transition-duration: .01ms !important;
+            }
+        }
+
+
+        /* OTIS FLOATING CHAT WINDOW: keep the dashboard visible behind it. */
+        #altairAIOverlay.altair-ai-overlay {
+            display: none;
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
+            align-items: flex-end !important;
+            justify-content: flex-end !important;
+            padding: 22px !important;
+            background: rgba(5, 8, 20, .16) !important;
+            backdrop-filter: blur(2px) !important;
+            -webkit-backdrop-filter: blur(2px) !important;
+        }
+
+        #altairAIOverlay.altair-ai-overlay.is-open {
+            display: flex !important;
+        }
+
+        #altairAIOverlay .altair-ai-window {
+            width: min(540px, calc(100vw - 44px)) !important;
+            height: min(690px, calc(100vh - 44px)) !important;
+            max-height: calc(100vh - 44px) !important;
+            margin: 0 !important;
+            border-radius: 20px !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            box-shadow: 0 22px 75px rgba(0, 0, 0, .38), 0 0 28px rgba(0, 240, 255, .10) !important;
+            animation: otisPopupIn .22s ease-out both;
+        }
+
+        @keyframes otisPopupIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(.985);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        #altairAIOverlay .altair-ai-body {
+            min-height: 0 !important;
+            flex: 1 1 auto !important;
+            overflow: hidden !important;
+        }
+
+        #altairAIOverlay .altair-ai-main {
+            min-height: 0 !important;
+        }
+
+        @media (max-width: 760px) {
+            #altairAIOverlay.altair-ai-overlay {
+                align-items: flex-end !important;
+                justify-content: center !important;
+                padding: 8px !important;
+                background: rgba(5, 8, 20, .24) !important;
+            }
+
+            #altairAIOverlay .altair-ai-window {
+                width: min(100%, 560px) !important;
+                height: min(min(min(720px, 82dvh), calc(100dvh - 16px)), 720px) !important;
+                max-height: calc(100dvh - 16px) !important;
+                border-radius: 18px !important;
+            }
+        }
+
+
+        /* MONTHLY LOAN INTEREST REPORT */
+        .monthly-interest-report {
+            margin: 18px 0 22px;
+            padding: 18px;
+            border: 1px solid #e7e8f2;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #fbfbff, #f4f6ff);
+        }
+
+        .monthly-interest-report-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 15px;
+        }
+
+        .monthly-interest-report-heading h4 {
+            margin: 0 0 5px;
+            color: #252641;
+            font-size: 15px;
+        }
+
+        .monthly-interest-report-heading p {
+            margin: 0;
+            color: #777991;
+            font-size: 12px;
+        }
+
+        .monthly-interest-total {
+            min-width: 175px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            background: #17172b;
+            color: #fff;
+        }
+
+        .monthly-interest-total span,
+        .monthly-interest-total strong {
+            display: block;
+        }
+
+        .monthly-interest-total span {
+            color: #c5c6dc;
+            font-size: 11px;
+        }
+
+        .monthly-interest-total strong {
+            margin-top: 4px;
+            color: #65e6d2;
+            font-size: 20px;
+        }
+
+        .interest-date-filter {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            gap: 11px;
+            margin-bottom: 14px;
+        }
+
+        .interest-date-filter label {
+            display: grid;
+            gap: 5px;
+            color: #55566f;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .interest-date-filter input {
+            min-height: 39px;
+            padding: 8px 10px;
+            border: 1px solid #dfe1ed;
+            border-radius: 9px;
+            background: #fff;
+            color: #292a43;
+            font: inherit;
+        }
+
+        .interest-date-filter button {
+            min-height: 39px;
+            padding: 0 16px;
+            border: 0;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #6656d9, #4939b7);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .interest-date-filter a {
+            padding: 10px 4px;
+            color: #6255c8;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .monthly-interest-report table tfoot th {
+            padding-top: 13px;
+            border-top: 2px solid #e5e6f0;
+            color: #252641;
+        }
+
+        @media (max-width: 600px) {
+            .monthly-interest-report {
+                padding: 13px;
+            }
+
+            .monthly-interest-report-heading {
+                flex-direction: column;
+            }
+
+            .monthly-interest-total {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .interest-date-filter {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+
+            .interest-date-filter input,
+            .interest-date-filter button {
+                width: 100%;
+                box-sizing: border-box;
             }
         }
     </style>
