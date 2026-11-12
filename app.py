@@ -43,20 +43,17 @@ cloudinary.config(
 
 
 
-# PART 1 - START THE WEBSITE: create the Flask application and set its main settings.
 
 
 
 
 
-# FLASK APP
+
+
 app = Flask(__name__)
 
 
-# IMPORTANT:
-# Flask's signing key must remain identical across app restarts and workers.
-# A random key here invalidates every session cookie whenever Render restarts
-# the service or sends a request to a different worker.
+
 app.secret_key = (os.environ.get("FLASK_SECRET_KEY") or "").strip()
 if not app.secret_key:
     raise RuntimeError(
@@ -64,7 +61,7 @@ if not app.secret_key:
         "and use the same value for every deployment/worker."
     )
 
-# Login sessions are browser-session-only (not remembered permanently).
+
 app.config.update(
     SESSION_PERMANENT=True,
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
@@ -74,15 +71,15 @@ app.config.update(
     SESSION_COOKIE_SECURE=os.environ.get("RENDER", "").strip().lower() == "true",
 )
 
-# PART 2 - PAGE DISPLAY: connect each page name to the correct section in index.html.
 
 
 
 
 
-# SINGLE-FILE FRONTEND ADAPTER
-# Every former page template is now a conditional section inside templates/index.html.
-# Existing route handlers, database operations, validation and authorization stay in place.
+
+
+
+
 _TEMPLATE_VIEW_MAP = {
     "dashboard.html": "dashboard",
     "customer.html": "customer",
@@ -116,8 +113,8 @@ def render_template(template_name, **context):
         context.setdefault("active_view", request.args.get("view", "dashboard"))
         return _flask_render_template("index.html", **context)
 
-    # Authentication pages deliberately use their original standalone templates.
-    # This preserves the exact login/register designs supplied by the user.
+    
+    
     if name in ("login.html", "register.html"):
         return _flask_render_template(name, **context)
 
@@ -125,19 +122,19 @@ def render_template(template_name, **context):
     if view:
         context["active_view"] = view
         return _flask_render_template("index.html", **context)
-    # Non-HTML or future templates remain supported instead of silently breaking.
+    
     return _flask_render_template(name, **context)
 
 
 
 
-# PART 3 - SMALL POP-UP MESSAGES AND LOADING EFFECTS: show alerts and progress screens.
 
 
 
 
 
-# ALTAIR UI: INLINE TOAST NOTIFICATIONS + LOADING INDICATOR
+
+
 ALTAIR_UI_CSS = r"""#altair-toast-container{position:fixed;top:22px;right:22px;z-index:2147483000;display:flex;flex-direction:column;gap:11px;width:min(390px,calc(100vw - 28px));pointer-events:none}
 .altair-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;padding:15px 16px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(17,17,28,.96);color:#f7f8ff;box-shadow:0 18px 55px rgba(0,0,0,.28);backdrop-filter:blur(18px);font:500 14px/1.45 Inter,system-ui,sans-serif;animation:altairToastIn .28s ease both;overflow:hidden}
 .altair-toast::before{content:"";width:4px;align-self:stretch;flex:0 0 4px;border-radius:5px;background:#00f0ff}.altair-toast.success::before{background:#22c55e}.altair-toast.error::before{background:#fb7185}.altair-toast.warning::before{background:#fbbf24}.altair-toast .altair-toast-icon{font-size:19px;line-height:1.2}.altair-toast .altair-toast-message{flex:1;overflow-wrap:anywhere}.altair-toast .altair-toast-close{border:0;background:transparent;color:#aab0c7;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 4px}.altair-toast.hide{animation:altairToastOut .22s ease forwards}
@@ -261,19 +258,19 @@ def altair_ui_inject(response):
         print("ALTAIR UI INJECTION ERROR:", ui_error)
     return response
 
-# PART 4 - COMPANY LOGO: control which logo files can be uploaded and where they are stored.
 
 
 
 
 
-# PART 8 - SHOW COMPANY LOGO: send the saved company logo to the browser.
 
 
 
 
 
-# COMPANY LOGO UPLOAD SETTINGS
+
+
+
 UPLOAD_FOLDER = os.path.join(
     app.root_path,
     "static",
@@ -298,13 +295,13 @@ def allowed_file(filename):
     )
 
 
-# PART 5 - MONEY DISPLAY: format amounts so prices are easy to read.
 
 
 
 
 
-# MONEY FORMATTER
+
+
 
 
 def format_money(value):
@@ -325,28 +322,28 @@ def format_money(value):
     try:
         value = float(value)
 
-        # Remove unnecessary decimal .0
+        
         if value.is_integer():
             return f"{int(value):,}".replace(",", " ")
 
-        # Keep decimal values
+        
         return f"{value:,.2f}".replace(",", " ")
 
     except (ValueError, TypeError):
         return "0"
 
 
-# Make the function available inside all Jinja templates
+
 app.jinja_env.filters["money"] = format_money
 
 
-# PART 6 - DATABASE CONNECTION: connect Flask to the MySQL database.
 
 
 
 
 
-# MYSQL CONNECTION
+
+
 
 
 def get_db_connection():
@@ -388,13 +385,13 @@ def require_current_company():
     return user_id, company    
 
 
-# PART 7 - USER AND COMPANY CHECKS: make sure each user sees only their own company information.
 
 
 
 
 
-# CURRENT USER / COMPANY SECURITY
+
+
 def get_current_user_id():
     """
     Returns the authenticated user's ID.
@@ -470,7 +467,7 @@ def get_current_company_id():
 
     return company["id"]
 
-# COMPANY LOGO
+
 
 @app.route("/company-logo")
 def company_logo():
@@ -501,11 +498,11 @@ def company_logo():
 
         logo = company["logo"].strip()
 
-        # Cloudinary or another externally hosted image
+        
         if logo.startswith("https://") or logo.startswith("http://"):
             return redirect(logo)
 
-        # Local image: accept only a filename, not a path
+        
         if (
             "/" in logo
             or "\\" in logo
@@ -555,25 +552,25 @@ def company_logo():
 
 
 
-# PART 9 - CREATE ACCOUNT PAGE: validate details and save a new user account.
 
 
 
 
 
-# REGISTER
 
 
 
 
-# EASY GUIDE: Create account page - checks the details and saves a new user.
+
+
+
 @app.route(
     "/register",
     methods=["GET", "POST"]
 )
 def register():
 
-    # Allow visitors to register even if they are not logged in.
+    
     if request.method == "GET":
 
         return render_template(
@@ -596,7 +593,7 @@ def register():
     )
 
     
-    # VALIDATE INPUT
+    
 
     if not name or not email or not password:
 
@@ -643,7 +640,7 @@ def register():
         )
 
     
-    # DATABASE CONNECTION
+    
     
 
     db = None
@@ -658,7 +655,7 @@ def register():
         )
 
         
-        # CHECK WHETHER THE EMAIL ALREADY EXISTS
+        
     
         cursor.execute(
             """
@@ -685,7 +682,7 @@ def register():
             )
 
         
-        # HASH PASSWORD
+        
         
 
         password_hash = generate_password_hash(
@@ -693,7 +690,7 @@ def register():
         )
 
         
-        # CREATE USER
+        
         
 
         cursor.execute(
@@ -779,27 +776,27 @@ def register():
 
 
 
-# PART 10 - LOGIN PAGE: check the user’s email and password.
-
-
-
-
-
-# LOGIN
 
 
 
 
 
 
-# EASY GUIDE: Login page - checks the email and password, then opens the workspace.
+
+
+
+
+
+
+
+
 @app.route(
     "/login",
     methods=["GET", "POST"]
 )
 def login():
 
-    # If the browser still has a valid remembered session, skip the login form.
+    
     if request.method == "GET" and session.get("user_id"):
         db_existing = None
         cur_existing = None
@@ -866,7 +863,7 @@ def login():
                 user["password_hash"],
                 password
             ):
-                # Start a clean authenticated session after login.
+                
                 session.clear()
                 session.permanent = True
                 session["show_workspace_loader"] = True
@@ -876,7 +873,7 @@ def login():
 
                 session["user_email"] = user["email"]
 
-                # Existing accounts go straight into their workspace.
+                
                 cursor.execute(
                     "SELECT id FROM companies WHERE user_id = %s LIMIT 1",
                     (user["id"],)
@@ -957,20 +954,20 @@ def login():
 
 
 
-# PART 11 - LOGOUT: end the current user session.
-
-
-
-
-
-# LOGOUT
 
 
 
 
 
 
-# EASY GUIDE: Logout - clears the current login session.
+
+
+
+
+
+
+
+
 @app.route("/logout")
 def logout():
 
@@ -987,12 +984,12 @@ def logout():
     )
 
 
-#company setup code
 
 
 
 
-# EASY GUIDE: Company setup page - saves the business profile.
+
+
 @app.route("/company-setup", methods=["GET", "POST"])
 def company_setup():
 
@@ -1045,8 +1042,8 @@ def company_setup():
     print("SERVICES PROVIDED:", bool(services))
     print("========================================\n")
     
-    # POST REQUEST
-    # GET FORM DATA
+    
+    
 
     company_name = request.form.get(
         "company_name",
@@ -1104,7 +1101,7 @@ def company_setup():
     ).strip()
 
     
-    # VALIDATION
+    
     
 
     if not company_name:
@@ -1135,7 +1132,7 @@ def company_setup():
         return redirect(url_for("company_setup"))
 
     
-    # LOGO
+    
     
 
     logo = request.files.get("logo")
@@ -1143,13 +1140,13 @@ def company_setup():
     logo_url = None
 
     
-    # UPLOAD LOGO ONLY IF USER SELECTED ONE
+    
     
 
     if logo and logo.filename:
 
         
-        # CHECK FILE TYPE
+        
         
 
         if not allowed_file(logo.filename):
@@ -1164,7 +1161,7 @@ def company_setup():
             )
 
         
-        # UPLOAD TO CLOUDINARY
+        
         
 
         try:
@@ -1184,7 +1181,7 @@ def company_setup():
             logo_url = upload_result.get("secure_url")
 
             
-            # GET PERMANENT CLOUDINARY URL
+            
             logo_url = upload_result.get(
                 "secure_url"
             )
@@ -1211,7 +1208,7 @@ def company_setup():
             )
 
     
-    # DATABASE
+    
     
 
     db = None
@@ -1224,7 +1221,7 @@ def company_setup():
         cursor = db.cursor()
 
         
-        # CHECK IF COMPANY ALREADY EXISTS
+        
         
 
         cursor.execute(
@@ -1240,7 +1237,7 @@ def company_setup():
         existing_company = cursor.fetchone()
 
         
-        # UPDATE EXISTING COMPANY
+        
         
 
         if existing_company:
@@ -1279,7 +1276,7 @@ def company_setup():
             )
 
             
-            # ONLY UPDATE LOGO IF A NEW LOGO WAS UPLOADED
+            
             
 
             if logo_url:
@@ -1297,7 +1294,7 @@ def company_setup():
                 )
 
         
-        # CREATE NEW COMPANY
+        
         
 
         else:
@@ -1355,7 +1352,7 @@ def company_setup():
             )
 
         
-        # COMMIT
+        
         
 
         db.commit()
@@ -1370,7 +1367,7 @@ def company_setup():
         )
 
     
-    # DATABASE ERROR
+    
     
 
     except Exception as e:
@@ -1394,7 +1391,7 @@ def company_setup():
         )
 
     
-    # CLOSE DATABASE
+    
     
 
     finally:
@@ -1408,13 +1405,13 @@ def company_setup():
             db.close()
 
 
-# PART 23 - AI REVENUE FORECAST: estimate future business income.
 
 
 
 
 
-# ALTAIR AI - REVENUE FORECASTING ENGINE
+
+
 def predict_next_month_revenue(monthly_revenue):
 
     """
@@ -1456,11 +1453,11 @@ def predict_next_month_revenue(monthly_revenue):
         except Exception:
             cleaned.append(0)
 
-    # Remove empty trailing periods
+    
     while cleaned and cleaned[-1] == 0:
         cleaned.pop()
 
-    # Not enough historical data
+    
     if len(cleaned) < 3:
 
         if cleaned:
@@ -1477,7 +1474,7 @@ def predict_next_month_revenue(monthly_revenue):
             "model": "Historical average"
         }
 
-    # MACHINE LEARNING MODEL
+    
 
     X = np.array(
         range(1, len(cleaned) + 1)
@@ -1497,14 +1494,14 @@ def predict_next_month_revenue(monthly_revenue):
         next_period
     )[0]
 
-    # Revenue cannot be negative
+    
     prediction = max(
         0,
         float(prediction)
     )
 
     
-    # MODEL FIT
+    
 
     try:
 
@@ -1535,38 +1532,38 @@ def predict_next_month_revenue(monthly_revenue):
 
 
 
-# PART 24 - OTIS CHATBOT: train the local business assistant to understand questions.
 
 
 
 
 
-# OTIS | SUPERVISED SKLEARN CHATBOT
-# TF-IDF text features + Logistic Regression intent classifier.
-# No OpenAI API, paid model API, or external LLM is used.
+
+
+
+
 
 
 OTIS_TRAINING_DATA = [
-    # Greetings
+    
     ("hi", "greeting"), ("hello", "greeting"), ("hey Otis", "greeting"),
     ("good morning", "greeting"), ("good afternoon", "greeting"),
     ("good evening", "greeting"), ("hello there", "greeting"),
     ("hey there", "greeting"), ("how are you", "greeting"),
     ("good day Otis", "greeting"),
 
-    # Thanks
+    
     ("thank you", "thanks"), ("thanks Otis", "thanks"),
     ("thank you for the help", "thanks"), ("that helped me", "thanks"),
     ("great thanks", "thanks"), ("I appreciate your help", "thanks"),
     ("thanks for explaining", "thanks"), ("much appreciated", "thanks"),
 
-    # Help / capability
+    
     ("what can you do", "help"), ("how can you help me", "help"),
     ("help me use this assistant", "help"), ("what can I ask you", "help"),
     ("show me examples of questions", "help"), ("what do you understand", "help"),
     ("how do I use Otis", "help"), ("what business questions can you answer", "help"),
 
-    # Troubleshooting
+    
     ("I have an error in the app", "troubleshooting"),
     ("help me fix this error", "troubleshooting"),
     ("the page is not working", "troubleshooting"),
@@ -1576,7 +1573,7 @@ OTIS_TRAINING_DATA = [
     ("why am I getting an error message", "troubleshooting"),
     ("help me troubleshoot a technical problem", "troubleshooting"),
 
-    # Revenue
+    
     ("how much revenue did I make", "revenue"),
     ("what is my revenue", "revenue"), ("how much money did my business make", "revenue"),
     ("show me my sales revenue", "revenue"), ("what are my sales", "revenue"),
@@ -1586,7 +1583,7 @@ OTIS_TRAINING_DATA = [
     ("how are my sales doing", "revenue"), ("total paid invoice amount", "revenue"),
     ("how much have customers paid me", "revenue"), ("income from paid invoices", "revenue"),
 
-    # Forecast
+    
     ("what will my revenue be next month", "forecast"),
     ("predict my revenue", "forecast"), ("how much will I make next month", "forecast"),
     ("what is my revenue forecast", "forecast"), ("forecast my sales", "forecast"),
@@ -1595,7 +1592,7 @@ OTIS_TRAINING_DATA = [
     ("how much revenue might I earn next month", "forecast"),
     ("give me a sales forecast", "forecast"), ("what is the expected revenue", "forecast"),
 
-    # Expenses
+    
     ("how much are my expenses", "expenses"), ("show me my expenses", "expenses"),
     ("how much money am I spending", "expenses"), ("what are my business expenses", "expenses"),
     ("how much have I spent", "expenses"), ("show total spending", "expenses"),
@@ -1603,7 +1600,7 @@ OTIS_TRAINING_DATA = [
     ("what are my recorded costs", "expenses"), ("how much have I paid out", "expenses"),
     ("show my expense total", "expenses"), ("are my expenses high", "expenses"),
 
-    # Invoices
+    
     ("how many invoices do I have", "invoices"), ("show me my invoices", "invoices"),
     ("how many invoices are pending", "invoices"), ("how many invoices are overdue", "invoices"),
     ("what invoices have been paid", "invoices"), ("tell me my invoice status", "invoices"),
@@ -1611,7 +1608,7 @@ OTIS_TRAINING_DATA = [
     ("how many bills have I issued", "invoices"), ("which invoices are unpaid", "invoices"),
     ("give me an invoice summary", "invoices"), ("invoice collection status", "invoices"),
 
-    # Cash flow
+    
     ("how much money is outstanding", "cash_flow"),
     ("how much money am I waiting for", "cash_flow"),
     ("what is my cash flow situation", "cash_flow"),
@@ -1622,14 +1619,14 @@ OTIS_TRAINING_DATA = [
     ("show my outstanding payments", "cash_flow"), ("am I waiting for payments", "cash_flow"),
     ("what is owed to my business", "cash_flow"), ("help me understand cashflow", "cash_flow"),
 
-    # Customers
+    
     ("how many customers do I have", "customers"), ("show me my customers", "customers"),
     ("how many clients are there", "customers"), ("tell me about my customers", "customers"),
     ("show my client base", "customers"), ("how many customer records exist", "customers"),
     ("give me a customer summary", "customers"), ("customer information overview", "customers"),
     ("how many clients have I registered", "customers"),
 
-    # Loans and lending
+    
     ("show my loans", "loans"), ("what is my total outstanding loan balance", "loans"),
     ("how much principal is left on my loans", "loans"),
     ("how much interest is still outstanding", "loans"),
@@ -1641,14 +1638,14 @@ OTIS_TRAINING_DATA = [
     ("what is pending and overdue in my loans", "loans"),
     ("how much money have I lent out", "loans"),
 
-    # Leads
+    
     ("how many leads do I have", "leads"), ("show me my leads", "leads"),
     ("how are my leads performing", "leads"), ("how many prospects are recorded", "leads"),
     ("show potential customers", "leads"), ("give me a lead summary", "leads"),
     ("how many new leads do I have", "leads"), ("how many leads converted", "leads"),
     ("what is my lead conversion rate", "leads"), ("show my prospect pipeline", "leads"),
 
-    # Lead conversion analysis
+    
     ("why are my leads not converting", "lead_conversion_analysis"),
     ("why do leads not become customers", "lead_conversion_analysis"),
     ("how can I convert more leads", "lead_conversion_analysis"),
@@ -1659,7 +1656,7 @@ OTIS_TRAINING_DATA = [
     ("what is stopping leads from converting", "lead_conversion_analysis"),
     ("review my lead follow up", "lead_conversion_analysis"),
 
-    # Profitability (reported separately from cash flow)
+    
     ("what is my profit this month", "profitability"),
     ("how much profit did I make this month", "profitability"),
     ("show me my profit", "profitability"),
@@ -1673,7 +1670,7 @@ OTIS_TRAINING_DATA = [
     ("profit and loss summary", "profitability"),
     ("is my business profitable", "profitability"),
 
-    # Business health
+    
     ("how is my business doing", "business_health"),
     ("how is my business performing", "business_health"),
     ("how healthy is my business", "business_health"),
@@ -1685,7 +1682,7 @@ OTIS_TRAINING_DATA = [
     ("how well is my business doing", "business_health"),
     ("review my business performance", "business_health"),
 
-    # Recommendations
+    
     ("what should I do to improve my business", "recommendations"),
     ("give me business advice", "recommendations"),
     ("what should I improve", "recommendations"),
@@ -1721,7 +1718,7 @@ otis_nlp_model = Pipeline([
 
 otis_nlp_model.fit(OTIS_QUESTIONS, OTIS_INTENTS)
 
-# Backward-compatible name in case other app sections reference this variable.
+
 altair_nlp_model = otis_nlp_model
 
 print("OTIS SUPERVISED SKLEARN CHATBOT TRAINED")
@@ -1737,7 +1734,7 @@ def get_business_ai_data(user_id):
     try:
 
         
-        # OPEN DATABASE CONNECTION
+        
         
 
         db = get_db_connection()
@@ -1747,7 +1744,7 @@ def get_business_ai_data(user_id):
         )
 
         
-        # SECURITY: RESOLVE COMPANY FROM AUTHENTICATED USER
+        
         
 
         company = get_current_company()
@@ -1759,7 +1756,7 @@ def get_business_ai_data(user_id):
                 "No company is associated with the authenticated user."
             )
 
-        # Extra ownership verification
+        
 
         if int(company["user_id"]) != int(user_id):
 
@@ -1770,7 +1767,7 @@ def get_business_ai_data(user_id):
         company_id = company["id"]
 
         
-        # VERIFIED COMPANY INFORMATION
+        
         
 
         verified_company = {
@@ -1803,7 +1800,7 @@ def get_business_ai_data(user_id):
 
 
         
-        # COMPANY
+        
         
 
         cursor.execute("""
@@ -1825,7 +1822,7 @@ def get_business_ai_data(user_id):
         data["company"] = company or {}
 
         
-        # REVENUE BY MONTH
+        
         
 
         cursor.execute("""
@@ -1868,7 +1865,7 @@ def get_business_ai_data(user_id):
         )
 
         
-        # INVOICE ANALYSIS
+        
         
 
         cursor.execute("""
@@ -1943,8 +1940,8 @@ def get_business_ai_data(user_id):
         )
 
         
-        # PART 13 - CUSTOMERS PAGE: view and manage customer information.
-# CUSTOMERS
+        
+
         
 
         cursor.execute("""
@@ -1961,7 +1958,7 @@ def get_business_ai_data(user_id):
         )
 
         
-        # LEADS
+        
         
 
         cursor.execute("""
@@ -2011,8 +2008,8 @@ def get_business_ai_data(user_id):
         )
 
         
-        # PART 16 - EXPENSES: record and manage business spending.
-# EXPENSES
+        
+
         cursor.execute("""
             SELECT
 
@@ -2032,8 +2029,8 @@ def get_business_ai_data(user_id):
             cursor.fetchone() or {}
         )
 
-        # Current-month figures used by Otis's profitability answers.
-        # These use the dates and statuses recorded in the user's own account.
+        
+        
         cursor.execute("""
             SELECT
                 COALESCE(SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END), 0) AS paid_revenue
@@ -2062,7 +2059,7 @@ def get_business_ai_data(user_id):
         }
 
    
-        # INVESTMENTS
+        
 
         cursor.execute("""
             SELECT
@@ -2084,7 +2081,7 @@ def get_business_ai_data(user_id):
         )
 
 
-        # INVENTORY
+        
 
         cursor.execute("""
             SELECT
@@ -2098,7 +2095,7 @@ def get_business_ai_data(user_id):
         )
 
         
-        # RECURRING PAYMENTS
+        
 
         cursor.execute("""
             SELECT
@@ -2138,7 +2135,7 @@ def get_business_ai_data(user_id):
         )
 
      
-        # LOANS AND LENDING - only this signed-in user's loan records are included.
+        
         data["loans"] = {
             "total_loans": 0, "active_count": 0, "paid_count": 0,
             "pending_count": 0, "overdue_count": 0,
@@ -2172,7 +2169,7 @@ def get_business_ai_data(user_id):
         except Exception as loan_summary_error:
             app.logger.info("Otis loan summary is not available yet: %s", loan_summary_error)
 
-        # CALCULATED FORECAST
+        
 
         forecast = predict_next_month_revenue(
             monthly_revenue
@@ -2193,13 +2190,13 @@ def get_business_ai_data(user_id):
 
 
 
-# PART 25 - BUSINESS SUMMARY: collect the numbers Otis needs to understand the business.
 
 
 
 
 
-# ALTAIR BUSINESS SUMMARY ENGINE
+
+
 
 
 def altair_business_summary(
@@ -2265,7 +2262,7 @@ def altair_business_summary(
 
 
     
-    # HEALTH DESCRIPTION
+    
     
 
     if health >= 80:
@@ -2292,7 +2289,7 @@ def altair_business_summary(
 
 
     
-    # BUILD RESPONSE
+    
     
 
     return (
@@ -2330,19 +2327,19 @@ def altair_business_summary(
 
 
 
-# PART 26 - OTIS ANSWERS: prepare business advice and answers.
 
 
 
 
 
-# ALTAIR AI RESPONSE ENGINE
-# Generates answers from the authenticated user's business data
+
+
+
 
 def altair_response_engine(intent, business_data, analysis):
 
     
-    # SAFELY READ BUSINESS DATA
+    
     
 
     business_data = business_data or {}
@@ -2370,7 +2367,7 @@ def altair_response_engine(intent, business_data, analysis):
         return f"{value:,.2f}"
 
     
-    # REVENUE
+    
     
 
     if intent == "revenue":
@@ -2392,7 +2389,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # EXPENSES
+    
     
 
     if intent == "expenses":
@@ -2423,7 +2420,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # CASH FLOW
+    
     
 
     if intent == "cash_flow":
@@ -2463,7 +2460,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # INVOICES
+    
     
 
     if intent == "invoices":
@@ -2493,7 +2490,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # LOANS AND LENDING
+    
     if intent == "loans":
         loans = data.get("loans") or {}
         return (
@@ -2512,7 +2509,7 @@ def altair_response_engine(intent, business_data, analysis):
             "Accounting note: principal recovered is a return of lent capital, not sales revenue. Interest collected is lending income."
         )
 
-    # CUSTOMERS
+    
     
 
     if intent == "customers":
@@ -2531,7 +2528,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # LEADS
+    
     
 
     if intent == "leads":
@@ -2571,7 +2568,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # FORECASTING
+    
     
 
     if intent == "forecast":
@@ -2602,7 +2599,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # BUSINESS HEALTH
+    
     
 
     if intent == "business_health":
@@ -2674,7 +2671,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # RECOMMENDATIONS
+    
     
 
     if intent == "recommendations":
@@ -2695,7 +2692,7 @@ def altair_response_engine(intent, business_data, analysis):
 
         converted_leads = count(leads, "converted")
 
-        # Overdue invoices
+        
 
         if overdue_amount > 0:
 
@@ -2706,7 +2703,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "payment dates."
             )
 
-        # Pending invoices
+        
 
         if pending_amount > 0:
 
@@ -2717,7 +2714,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "payment dates."
             )
 
-        # Expenses
+        
 
         if total_expenses > 0:
 
@@ -2727,7 +2724,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "and identify avoidable costs."
             )
 
-        # Recurring payments
+        
 
         if monthly_recurring > 0:
 
@@ -2737,7 +2734,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "Check whether each payment is still necessary."
             )
 
-        # Leads
+        
 
         if total_leads > converted_leads:
 
@@ -2747,7 +2744,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "and follow up with promising prospects."
             )
 
-        # Revenue compared with recorded expenses
+        
 
         if total_expenses > paid_revenue:
 
@@ -2757,7 +2754,7 @@ def altair_response_engine(intent, business_data, analysis):
                 "financial records and upcoming payment obligations."
             )
 
-        # No obvious issues
+        
 
         if not recommendations:
 
@@ -2780,7 +2777,7 @@ def altair_response_engine(intent, business_data, analysis):
         )
 
     
-    # UNKNOWN OR UNSUPPORTED INTENT
+    
     
 
     return (
@@ -2799,16 +2796,16 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-# ============================================================
-# ALTAIR AI ASSISTANT 2.0
-# Conversation handling, stronger intent recognition, and
-# transparent business-health / lead-conversion analysis.
-# Keep this section after the original engines so these improved
-# functions are the active versions used by the existing routes.
-# ============================================================
 
-# Preserve the existing tested response engine for its established
-# revenue, expense, cash-flow, invoice, customer, and forecast answers.
+
+
+
+
+
+
+
+
+
 altair_response_engine_legacy = altair_response_engine
 
 
@@ -2837,8 +2834,8 @@ def understand_altair_question(question):
         intent = str(classes[best_index])
         confidence = float(probabilities[best_index] * 100)
 
-        # This is a practical rejection threshold, not a calibrated probability.
-        # A prediction below it is treated as unknown to reduce wrong answers.
+        
+        
         if confidence < 32.0:
             return {"intent": "unknown", "confidence": round(confidence, 2)}
 
@@ -2874,8 +2871,8 @@ def generate_business_advice(business_data):
     converted = min(converted, total_leads) if total_leads else 0
     conversion = (converted / total_leads * 100) if total_leads else 0.0
 
-    # 30 points: payment collection. Missing invoice data is treated as unknown,
-    # not as perfect performance.
+    
+    
     if invoice_count > 0:
         total_invoice_value = paid + pending + overdue
         overdue_share = overdue / total_invoice_value if total_invoice_value else 0
@@ -2884,7 +2881,7 @@ def generate_business_advice(business_data):
     else:
         collection_score = 18.0
 
-    # 25 points: recorded expenses relative to recorded paid invoice revenue.
+    
     if paid > 0:
         expense_ratio = expense_total / paid
         if expense_ratio <= 0.50: expense_score = 25.0
@@ -2895,8 +2892,8 @@ def generate_business_advice(business_data):
     else:
         expense_score = 15.0 if expense_total == 0 else 5.0
 
-    # 25 points: recorded lead conversion. No leads means there is not enough
-    # evidence to grade conversion, so use a neutral partial score.
+    
+    
     if total_leads > 0:
         if conversion >= 25: lead_score = 25.0
         elif conversion >= 15: lead_score = 20.0
@@ -2905,7 +2902,7 @@ def generate_business_advice(business_data):
     else:
         lead_score = 15.0
 
-    # 20 points: recurring costs relative to recent monthly paid revenue.
+    
     monthly_rows = data.get("monthly_revenue") or []
     monthly_values = []
     for row in monthly_rows[-3:]:
@@ -3111,7 +3108,7 @@ def altair_response_engine(intent, business_data, analysis):
             lines = ["Keep your invoices, expenses, lead statuses, and customer records up to date; revisit these indicators regularly."]
         return "OTIS BUSINESS PRIORITIES\n\n" + "\n\n".join(lines) + "\n\nThese priorities are based on the data currently recorded in your account."
 
-    # Existing established intents keep their previous answer logic.
+    
     return altair_response_engine_legacy(intent, business_data, analysis)
 
 
@@ -3134,11 +3131,11 @@ def altair_response_engine(intent, business_data, analysis):
 
 
 
-# PART 27 - OTIS CHAT ROUTE: receive a question from the chat window and return an answer.
-# ALTAIR AI CHAT API
 
 
-# OTIS APPLICATION KNOWLEDGE + SAFE RECORD SEARCH
+
+
+
 
 OTIS_APP_KNOWLEDGE = {
     "dashboard": ("Dashboard", "/", "Shows a business overview, performance indicators, forecast information, recent activity, and Otis advice when data is available."),
@@ -3161,7 +3158,7 @@ def _otis_norm(value):
 def _otis_knowledge_answer(message):
     q = _otis_norm(message)
 
-    # Public developer profile: answer only with facts Prince has shared.
+    
     developer_questions = (
         "who is your developer", "who developed you", "who created you",
         "who built you", "who is your creator", "tell me about prince",
@@ -3209,7 +3206,7 @@ def _otis_knowledge_answer(message):
             "• Settings — available preferences (/settings)\n\n"
             "Ask me to find a specific invoice, customer, lead, inventory item, expense, investment, or recurring payment."
         )
-    # Ordinary questions about money or records should reach the live data engine.
+    
     documentation_cues = (
         "page", "feature", "section", "tab", "where", "how do i",
         "how to", "what is the", "what does the", "explain the",
@@ -3225,7 +3222,7 @@ def _otis_knowledge_answer(message):
 
 def _otis_is_record_search(message):
     q = _otis_norm(message)
-    # Page/navigation questions belong to the documentation helper, not database search.
+    
     if any(word in q for word in (" page", " feature", " section", " tab", "navigate", "menu")):
         return False
     return any(v in q for v in (
@@ -3324,7 +3321,7 @@ def altair_ai_chat():
         if knowledge_reply:
             return jsonify({"success": True, "reply": knowledge_reply, "intent": "app_knowledge", "confidence": 100.0})
 
-        # Handle simple conversation without requiring a database query.
+        
         understanding = understand_altair_question(message)
         intent = understanding.get("intent", "unknown")
         confidence = float(understanding.get("confidence", 0) or 0)
@@ -3352,7 +3349,7 @@ def altair_ai_chat():
                 "confidence": confidence,
             })
 
-        # General help and troubleshooting do not require private business records.
+        
         if intent in {"help", "troubleshooting"}:
             reply = altair_response_engine(intent, {}, {})
             return jsonify({"success": True, "reply": reply, "intent": intent, "confidence": round(confidence, 2)})
@@ -3372,8 +3369,8 @@ def altair_ai_chat():
             )
             return jsonify({"success": True, "reply": reply, "intent": "unknown", "confidence": round(confidence, 2)})
 
-        # Only fetch private business records after the authenticated session is verified.
-        # get_business_ai_data independently checks the current company ownership.
+        
+        
         business_data = get_business_ai_data(user_id)
         analysis = generate_business_advice(business_data)
 
@@ -3413,7 +3410,7 @@ def api_business_insights():
     try:
 
         
-        # GET REAL BUSINESS DATA
+        
         
 
         business_data = get_business_ai_data(user_id)
@@ -3428,7 +3425,7 @@ def api_business_insights():
         )
 
         
-        # REAL INVOICE STATISTICS
+        
         
 
         invoice_data = (
@@ -3453,7 +3450,7 @@ def api_business_insights():
         )
 
         
-        # CONNECT TO MYSQL
+        
         
 
         db = get_db_connection()
@@ -3462,9 +3459,9 @@ def api_business_insights():
             dictionary=True
         )
 
-        # Count unpaid loan accounts alongside unpaid invoices. A loan with
-        # an outstanding balance is pending until its next payment date passes;
-        # after that date it is overdue. Keep the figures isolated by user_id.
+        
+        
+        
         loan_dashboard_stats = {"pending_count": 0, "overdue_count": 0, "pending_amount": 0.0, "overdue_amount": 0.0, "interest_collected": 0.0}
         try:
             cursor.execute("""
@@ -3504,7 +3501,7 @@ def api_business_insights():
         analysis["overdue_invoices"] += analysis["overdue_loan_count"]
 
         
-        # MONTHLY REVENUE
+        
         
 
         cursor.execute("""
@@ -3547,8 +3544,8 @@ def api_business_insights():
             cursor.fetchall() or []
         )
 
-        # Loan interest actually received is business income. Principal
-        # repayments are capital recovery, not revenue, so they are excluded.
+        
+        
         loan_interest_rows = []
         try:
             cursor.execute("""
@@ -3564,7 +3561,7 @@ def api_business_insights():
             print("LOAN INTEREST REVENUE NOT INCLUDED:", loan_income_error)
 
         
-        # MONTHLY EXPENSES
+        
         
 
         cursor.execute("""
@@ -3602,7 +3599,7 @@ def api_business_insights():
         )
 
         
-        # PREPARE MONTHLY DATA
+        
         
 
         revenue_by_month = {
@@ -3628,7 +3625,7 @@ def api_business_insights():
 
 
         
-        # BUILD A CONTINUOUS 12-MONTH TIMELINE
+        
         
 
         now = datetime.now()
@@ -3700,7 +3697,7 @@ def api_business_insights():
             )
 
         
-        # SEND GRAPH DATA TO DASHBOARD
+        
         
 
         analysis["chart_labels"] = (
@@ -3720,7 +3717,7 @@ def api_business_insights():
         )
 
         
-        # RECENT INVOICES
+        
         
 
         cursor.execute("""
@@ -3752,7 +3749,7 @@ def api_business_insights():
         )
 
         
-        # RECENT EXPENSES
+        
         
 
         cursor.execute("""
@@ -3784,7 +3781,7 @@ def api_business_insights():
         )
 
         
-        # LOAN REPAYMENTS RECEIVED (principal recovery + interest cash received).
+        
         loan_transactions = []
         try:
             cursor.execute("""
@@ -3803,7 +3800,7 @@ def api_business_insights():
         except Exception as loan_activity_error:
             print("LOAN REPAYMENT ACTIVITY NOT INCLUDED:", loan_activity_error)
 
-        # COMBINE TRANSACTIONS
+        
         
 
         transactions = []
@@ -3851,7 +3848,7 @@ def api_business_insights():
 
             })
 
-        # Newest transactions first.
+        
         transactions.sort(
             key=lambda item: (
                 item["transaction_date"]
@@ -3864,7 +3861,7 @@ def api_business_insights():
         )
 
         
-        # RETURN DASHBOARD DATA
+        
         
 
         return jsonify({
@@ -3907,18 +3904,18 @@ def api_business_insights():
 
 
 
-# PART 22 - HELP AND SUPPORT: display help guides and support options.
 
 
 
 
 
-# HELP & SUPPORT CENTRE
 
 
 
 
-# EASY GUIDE: Help and support page - shows help information and support requests.
+
+
+
 @app.route("/help-support", methods=["GET", "POST"])
 def help_support():
     """Help centre and user-owned support tickets."""
@@ -3931,7 +3928,7 @@ def help_support():
     company = None
     tickets = []
 
-    # The table is created automatically so no separate SQL import is required.
+    
     try:
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
@@ -3992,7 +3989,7 @@ def help_support():
             elif len(contact_email) > 255:
                 flash("Please enter a valid contact email address.", "error")
             else:
-                # Use a unique ticket reference and bind every user value as SQL parameters.
+                
                 cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM support_tickets")
                 next_id_row = cursor.fetchone() or {}
                 ticket_number = "ALT-" + datetime.now().strftime("%y%m%d") + "-" + str(next_id_row.get("next_id", 1)).zfill(5)
@@ -4008,7 +4005,7 @@ def help_support():
                 flash("Support ticket " + ticket_number + " was submitted successfully.", "success")
                 return redirect(url_for("help_support", _anchor="my-tickets"))
 
-        # Strictly limit the ticket list to the authenticated user.
+        
         cursor.execute("""
             SELECT ticket_number, subject, category, priority, description,
                    contact_email, status, created_at, updated_at
@@ -4042,18 +4039,18 @@ def help_support():
     )
 
 
-# PART 12 - DASHBOARD PAGE: load the main business overview.
 
 
 
 
 
-# DASHBOARD
 
 
 
 
-# EASY GUIDE: Dashboard page - loads the main business overview.
+
+
+
 @app.route("/")
 def dashboard():
 
@@ -4102,7 +4099,7 @@ def dashboard():
             url_for("company_setup")
         )
 
-    # Show the full workspace loading screen only immediately after login.
+    
     show_workspace_loader = session.pop("show_workspace_loader", False)
 
     return render_template(
@@ -4125,10 +4122,10 @@ def dashboard():
 
 
 
-# =====================================================================
-# BUSINESS MANAGEMENT MODULES: TEAM, DOCUMENTS, NOTIFICATIONS, INTEGRATIONS
-# All records are scoped to the signed-in user's company.
-# =====================================================================
+
+
+
+
 
 def ensure_business_management_tables(cursor):
     """Create the additional ABS business-management tables when needed."""
@@ -4421,7 +4418,7 @@ def notifications():
             db.commit()
             return redirect(url_for("notifications"))
 
-        # Generate fresh alerts from current financial records (idempotent by source/type).
+        
         cur.execute("""SELECT id, invoice_number, customer_name, amount, due_date, status
             FROM invoices WHERE user_id=%s AND status IN ('Pending','Overdue') AND due_date IS NOT NULL""",
             (session["user_id"],))
@@ -4446,7 +4443,7 @@ def notifications():
                     VALUES (%s,%s,%s,%s,'Invoice',%s,'invoice',%s,%s)""",
                     (session["user_id"],company["id"],title,msg,"High" if overdue else "Normal",
                      inv["id"],datetime.combine(due, datetime.min.time()) if due else None))
-        # Loan alerts use the existing ABS business_loans table and its current loan status.
+        
         cur.execute("""SELECT id, loan_number, borrower_name, total_repayable, loan_status,
             first_payment_date FROM business_loans
             WHERE user_id=%s AND loan_status IN ('Pending','Overdue')""", (session["user_id"],))
@@ -4471,7 +4468,7 @@ def notifications():
                     VALUES (%s,%s,%s,%s,'Loan',%s,'loan',%s,%s)""",
                     (session["user_id"],company["id"],title,msg,"High" if overdue else "Normal",
                      loan["id"],datetime.combine(due, datetime.min.time()) if due else None))
-        # Team tasks that are due today or already late also appear here.
+        
         cur.execute("""SELECT id,title,due_date,status FROM abs_employee_tasks
             WHERE user_id=%s AND company_id=%s AND status <> 'Completed'
             AND due_date IS NOT NULL AND due_date <= CURDATE()""",
@@ -4551,12 +4548,12 @@ def integrations():
         db.close()
 
 
-# COMING SOON: ACCOUNT, BILLING, AND BUSINESS MANAGEMENT MODULES
 
 
 
 
-# EASY GUIDE: Coming soon pages - show a message for unfinished modules.
+
+
 @app.route("/coming-soon/<feature>", methods=["GET", "POST"])
 def coming_soon(feature):
     if "user_id" not in session:
@@ -4705,14 +4702,14 @@ def coming_soon(feature):
 
 
 
-# FORECASTING ROUTE COMPATIBILITY FIX
-# Some page templates use url_for("forecasting"). Register the endpoint so
-# those templates can render while the dedicated forecasting page is pending.
 
 
 
 
-# EASY GUIDE: Forecasting page - shows predicted business income and costs.
+
+
+
+
 @app.route("/forecasting", methods=["GET", "POST"])
 def forecasting():
     """Build a transparent planning forecast from this company's recorded invoices and expenses."""
@@ -4886,27 +4883,27 @@ def forecasting():
         expense_method=expense_method,
     )
 
-# CUSTOMERS ROUTE COMPATIBILITY FIX
-# Some templates still call url_for("customers"), while the main route endpoint
-# is named "customer". Keep both endpoint names working to prevent BuildError.
 
 
 
 
-# EASY GUIDE: Customer link helper - keeps old customer links working.
+
+
+
+
 @app.route("/customers", endpoint="customers")
 def customers_compatibility():
     return redirect(url_for("customer"))
 
 
-# CUSTOMERS
 
 
 
 
 
 
-# EASY GUIDE: Customers page - lists and manages customer records.
+
+
 @app.route("/customer")
 def customer():
 
@@ -4926,7 +4923,7 @@ def customer():
 
     try:
 
-        # Company
+        
 
         cursor.execute(
             """
@@ -4946,7 +4943,7 @@ def customer():
                 url_for("company_setup")
             )
 
-        # Customers
+        
 
         cursor.execute(
             """
@@ -4960,7 +4957,7 @@ def customer():
 
         customers = cursor.fetchall()
 
-        # Total
+        
 
         cursor.execute(
             """
@@ -4973,7 +4970,7 @@ def customer():
 
         total_customers = cursor.fetchone()["total"]
 
-        # New this month
+        
 
         cursor.execute(
             """
@@ -4988,7 +4985,7 @@ def customer():
 
         new_customers = cursor.fetchone()["total"]
 
-        # Active
+        
 
         cursor.execute(
             """
@@ -5002,7 +4999,7 @@ def customer():
 
         active_customers = cursor.fetchone()["total"]
 
-        # Average value
+        
 
         cursor.execute(
             """
@@ -5051,14 +5048,14 @@ def customer():
 
 
 
-# ADD CUSTOMER
 
 
 
 
 
 
-# EASY GUIDE: Add customer - saves a new customer.
+
+
 @app.route(
     "/customer/add",
     methods=["POST"]
@@ -5217,18 +5214,18 @@ def add_customer():
 
 
 
-# CUSTOMER FINANCIAL HISTORY
 
 
 
 
 
 
-# EASY GUIDE: Customer history - shows a customer’s past activity.
+
+
 @app.route("/customer/<int:customer_id>/history")
 def customer_history(customer_id):
 
-    # Ensure the user is logged in
+    
     if "user_id" not in session:
         return jsonify({
             "success": False,
@@ -5244,9 +5241,9 @@ def customer_history(customer_id):
         db = get_db_connection()
         cursor = db.cursor(dictionary=True)
 
-        # ----------------------------------------------------
-        # 1. Get customer belonging to the logged-in user
-        # ----------------------------------------------------
+        
+        
+        
 
         cursor.execute("""
             SELECT
@@ -5270,9 +5267,9 @@ def customer_history(customer_id):
                 "message": "Customer not found."
             }), 404
 
-        # ----------------------------------------------------
-        # 2. Get invoices linked to this customer
-        # ----------------------------------------------------
+        
+        
+        
 
         customer_email = (
             customer_record.get("email") or ""
@@ -5328,9 +5325,9 @@ def customer_history(customer_id):
 
         invoices = cursor.fetchall()
 
-        # ----------------------------------------------------
-        # 3. Calculate financial totals
-        # ----------------------------------------------------
+        
+        
+        
 
         total_invoiced = 0.0
         total_paid = 0.0
@@ -5358,7 +5355,7 @@ def customer_history(customer_id):
                 if status == "overdue":
                     overdue_balance += amount
 
-            # Convert dates for JSON responses
+            
             for date_field in ("invoice_date", "due_date"):
 
                 date_value = invoice.get(date_field)
@@ -5366,12 +5363,12 @@ def customer_history(customer_id):
                 if date_value is not None:
                     invoice[date_field] = str(date_value)
 
-            # Ensure Decimal values can be serialized
+            
             invoice["amount"] = amount
 
-        # ----------------------------------------------------
-        # 4. Return customer and invoice information
-        # ----------------------------------------------------
+        
+        
+        
 
         return jsonify({
             "success": True,
@@ -5421,14 +5418,14 @@ def customer_history(customer_id):
 
 
 
-# EDIT CUSTOMER
 
 
 
 
 
 
-# EASY GUIDE: Edit customer - updates a saved customer.
+
+
 @app.route(
     "/customer/<int:customer_id>/edit",
     methods=["POST"]
@@ -5443,7 +5440,7 @@ def edit_customer(customer_id):
 
     user_id = session["user_id"]
 
-    # Read submitted form data
+    
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
     phone = request.form.get("phone", "").strip()
@@ -5457,7 +5454,7 @@ def edit_customer(customer_id):
     status = request.form.get("status", "Active").strip()
     notes = request.form.get("notes", "").strip()
 
-    # Basic validation
+    
     if not name:
         return jsonify({
             "success": False,
@@ -5508,8 +5505,8 @@ def edit_customer(customer_id):
 
         if cursor.rowcount == 0:
 
-            # Check whether the customer exists and belongs
-            # to this user, even if submitted values were unchanged.
+            
+            
             cursor.execute("""
                 SELECT id
                 FROM customers
@@ -5556,14 +5553,14 @@ def edit_customer(customer_id):
 
 
 
-# DELETE CUSTOMER
 
 
 
 
 
 
-# EASY GUIDE: Delete customer - removes a customer when requested.
+
+
 @app.route(
     "/customer/<int:customer_id>/delete",
     methods=["POST"]
@@ -5635,25 +5632,25 @@ def delete_customer(customer_id):
             db.close()                        
 
 
-# PART 14 - INVOICE PAGE: view invoices and create customer bills.
-
-
-
-
-
-# INVOICE PAGE
 
 
 
 
 
 
-# EASY GUIDE: Invoices page - lists invoices and billing information.
+
+
+
+
+
+
+
+
 @app.route("/invoice")
 def invoice():
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -5671,7 +5668,7 @@ def invoice():
         cursor = db.cursor(dictionary=True)
 
         
-        # GET COMPANY DETAILS
+        
         
 
         cursor.execute(
@@ -5687,7 +5684,7 @@ def invoice():
         company = cursor.fetchone()
 
         
-        # CREATE QUOTATIONS TABLE IF IT DOES NOT EXIST.
+        
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS quotations (
@@ -5720,7 +5717,7 @@ def invoice():
             """
         )
 
-        # GET THIS USER'S QUOTATIONS ONLY.
+        
         cursor.execute(
             """
             SELECT *
@@ -5732,7 +5729,7 @@ def invoice():
         )
         quotations = cursor.fetchall()
 
-        # GET USER'S INVOICES
+        
         
 
         cursor.execute(
@@ -5748,7 +5745,7 @@ def invoice():
         invoices = cursor.fetchall()
 
         
-        # INVOICE STATISTICS
+        
         
 
         cursor.execute(
@@ -5837,7 +5834,7 @@ def invoice():
         stats = cursor.fetchone()
 
         
-        # RENDER INVOICE PAGE
+        
         
 
         return render_template(
@@ -5891,14 +5888,14 @@ def invoice():
 
 
 
-# CREATE INVOICE
 
 
 
 
 
 
-# EASY GUIDE: Create invoice - saves a new invoice.
+
+
 @app.route(
     "/invoice/create",
     methods=["POST"]
@@ -5906,7 +5903,7 @@ def invoice():
 def create_invoice():
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -5915,7 +5912,7 @@ def create_invoice():
     user_id = session["user_id"]
 
     
-    # GET FORM DATA
+    
     
 
     customer_name = request.form.get(
@@ -5933,8 +5930,8 @@ def create_invoice():
         ""
     ).strip()
 
-    # Support forms that use "description"
-    # instead of "item_name".
+    
+    
 
     if not item_name:
 
@@ -5959,7 +5956,7 @@ def create_invoice():
     ).strip()
 
     
-    # VALIDATE CUSTOMER NAME
+    
     
 
     if not customer_name:
@@ -5972,7 +5969,7 @@ def create_invoice():
         return redirect(url_for("invoice"))
 
     
-    # VALIDATE ITEM DESCRIPTION
+    
     
 
     if not item_name:
@@ -5985,7 +5982,7 @@ def create_invoice():
         return redirect(url_for("invoice"))
 
     
-    # VALIDATE AMOUNT
+    
     
 
     try:
@@ -6005,7 +6002,7 @@ def create_invoice():
         return redirect(url_for("invoice"))
 
     
-    # VALIDATE DUE DATE
+    
     
 
     if due_date:
@@ -6028,7 +6025,7 @@ def create_invoice():
         due_date = None
 
     
-    # DATABASE VARIABLES
+    
     
 
     db = None
@@ -6041,7 +6038,7 @@ def create_invoice():
         cursor = db.cursor()
 
         
-        # GENERATE NEXT INVOICE NUMBER
+        
               
         cursor.execute(
             """
@@ -6082,13 +6079,13 @@ def create_invoice():
         invoice_number = f"INV-{highest_number + 1}"
 
         
-        # CURRENT INVOICE DATE
+        
         
 
         invoice_date = date.today()
 
         
-        # INSERT INVOICE
+        
         
 
         cursor.execute(
@@ -6185,21 +6182,21 @@ def create_invoice():
 
 
 
-# ============================================================
-# PART 15 - QUOTATIONS: create and manage price quotations for customers.
 
 
 
 
 
-# QUOTATIONS
-# ============================================================
 
 
 
 
 
-# EASY GUIDE: Create quotation - saves a new quotation.
+
+
+
+
+
 @app.route("/quotations/create", methods=["POST"])
 def create_quotation():
     """Create a quotation for the authenticated user's own account."""
@@ -6270,7 +6267,7 @@ def create_quotation():
         db = get_db_connection()
         cursor = db.cursor()
 
-        # Keep table setup available for deployments that visit this endpoint first.
+        
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS quotations (
@@ -6303,7 +6300,7 @@ def create_quotation():
             """
         )
 
-        # Find the next quotation number within this user's account.
+        
         cursor.execute(
             "SELECT quotation_number FROM quotations WHERE user_id = %s",
             (user_id,)
@@ -6367,8 +6364,8 @@ def create_quotation():
 
 
 
-# Public quotation links are signed so customers can view a quotation without logging in,
-# while random users cannot simply guess an ID and read another customer's document.
+
+
 def quotation_share_token(quotation_id):
     serializer = URLSafeSerializer(app.secret_key, salt="altair-public-quotation-v1")
     return serializer.dumps({"quotation_id": int(quotation_id)})
@@ -6411,7 +6408,7 @@ def public_view_quotation(quotation_id, token):
             db.close()
 
 
-# EASY GUIDE: Quotation download shortcut - opens the quotation preview and its PDF download control.
+
 @app.route("/quotations/<int:quotation_id>/download", methods=["GET"])
 def download_quotation(quotation_id):
     if "user_id" not in session:
@@ -6433,7 +6430,7 @@ def download_quotation(quotation_id):
             db.close()
 
 
-# EASY GUIDE: View quotation - displays one quotation.
+
 @app.route("/quotations/<int:quotation_id>", methods=["GET"])
 def view_quotation(quotation_id):
     """Display one quotation belonging to the currently authenticated user."""
@@ -6483,7 +6480,7 @@ def view_quotation(quotation_id):
 
 
 
-# EASY GUIDE: Update quotation - changes its status.
+
 @app.route("/quotations/<int:quotation_id>/status", methods=["POST"])
 def update_quotation_status(quotation_id):
     """Update status only when the quotation belongs to the logged-in user."""
@@ -6529,13 +6526,13 @@ def update_quotation_status(quotation_id):
 
 
 
-# VIEW INDIVIDUAL INVOICE
 
 
 
 
 
-# EASY GUIDE: View invoice - displays one invoice.
+
+
 @app.route(
     "/invoice/view/<int:invoice_id>",
     methods=["GET"]
@@ -6543,7 +6540,7 @@ def update_quotation_status(quotation_id):
 def view_invoice(invoice_id):
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -6561,7 +6558,7 @@ def view_invoice(invoice_id):
         cursor = db.cursor(dictionary=True)
 
         
-        # GET COMPANY DETAILS
+        
         
 
         cursor.execute(
@@ -6577,7 +6574,7 @@ def view_invoice(invoice_id):
         company = cursor.fetchone()
 
         
-        # GET THE REQUESTED INVOICE
+        
               
 
         cursor.execute(
@@ -6597,7 +6594,7 @@ def view_invoice(invoice_id):
         invoice_data = cursor.fetchone()
 
         
-        # CHECK WHETHER INVOICE EXISTS
+        
         
 
         if not invoice_data:
@@ -6605,7 +6602,7 @@ def view_invoice(invoice_id):
             return "Invoice not found.", 404
 
         
-        # RENDER INDIVIDUAL INVOICE
+        
         
 
         return render_template(
@@ -6639,7 +6636,7 @@ def view_invoice(invoice_id):
 
 
 
-# EASY GUIDE: Invoice download shortcut - opens the invoice document where its PDF button is available.
+
 @app.route("/invoice/<int:invoice_id>/download", methods=["GET"])
 def download_invoice(invoice_id):
     if "user_id" not in session:
@@ -6661,14 +6658,14 @@ def download_invoice(invoice_id):
             db.close()
 
 
-# MARK INVOICE AS PAID
 
 
 
 
 
 
-# EASY GUIDE: Mark invoice paid - changes an invoice to Paid.
+
+
 @app.route(
     "/invoice/<int:invoice_id>/paid",
     methods=["POST"]
@@ -6676,7 +6673,7 @@ def download_invoice(invoice_id):
 def mark_invoice_paid(invoice_id):
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -6694,7 +6691,7 @@ def mark_invoice_paid(invoice_id):
         cursor = db.cursor()
 
         
-        # UPDATE ONLY THE LOGGED-IN USER'S INVOICE
+        
         
 
         cursor.execute(
@@ -6753,12 +6750,12 @@ def mark_invoice_paid(invoice_id):
 
 
 
-# DELETE INVOICE
 
 
 
 
-# EASY GUIDE: Delete invoice - removes an invoice when requested.
+
+
 @app.route(
     "/invoice/<int:invoice_id>/delete",
     methods=["POST"]
@@ -6766,7 +6763,7 @@ def mark_invoice_paid(invoice_id):
 def delete_invoice(invoice_id):
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -6784,7 +6781,7 @@ def delete_invoice(invoice_id):
         cursor = db.cursor()
 
         
-        # DELETE ONLY THE LOGGED-IN USER'S INVOICE
+        
         
 
         cursor.execute(
@@ -6842,14 +6839,14 @@ def delete_invoice(invoice_id):
 
 
 
-# REMIND CUSTOMER
 
 
 
 
 
 
-# EASY GUIDE: Invoice reminder - prepares a reminder for a customer.
+
+
 @app.route(
     "/invoice/<int:invoice_id>/remind",
     methods=["POST"]
@@ -6921,14 +6918,14 @@ def remind_invoice(invoice_id):
 
 
 
-# EXPENSES
 
 
 
 
 
 
-# EASY GUIDE: Add expense - records money spent by the business.
+
+
 @app.route(
     "/expenses/add",
     methods=["POST"]
@@ -7066,14 +7063,14 @@ def add_expense():
 
 
 
-# DELETE EXPENSE
 
 
 
 
 
 
-# EASY GUIDE: Delete expense - removes an expense record.
+
+
 @app.route(
     "/expenses/delete/<int:expense_id>",
     methods=["POST"]
@@ -7147,20 +7144,20 @@ def delete_expense(expense_id):
 
 
 
-# PART 17 - INVESTMENTS: record money put into the business.
-
-
-
-
-
-# ADD INVESTMENT
 
 
 
 
 
 
-# EASY GUIDE: Add investment - records money invested in the business.
+
+
+
+
+
+
+
+
 @app.route(
     "/investments/add",
     methods=["POST"]
@@ -7306,14 +7303,14 @@ def add_investment():
 
 
 
-# DELETE INVESTMENT
 
 
 
 
 
 
-# EASY GUIDE: Delete investment - removes an investment record.
+
+
 @app.route(
     "/investments/delete/<int:investment_id>",
     methods=["POST"]
@@ -7386,20 +7383,20 @@ def delete_investment(investment_id):
 
 
 
-# PART 18 - REPEATED PAYMENTS: manage payments that happen regularly.
-
-
-
-
-
-# ADD RECURRING PAYMENT
 
 
 
 
 
 
-# EASY GUIDE: Add recurring payment - saves a regular payment.
+
+
+
+
+
+
+
+
 @app.route(
     "/recurring/add",
     methods=["POST"]
@@ -7584,12 +7581,12 @@ def add_recurring_payment():
 
 
 
-# DELETE RECURRING PAYMENT
 
 
 
 
-# EASY GUIDE: Delete recurring payment - removes a regular payment.
+
+
 @app.route(
     "/recurring/delete/<int:payment_id>",
     methods=["POST"]
@@ -7664,7 +7661,7 @@ def delete_recurring_payment(payment_id):
 
 
 
-# RECURRING PAYMENT DATE CONVERTER
+
 
 
 def convert_to_date(value):
@@ -7699,7 +7696,7 @@ def convert_to_date(value):
 
         try:
 
-            # Handles YYYY-MM-DD and ISO datetime strings.
+            
             return datetime.fromisoformat(
                 value.replace("Z", "+00:00")
             ).date()
@@ -7724,13 +7721,13 @@ def convert_to_date(value):
 
 
 
-# PART 19 - PAYMENT DATE HELPERS: handle dates for repeated payments.
 
 
 
 
 
-# PROCESS RECURRING PAYMENTS
+
+
 
 
 def process_recurring_payments(
@@ -7744,7 +7741,7 @@ def process_recurring_payments(
     try:
 
         
-        # GET ACTIVE RECURRING PAYMENTS THAT ARE DUE
+        
         
 
         cursor.execute(
@@ -7765,7 +7762,7 @@ def process_recurring_payments(
         recurring_payments = cursor.fetchall()
 
         
-        # PROCESS EACH RECURRING PAYMENT
+        
         
 
         for payment in recurring_payments:
@@ -7782,19 +7779,19 @@ def process_recurring_payments(
 
             frequency = payment["frequency"]
 
-            # Skip records without a valid next payment date.
+            
             if payment_date is None:
                 continue
 
-            # ------------------------------------------------
-            # PROCESS EVERY MISSED PAYMENT OCCURRENCE
-            # ------------------------------------------------
+            
+            
+            
 
             while payment_date <= today:
 
-                # --------------------------------------------
-                # CHECK END DATE
-                # --------------------------------------------
+                
+                
+                
 
                 if (
                     end_date is not None
@@ -7816,9 +7813,9 @@ def process_recurring_payments(
 
                     break
 
-                # --------------------------------------------
-                # CHECK FOR AN EXISTING PAYMENT RECORD
-                # --------------------------------------------
+                
+                
+                
 
                 cursor.execute(
                     """
@@ -7838,9 +7835,9 @@ def process_recurring_payments(
 
                 existing_record = cursor.fetchone()
 
-                # --------------------------------------------
-                # RECORD THE PAYMENT IF IT DOES NOT EXIST
-                # --------------------------------------------
+                
+                
+                
 
                 if not existing_record:
 
@@ -7874,9 +7871,9 @@ def process_recurring_payments(
                         )
                     )
 
-                    # ----------------------------------------
-                    # CREATE THE ASSOCIATED EXPENSE
-                    # ----------------------------------------
+                    
+                    
+                    
 
                     cursor.execute(
                         """
@@ -7915,9 +7912,9 @@ def process_recurring_payments(
                         )
                     )
 
-                # --------------------------------------------
-                # CALCULATE THE NEXT PAYMENT DATE
-                # --------------------------------------------
+                
+                
+                
 
                 if frequency == "Monthly":
 
@@ -7957,7 +7954,7 @@ def process_recurring_payments(
 
                 else:
 
-                    # Stop processing unsupported frequencies.
+                    
                     print(
                         f"Unsupported recurring payment frequency "
                         f"'{frequency}' for payment ID {payment_id}."
@@ -7985,7 +7982,7 @@ def process_recurring_payments(
                         f"recurring payment ID {payment_id}."
                     )
 
-                # Protect against an infinite loop.
+                
                 if next_payment_date <= payment_date:
 
                     raise RuntimeError(
@@ -7995,9 +7992,9 @@ def process_recurring_payments(
 
                 payment_date = next_payment_date
 
-            # ------------------------------------------------
-            # SAVE THE NEXT PAYMENT DATE
-            # ------------------------------------------------
+            
+            
+            
 
             cursor.execute(
                 """
@@ -8014,7 +8011,7 @@ def process_recurring_payments(
             )
 
         
-        # COMMIT SUCCESSFUL PROCESSING
+        
         
 
         conn.commit()
@@ -8023,7 +8020,7 @@ def process_recurring_payments(
 
         conn.rollback()
 
-        # Log the complete traceback in your application logs.
+        
         import traceback
 
         print(
@@ -8032,7 +8029,7 @@ def process_recurring_payments(
 
         traceback.print_exc()
 
-        # Propagate the error so the calling route can handle it.
+        
         raise
 
 
@@ -8060,7 +8057,6 @@ def process_recurring_payments(
 
 
 
-# PART 20 - INVENTORY AND MONEY: manage products, services and money records.
 
 
 
@@ -8068,10 +8064,11 @@ def process_recurring_payments(
 
 
 
-# ============================================================
-# LOAN MANAGEMENT DATABASE SUPPORT
-# Creates or upgrades the two loan tables without deleting data.
-# ============================================================
+
+
+
+
+
 
 def ensure_loan_tables(cursor):
     cursor.execute("""
@@ -8140,8 +8137,8 @@ def ensure_loan_tables(cursor):
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     """)
 
-    # Upgrade tables created by the earlier, smaller loan schema. Existing
-    # records are retained; only missing columns are added.
+    
+    
     loan_columns = {
         "loan_number": "VARCHAR(60) NULL",
         "borrower_name": "VARCHAR(180) NOT NULL DEFAULT ''",
@@ -8182,7 +8179,7 @@ def ensure_loan_tables(cursor):
     for column, definition in loan_columns.items():
         if column not in existing:
             cursor.execute(f"ALTER TABLE business_loans ADD COLUMN `{column}` {definition}")
-    # Earlier versions used an ENUM that did not include Biweekly.
+    
     cursor.execute("ALTER TABLE business_loans MODIFY COLUMN repayment_frequency VARCHAR(30) NOT NULL DEFAULT 'Monthly'")
 
     repayment_columns = {
@@ -8253,17 +8250,17 @@ def _calculate_loan_totals(principal, rate, interest_type, months, frequency):
 
 
 
-# INVENTORY + MONEY MANAGEMENT
 
 
 
 
-# EASY GUIDE: Inventory and money page - manages products, expenses, investments and regular payments.
+
+
 @app.route("/items")
 def items():
 
     
-    # AUTHENTICATION
+    
     
 
     if "user_id" not in session:
@@ -8277,7 +8274,7 @@ def items():
     try:
 
         
-        # DATABASE CONNECTION
+        
         
 
         db = get_db_connection()
@@ -8289,12 +8286,12 @@ def items():
 
         cursor = db.cursor(dictionary=True)
 
-        # Create / upgrade the loan tables before the Loan Management panels load.
+        
         ensure_loan_tables(cursor)
         db.commit()
 
         
-        # COMPANY
+        
         
 
         cursor.execute(
@@ -8310,10 +8307,10 @@ def items():
         company = cursor.fetchone()
 
         
-        # PROCESS RECURRING PAYMENTS
+        
         
 
-        # Recurring payment processing can fail if its database
+        
         try:
 
             process_recurring_payments(
@@ -8332,13 +8329,13 @@ def items():
             import traceback
             traceback.print_exc()
 
-            # Roll back any incomplete database transaction.
+            
             try:
                 db.rollback()
             except Exception:
                 pass
 
-            # Re-create the cursor after a rollback.
+            
             try:
                 cursor.close()
             except Exception:
@@ -8347,7 +8344,7 @@ def items():
             cursor = db.cursor(dictionary=True)
 
         
-        # INVENTORY
+        
         
 
         cursor.execute(
@@ -8363,7 +8360,7 @@ def items():
         inventory = cursor.fetchall()
 
         
-        # INVENTORY STATISTICS
+        
         
 
         cursor.execute(
@@ -8435,7 +8432,7 @@ def items():
         inventory_value = inventory_stats.get("inventory_value", 0)
 
         
-        # EXPENSES
+        
         
 
         cursor.execute(
@@ -8479,7 +8476,7 @@ def items():
         expense_count = expense_stats.get("expense_count", 0)
 
         
-        # INVESTMENTS
+        
         
 
         cursor.execute(
@@ -8521,7 +8518,7 @@ def items():
         )
 
         
-        # RECURRING PAYMENTS
+        
         
 
         cursor.execute(
@@ -8570,7 +8567,7 @@ def items():
         monthly_recurring = recurring_stats.get("monthly_recurring", 0)
 
         
-        # MONEY OUT RECORDS
+        
         
 
         cursor.execute(
@@ -8609,7 +8606,7 @@ def items():
         money_out_records = cursor.fetchall()
 
         
-        # TOTAL MONEY OUT
+        
         
 
         cursor.execute( """ SELECT (SELECT COALESCE(SUM(amount), 0)FROM expenses WHERE user_id = %s)+(SELECT COALESCE(SUM(amount), 0)FROM investments WHERE user_id = %s) AS total
@@ -8621,7 +8618,7 @@ def items():
         total_money_out = money_out_stats.get("total", 0)
 
         
-        # LOAN MANAGEMENT RECORDS
+        
         cursor.execute("""
             SELECT l.*,
                    COALESCE(l.disbursement_date, l.application_date) AS loan_taken_date,
@@ -8669,8 +8666,8 @@ def items():
         """, (user_id,))
         loan_stats = cursor.fetchone() or {}
 
-        # MONTHLY INTEREST REPORT: totals are based on interest actually
-        # received in repayments (interest_paid), grouped by payment month.
+        
+        
         today = date.today()
         default_interest_start = date(today.year, 1, 1)
         interest_start = default_interest_start
@@ -8704,7 +8701,7 @@ def items():
             for row in interest_month_rows
         }
 
-        # Include months with zero collections so the selected period is clear.
+        
         monthly_interest_report = []
         month_pointer = date(interest_start.year, interest_start.month, 1)
         last_month = date(interest_end.year, interest_end.month, 1)
@@ -8724,7 +8721,7 @@ def items():
             row["monthly_interest"] for row in monthly_interest_report
         )
 
-        # RENDER PAGE
+        
         
 
         return render_template(
@@ -8735,7 +8732,7 @@ def items():
             user_name=session.get("user_name"),
             user_email=session.get("user_email"),
 
-            # Inventory
+            
             inventory=inventory,
             total_items=total_items,
             total_products=total_products,
@@ -8744,28 +8741,28 @@ def items():
             out_of_stock=out_of_stock,
             inventory_value=inventory_value,
 
-            # Expenses
+            
             expenses=expenses,
             total_expenses=total_expenses,
             month_expenses=month_expenses,
             expense_count=expense_count,
 
-            # Investments
+            
             investments=investments,
             total_investments=total_investments,
             expected_returns=expected_returns,
             investment_count=investment_count,
 
-            # Recurring payments
+            
             recurring_payments=recurring_payments,
             recurring_count=recurring_count,
             monthly_recurring=monthly_recurring,
 
-            # Money out
+            
             money_out_records=money_out_records,
             total_money_out=total_money_out,
 
-            # Loan management
+            
             loan_records=loan_records,
             loan_applications=loan_applications,
             approved_loans=approved_loans,
@@ -8790,7 +8787,7 @@ def items():
     except Exception as e:
 
         
-        # LOG THE ACTUAL ERROR
+        
         
 
         import traceback
@@ -8806,14 +8803,14 @@ def items():
         print("=" * 70)
         print("\n")
 
-        # Roll back only if a connection exists.
+        
         if db is not None:
             try:
                 db.rollback()
             except Exception:
                 pass
 
-        # Do not silently hide a missing database table or column.
+        
         flash(f"INVENTORY ERROR: {str(e)}","error")
 
         return render_template(
@@ -8823,7 +8820,7 @@ def items():
             user_name=session.get("user_name"),
             user_email=session.get("user_email"),
 
-            # Inventory
+            
             inventory=[],
             total_items=0,
             total_products=0,
@@ -8832,28 +8829,28 @@ def items():
             out_of_stock=0,
             inventory_value=0,
 
-            # Expenses
+            
             expenses=[],
             total_expenses=0,
             month_expenses=0,
             expense_count=0,
 
-            # Investments
+            
             investments=[],
             total_investments=0,
             expected_returns=0,
             investment_count=0,
 
-            # Recurring payments
+            
             recurring_payments=[],
             recurring_count=0,
             monthly_recurring=0,
 
-            # Money out
+            
             money_out_records=[],
             total_money_out=0,
 
-            # Loan management safe defaults
+            
             loan_records=[], loan_applications=[], approved_loans=[],
             disbursed_loans=[], loan_repayments=[], overdue_loans=[],
             total_loans_issued=0, total_principal_recovered=0,
@@ -8868,7 +8865,7 @@ def items():
     finally:
 
         
-        # CLOSE DATABASE RESOURCES SAFELY
+        
         
 
         if cursor is not None:
@@ -8895,9 +8892,9 @@ def items():
 
 
 
-# ============================================================
-# LOAN MANAGEMENT ACTIONS
-# ============================================================
+
+
+
 
 @app.route("/business-loans/add", methods=["POST"])
 def add_business_loan():
@@ -9145,7 +9142,7 @@ def add_business_loan_repayment():
 
 
 
-# EASY GUIDE: Change loan payment status - marking Paid records the remaining balance as received.
+
 @app.route("/business-loans/<int:loan_id>/payment-status", methods=["POST"])
 def update_business_loan_payment_status(loan_id):
     if "user_id" not in session:
@@ -9217,14 +9214,14 @@ def update_business_loan_payment_status(loan_id):
     return redirect(url_for("items") + "#loanManagementTab")
 
 
-# ADD INVENTORY ITEM
 
 
 
 
 
 
-# EASY GUIDE: Add inventory item - saves a product or service.
+
+
 @app.route(
     "/items/add",
     methods=["POST"]
@@ -9428,14 +9425,14 @@ def add_item():
 
 
 
-# EDIT INVENTORY ITEM
 
 
 
 
 
 
-# EASY GUIDE: Edit inventory item - updates a product or service.
+
+
 @app.route(
     "/items/edit/<int:item_id>",
     methods=["POST"]
@@ -9631,14 +9628,14 @@ def edit_item(item_id):
 
 
 
-# DELETE INVENTORY ITEM
 
 
 
 
 
 
-# EASY GUIDE: Delete inventory item - removes a product or service.
+
+
 @app.route(
     "/items/delete/<int:item_id>",
     methods=["POST"]
@@ -9712,20 +9709,20 @@ def delete_item(item_id):
 
 
 
-# PART 21 - SETTINGS PAGE: update business and account preferences.
-
-
-
-
-
-# SETTINGS
 
 
 
 
 
 
-# EASY GUIDE: Settings page - saves business and account preferences.
+
+
+
+
+
+
+
+
 @app.route(
     "/settings",
     methods=["GET", "POST"]
@@ -9749,12 +9746,12 @@ def settings():
     try:
 
         
-        # SAVE SETTINGS
+        
         
 
         if request.method == "POST":
 
-            # Company
+            
 
             company_name = request.form.get(
                 "company_name",
@@ -9776,7 +9773,7 @@ def settings():
                 ""
             ).strip()
 
-            # Contact
+            
 
             phone = request.form.get(
                 "phone",
@@ -9793,7 +9790,7 @@ def settings():
                 ""
             ).strip()
 
-            # Address
+            
 
             address = request.form.get(
                 "address",
@@ -9810,14 +9807,14 @@ def settings():
                 ""
             ).strip()
 
-            # Services
+            
 
             services = request.form.get(
                 "services",
                 ""
             ).strip()
 
-            # Banking
+            
 
             bank_name = request.form.get(
                 "bank_name",
@@ -9844,7 +9841,7 @@ def settings():
                 ""
             ).strip()
 
-            # Logo
+            
 
             logo = request.files.get(
                 "logo"
@@ -9867,8 +9864,8 @@ def settings():
                         url_for("settings")
                     )
 
-                # Upload to Cloudinary so the logo persists across
-                # Render deployments/restarts, just like Company Setup.
+                
+                
                 try:
                     upload_result = cloudinary.uploader.upload(
                         logo,
@@ -9905,7 +9902,7 @@ def settings():
                     return redirect(url_for("settings"))
 
             
-            # CHECK COMPANY
+            
             
 
             cursor.execute(
@@ -9924,7 +9921,7 @@ def settings():
             existing_company = cursor.fetchone()
 
             
-            # UPDATE
+            
             
 
             if existing_company:
@@ -10059,7 +10056,7 @@ def settings():
                     )
 
             
-            # CREATE COMPANY
+            
             
 
             else:
@@ -10178,7 +10175,7 @@ def settings():
             )
 
         
-        # LOAD SETTINGS
+        
         
 
         cursor.execute(
@@ -10197,7 +10194,7 @@ def settings():
         company = cursor.fetchone()
 
         
-        # DEFAULT COMPANY
+        
         
 
         if company is None:
@@ -10283,7 +10280,7 @@ def settings():
 
 
 
-# EASY GUIDE: AI Lead Finder page - searches for possible customers.
+
 @app.route("/ai-leads")
 def ai_leads():
 
@@ -10301,7 +10298,7 @@ def ai_leads():
         cursor = db.cursor(dictionary=True)
 
         
-        # GET CURRENT USER'S COMPANY
+        
         
 
         cursor.execute("""
@@ -10314,7 +10311,7 @@ def ai_leads():
         company = cursor.fetchone()
 
         
-        # GET CURRENT USER'S LEADS
+        
         
 
         cursor.execute("""
@@ -10327,7 +10324,7 @@ def ai_leads():
         leads = cursor.fetchall()
 
         
-        # TOTAL LEADS
+        
         
 
         cursor.execute("""
@@ -10339,7 +10336,7 @@ def ai_leads():
         total_leads = cursor.fetchone()["total"]
 
         
-        # NEW LEADS
+        
         
 
         cursor.execute("""
@@ -10352,7 +10349,7 @@ def ai_leads():
         new_leads = cursor.fetchone()["total"]
 
         
-        # CONTACTED LEADS
+        
         
 
         cursor.execute("""
@@ -10365,7 +10362,7 @@ def ai_leads():
         contacted_leads = cursor.fetchone()["total"]
 
         
-        # INTERESTED LEADS
+        
         
 
         cursor.execute("""
@@ -10378,7 +10375,7 @@ def ai_leads():
         interested_leads = cursor.fetchone()["total"]
 
         
-        # CONVERTED LEADS
+        
         
 
         cursor.execute("""
@@ -10391,7 +10388,7 @@ def ai_leads():
         converted_leads = cursor.fetchone()["total"]
 
         
-        # OPEN AI LEAD FINDER
+        
         
 
         return render_template(
@@ -10428,13 +10425,13 @@ def ai_leads():
             db.close()
             
 
-# ADD AI LEAD MANUALLY
 
 
 
 
 
-# EASY GUIDE: Add lead - saves a potential customer.
+
+
 @app.route(
     "/ai-leads/add",
     methods=["POST"]
@@ -10493,7 +10490,7 @@ def add_ai_lead():
 
 
     
-    # VALIDATION
+    
     
 
     if not company_name:
@@ -10519,7 +10516,7 @@ def add_ai_lead():
 
 
         
-        # INSERT LEAD
+        
         
 
         cursor.execute(
@@ -10622,7 +10619,7 @@ def add_ai_lead():
 
 
 
-# EASY GUIDE: Update lead status - changes the progress of a lead.
+
 @app.route(
     "/ai-leads/<int:lead_id>/status",
     methods=["POST"]
@@ -10643,7 +10640,7 @@ def update_lead_status(lead_id):
         cursor = db.cursor(dictionary=True)
 
         
-        # COMPANY
+        
         
 
         cursor.execute("""
@@ -10656,7 +10653,7 @@ def update_lead_status(lead_id):
         company = cursor.fetchone()
 
         
-        # ALL LEADS
+        
         
 
         cursor.execute("""
@@ -10669,7 +10666,7 @@ def update_lead_status(lead_id):
         leads = cursor.fetchall()
 
         
-        # STATISTICS
+        
         
 
         cursor.execute("""
@@ -10759,13 +10756,13 @@ def update_lead_status(lead_id):
 @app.route("/ai-leads/<int:lead_id>/edit", methods=["POST"])
 def edit_ai_lead(lead_id):
 
-    # Require login
+    
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
 
-    # Collect the edited information
+    
     company_name = request.form.get("company_name", "").strip()
     industry = request.form.get("industry", "").strip()
     location = request.form.get("location", "").strip()
@@ -10781,12 +10778,12 @@ def edit_ai_lead(lead_id):
     notes = request.form.get("notes", "").strip()
     google_place_id = request.form.get("google_place_id", "").strip()
 
-    # Validate the company name
+    
     if not company_name:
         flash("Company name is required.", "error")
         return redirect(url_for("ai_leads"))
 
-    # Validate lead score
+    
     try:
         score_text = request.form.get("lead_score", "0").strip()
         lead_score = int(score_text or 0)
@@ -10805,8 +10802,8 @@ def edit_ai_lead(lead_id):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # SECURITY:
-        # Only allow editing leads owned by the logged-in user.
+        
+        
         cursor.execute(
             """
             SELECT id
@@ -10820,7 +10817,7 @@ def edit_ai_lead(lead_id):
             flash("Lead not found or you do not have permission to edit it.", "error")
             return redirect(url_for("ai_leads"))
 
-        # Save the changes
+        
         cursor.execute(
             """
             UPDATE leads
@@ -10886,7 +10883,7 @@ def edit_ai_lead(lead_id):
     return redirect(url_for("ai_leads"))
 
 
-    #to delete the lead
+    
 @app.route(
     "/ai-leads/<int:lead_id>/delete",
     methods=["POST"]
@@ -10951,7 +10948,7 @@ def delete_ai_lead(lead_id):
 
 
 
-# AI LEAD FINDER - GOOGLE PLACES SEARCH
+
 
 
 @app.route(
@@ -10961,7 +10958,7 @@ def delete_ai_lead(lead_id):
 def search_ai_leads():
 
     
-    # CHECK LOGIN
+    
     
 
     if "user_id" not in session:
@@ -10974,7 +10971,7 @@ def search_ai_leads():
 
 
     
-    # GET SEARCH INPUTS
+    
     
 
     services = request.form.get(
@@ -11008,7 +11005,7 @@ def search_ai_leads():
 
 
     
-    # MAX RESULTS
+    
     
 
     try:
@@ -11028,13 +11025,13 @@ def search_ai_leads():
         max_results = 10
 
 
-    # The current Google Places text-search request supports up to 20 results.
-    # Keep the server-side limit consistent with the form so the UI never promises more.
+    
+    
     max_results = max(1, min(max_results, 20))
 
 
     
-    # VALIDATION
+    
     
 
     if not services:
@@ -11061,10 +11058,10 @@ def search_ai_leads():
         )
 
 
-    # MULTI-SOURCE LEAD DISCOVERY: GOOGLE PLACES + FACEBOOK PUBLIC PAGES
-    # Each source is independent. If one API is missing or fails, the other
-    # can still return leads. Google Places is the primary business directory;
-    # Brave Search discovers publicly indexed Facebook Pages as a fallback / supplement.
+    
+    
+    
+    
     source_errors = []
     discovered_places = []
     seen_source_ids = set()
@@ -11078,9 +11075,9 @@ def search_ai_leads():
         audience_terms.append(business_size + " business")
     audience_terms.append(location)
     audience_query = " ".join(part for part in audience_terms if part).strip() or location
-    # Keep the query variable passed to the template defined on every path.
-    # Previously this was referenced as search_query at render time without
-    # ever being assigned, causing a 500 after both sources had finished.
+    
+    
+    
     search_query = audience_query
 
     print("=" * 70)
@@ -11090,8 +11087,8 @@ def search_ai_leads():
     print("Prospect mode:", prospect_type)
     print("=" * 70)
 
-    # SOURCE 1 — Google Places API (Text Search, current Places API v1).
-    # A missing/invalid Google key must not stop Facebook discovery.
+    
+    
     google_api_key = os.environ.get("GOOGLE_PLACES_API_KEY", "").strip()
     if google_api_key:
         google_query = " ".join(part for part in [audience_query, "businesses"] if part).strip()
@@ -11144,8 +11141,8 @@ def search_ai_leads():
     else:
         source_errors.append("GOOGLE_PLACES_API_KEY is not configured, so Google Places was skipped; Facebook discovery will still be attempted.")
 
-    # SOURCE 2 — public Facebook Pages indexed by Brave Search.
-    # This is a web-index fallback/supplement, not direct Meta Graph API access.
+    
+    
     brave_api_key = os.environ.get("BRAVE_SEARCH_API_KEY", "").strip()
     facebook_pages = []
     if brave_api_key:
@@ -11247,13 +11244,13 @@ def search_ai_leads():
     else:
         source_errors.append("BRAVE_SEARCH_API_KEY is not configured, so Facebook discovery was skipped; Google Places can still work.")
 
-    # Merge both sources into one lead-scoring pipeline, with Google and Facebook
-    # results both retained. Each source can return up to max_results.
+    
+    
     google_places = discovered_places + facebook_pages
     print("MULTI-SOURCE TOTALS — Google Places:", len(discovered_places), "Facebook public Pages:", len(facebook_pages))
 
-    # Tell the user what actually happened instead of leaving them with a
-    # generic server error or a blank results area.
+    
+    
     if discovered_places and facebook_pages:
         flash(
             f"Search completed: Google Places found {len(discovered_places)} businesses and Facebook public-page search found {len(facebook_pages)} pages.",
@@ -11283,13 +11280,13 @@ def search_ai_leads():
     for source_error in dict.fromkeys(source_errors):
         flash(source_error, "warning")
 
-    # Keep the merged Google Places + Facebook results in the shared
-    # lead-scoring / duplicate-check pipeline. Do not overwrite this list.
+    
+    
 
-    # PROCESS GOOGLE RESULTS
-    # Fetch existing lead statuses in ONE database query rather than opening
-    # a separate MySQL connection for every Google result. This reduces the
-    # chance of a slow search hitting Gunicorn's worker timeout.
+    
+    
+    
+    
     place_ids = [place.get("id") for place in google_places if place.get("id")]
     existing_lead_statuses = {}
 
@@ -11307,7 +11304,7 @@ def search_ai_leads():
             for row in status_cursor.fetchall():
                 existing_lead_statuses[row.get("google_place_id")] = (row.get("lead_status") or "").lower()
         except Exception as exc:
-            # Search should still work if status enrichment fails.
+            
             print("BATCH LEAD STATUS LOOKUP ERROR:", type(exc).__name__, str(exc))
         finally:
             if status_cursor:
@@ -11327,7 +11324,7 @@ def search_ai_leads():
 
 
         
-        # COMPANY NAME
+        
         
 
         display_name = place.get(
@@ -11343,7 +11340,7 @@ def search_ai_leads():
 
 
         
-        # PHONE
+        
         
 
         phone = (
@@ -11365,7 +11362,7 @@ def search_ai_leads():
 
 
         
-        # GOOGLE BUSINESS TYPES
+        
         
 
         types = place.get(
@@ -11375,7 +11372,7 @@ def search_ai_leads():
 
 
         
-        # DETERMINE INDUSTRY
+        
         
 
         industry_name = ""
@@ -11419,7 +11416,7 @@ def search_ai_leads():
 
 
         
-        # FALLBACK INDUSTRY
+        
         
 
         if not industry_name:
@@ -11428,7 +11425,7 @@ def search_ai_leads():
 
 
         
-        # ADDRESS
+        
         
 
         address = place.get(
@@ -11438,7 +11435,7 @@ def search_ai_leads():
 
 
         
-        # WEBSITE
+        
         
 
         website = place.get(
@@ -11446,13 +11443,13 @@ def search_ai_leads():
             ""
         )
 
-        # Google Places has no email field; look for a publicly listed
-        # email on the business's own website when a website is available.
+        
+        
         business_email = place.get("_email_from_snippet") or (find_public_business_email(website) if place.get("_source_type", "Google Places") == "Google Places" else "")
 
 
         
-        # BUSINESS STATUS
+        
         
 
         business_status = place.get(
@@ -11462,7 +11459,7 @@ def search_ai_leads():
 
 
         
-        # GOOGLE MAPS URL
+        
         
 
         google_maps_url = place.get(
@@ -11472,7 +11469,7 @@ def search_ai_leads():
 
 
         
-        # BUILD POTENTIAL LEAD
+        
         
 
         potential_lead = {
@@ -11518,7 +11515,7 @@ def search_ai_leads():
             "evidence_text": place.get("_evidence_text", ""),
             "services_offered": "",
 
-            # Cached from the single batch query above.
+            
             "_not_contacted_or_converted": (
                 existing_lead_statuses.get(place.get("id"))
                 not in ("contacted", "converted")
@@ -11531,7 +11528,7 @@ def search_ai_leads():
 
 
         
-        # CHECK FOR COMPETITOR
+        
         
 
         if potential_lead.get("prospect_type") == "Business / Organization" and is_likely_competitor(potential_lead, services):
@@ -11545,7 +11542,7 @@ def search_ai_leads():
 
 
         
-        # QUALIFY THE LEAD
+        
         
 
         try:
@@ -11560,7 +11557,7 @@ def search_ai_leads():
                 sender_name=sender_name
             ) or {}
         except Exception as exc:
-            # Keep the search results usable if AI qualification fails for one lead.
+            
             print("LEAD AI QUALIFICATION ERROR:", company_name, type(exc).__name__, str(exc))
             qualification = {
                 "lead_score": 0,
@@ -11573,7 +11570,7 @@ def search_ai_leads():
 
 
         
-        # ADD AI QUALIFICATION
+        
         
 
         potential_lead.update({
@@ -11617,7 +11614,7 @@ def search_ai_leads():
 
 
         
-        # GROUP RESULTS so the lead-group filter and badges always match.
+        
         final_score = int(potential_lead.get("lead_score") or 0)
         if final_score >= 80:
             potential_lead["lead_group"] = "High-Intent Lead"
@@ -11630,7 +11627,7 @@ def search_ai_leads():
         else:
             potential_lead["lead_group"] = "Needs Verification"
 
-        # ADD RESULT
+        
         
 
         google_results.append(
@@ -11639,7 +11636,7 @@ def search_ai_leads():
 
 
     
-    # SORT RESULTS BY LEAD SCORE
+    
     
 
     google_results.sort(
@@ -11655,7 +11652,7 @@ def search_ai_leads():
 
 
     
-    # NO RESULTS
+    
     
 
     if not google_results:
@@ -11668,7 +11665,7 @@ def search_ai_leads():
 
 
     
-    # LOAD AI LEAD FINDER PAGE
+    
     
 
     return render_template(
@@ -11739,7 +11736,7 @@ def search_ai_leads():
 
 
 
-# GET COMPANY FOR CURRENT USER
+
 
 
 def get_company_for_user(
@@ -11774,7 +11771,7 @@ def get_company_for_user(
 
 
 
-# GET LEADS FOR CURRENT USER
+
 
 
 def get_leads_for_user(
@@ -11809,7 +11806,7 @@ def get_leads_for_user(
 
 
 
-# GET TOTAL LEADS
+
 
 
 def get_lead_count(
@@ -11843,7 +11840,7 @@ def get_lead_count(
 
 
 
-# GET LEADS BY STATUS
+
 
 
 def get_lead_status_count(
@@ -11880,7 +11877,7 @@ def get_lead_status_count(
 
 
 
-# CHECK IF BUSINESS IS LIKELY A COMPETITOR
+
 
 
 def is_likely_competitor(lead, service):
@@ -11930,7 +11927,7 @@ def find_public_business_email(website_url):
             try:
                 if response.status_code >= 400:
                     return ""
-                # Read a small, bounded amount of homepage HTML only.
+                
                 chunks = []
                 total = 0
                 for chunk in response.iter_content(chunk_size=16384, decode_unicode=True):
@@ -12002,7 +11999,7 @@ def _lead_text_requests_service(text, service):
             return 0, ""
         except Exception as exc:
             print("QWEN LEAD INTENT CLASSIFICATION ERROR:", exc)
-            # Continue with the conservative local text classifier.
+            
 
     text = raw_text.lower()
     service = service.lower()
@@ -12061,8 +12058,8 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
     published_at = lead.get("published_at") or lead.get("post_published_at") or lead.get("listing_date")
     reasons, analysis_points = [], []
 
-    # A. Missing service/product information: a flexible opportunity signal.
-    # The existence of a website alone does not prove that offerings are listed.
+    
+    
     service_listing = (lead.get("services_offered") or lead.get("service_description") or lead.get("offering_evidence") or "").strip()
     if not service_listing and not source_text:
         missing_service_info_points = 40
@@ -12076,14 +12073,14 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
         missing_service_info_points = 0
         analysis_points.append("Public text includes service/product information, so no missing-offerings points were awarded.")
 
-    # B. Buying intent: only source text with actual evidence can earn points.
+    
     intent_points, intent_reason = _lead_text_requests_service(source_text, service)
     if intent_reason:
         reasons.append(intent_reason)
     else:
         analysis_points.append("No source text demonstrating a request to buy the selected service was available; buying-intent points are zero.")
 
-    # C. Recency: only use a source-provided timestamp.
+    
     recency_points = 0
     if published_at:
         try:
@@ -12099,7 +12096,7 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
     else:
         analysis_points.append("No original publication timestamp was available; no recency points were awarded.")
 
-    # D. Relevance is derived dynamically from the user's chosen search terms.
+    
     relevance_points = 0
     service_tokens = [w for w in re.findall(r"[a-z0-9]+", (service or "").lower()) if len(w) > 3]
     target_tokens = [w for w in re.findall(r"[a-z0-9]+", " ".join([target_industry or "", keywords or ""]).lower()) if len(w) > 3]
@@ -12112,7 +12109,7 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
 
     main_score = min(80, missing_service_info_points + intent_points + recency_points + relevance_points)
 
-    # Supplementary evidence: each supported criterion earns one point, capped at 20.
+    
     supplementary = 0
     supplementary_reasons = []
     def award(condition, label):
@@ -12183,7 +12180,7 @@ def qualify_lead_with_ai(lead, service, target_industry, target_location, busine
                                 "final_score": score, "supplementary_reasons": supplementary_reasons}}
 
 
-#saving the google leads
+
 @app.route("/save-google-lead", methods=["POST"])
 def save_google_lead():
 
@@ -12222,7 +12219,7 @@ def save_google_lead():
         cursor = db.cursor(dictionary=True)
 
         
-        # CHECK IF THIS GOOGLE LEAD IS ALREADY SAVED
+        
         
 
         cursor.execute("""
@@ -12239,7 +12236,7 @@ def save_google_lead():
         existing = cursor.fetchone()
 
         if existing:
-            # Enrich older saved records if the search has now found an email or website.
+            
             cursor.execute("""
                 UPDATE leads
                 SET
@@ -12261,7 +12258,7 @@ def save_google_lead():
 
 
         
-        # SAVE NEW LEAD
+        
         
 
         cursor.execute("""
@@ -12323,7 +12320,7 @@ def save_google_lead():
 
 
         
-        # RETURN JSON
+        
         
 
         return jsonify({
@@ -12355,15 +12352,15 @@ def save_google_lead():
         }), 500
     
 
-# ============================================================
-# BUSINESS ANALYTICS — COMPANY-SCOPED REPORTING
-# ============================================================
 
 
 
 
 
-# EASY GUIDE: Business Analytics page - shows business performance information.
+
+
+
+
 @app.route("/business-analytics", methods=["GET"])
 def business_analytics():
     """Display analytics based on the logged-in user's own business records."""
@@ -12374,7 +12371,7 @@ def business_analytics():
     start_date = request.args.get("start_date", "").strip()
     end_date = request.args.get("end_date", "").strip()
 
-    # Validate supplied date filters before they are used in comparisons.
+    
     try:
         if start_date:
             date.fromisoformat(start_date)
@@ -12405,7 +12402,7 @@ def business_analytics():
         if not company:
             return redirect(url_for("company_setup"))
 
-        # Fetch only records belonging to the currently authenticated user.
+        
         cursor.execute("""
             SELECT id, invoice_number, customer_name, customer_email, item_name,
                    invoice_date, due_date, amount, status, created_at
@@ -12512,7 +12509,7 @@ def business_analytics():
     paid_invoice_count = sum(1 for r in invoice_rows if r["_status"] in paid_statuses)
     unpaid_invoice_count = sum(1 for r in invoice_rows if r["_status"] in pending_statuses | overdue_statuses)
 
-    # Build the last six calendar months for the chart, with zeroes where no records exist.
+    
     today = date.today()
     month_starts = []
     year, month = today.year, today.month
@@ -12537,7 +12534,7 @@ def business_analytics():
         if day and day[:7] in expenses_by_month:
             expenses_by_month[day[:7]] += float(row.get("amount") or 0)
 
-    # Top customers are ranked by paid invoices in the selected date range.
+    
     top_customer_totals = {}
     for row in invoice_rows:
         if row["_status"] in paid_statuses:
@@ -12587,11 +12584,11 @@ def business_analytics():
         top_customers=top_customers,
         expense_breakdown=expense_breakdown,
         insights=insights,
-        # Keep the existing JSON variables for compatibility with the current template.
+        
         chart_labels=json.dumps(month_labels),
         revenue_chart=json.dumps([round(revenue_by_month[k], 2) for k in month_keys]),
         expenses_chart=json.dumps([round(expenses_by_month[k], 2) for k in month_keys]),
-        # Explicit JSON variables for the chart-data element approach in business_analytics.html.
+        
         chart_labels_json=json.dumps(month_labels).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026"),
         revenue_chart_json=json.dumps([round(revenue_by_month[k], 2) for k in month_keys]),
         expenses_chart_json=json.dumps([round(expenses_by_month[k], 2) for k in month_keys]),
@@ -12601,9 +12598,9 @@ def business_analytics():
     )
 
 
-# ============================================================
-# TRANSACTIONS MODULE — MANUAL + AUTOMATIC RECORDS
-# ============================================================
+
+
+
 
 
 def ensure_manual_transactions_table(cursor):
@@ -12632,7 +12629,7 @@ def ensure_manual_transactions_table(cursor):
 
 
 
-# EASY GUIDE: Transactions page - shows money coming in and going out.
+
 @app.route("/transactions", methods=["GET"])
 def transactions():
     if "user_id" not in session:
@@ -12658,7 +12655,7 @@ def transactions():
         cursor.execute("SELECT * FROM companies WHERE user_id = %s LIMIT 1", (user_id,))
         company = cursor.fetchone()
 
-        # Manual entries: users can add income, expenses, and investments.
+        
         cursor.execute("""
             SELECT id, transaction_type, title, category, amount,
                    transaction_date, payment_method, status, reference,
@@ -12682,7 +12679,7 @@ def transactions():
                 "can_delete": True
             })
 
-        # Automatically show existing invoices. Only Paid invoices count as received income.
+        
         cursor.execute("""
             SELECT id, invoice_number, customer_name, item_name, invoice_date,
                    due_date, amount, status, created_at
@@ -12704,9 +12701,9 @@ def transactions():
                 "can_delete": False
             })
 
-        # Automatically show expenses from the existing money-management module.
-        # Recurring-payment expenses are shown here once as expense rows; no extra
-        # recurring-payment table is added, preventing duplicate cash-out entries.
+        
+        
+        
         cursor.execute("""
             SELECT id, expense_name, category, amount, expense_date,
                    payment_method, description, recurring_payment_id
@@ -12739,8 +12736,8 @@ def transactions():
         if db:
             db.close()
 
-    # Apply filters to the combined ledger. Existing invoices/expenses are read-only here;
-    # edit them in their original modules so both screens stay in sync.
+    
+    
     filtered = []
     for item in records:
         item_date = (item.get("date") or "")[:10]
@@ -12761,7 +12758,7 @@ def transactions():
 
     filtered.sort(key=lambda x: x.get("date") or "", reverse=True)
 
-    # KPI totals use the full ledger, not the filtered results.
+    
     total_income = sum(x["amount"] for x in records if x["type"].lower() == "income" and x["status"].lower() == "paid")
     total_income += sum(x["amount"] for x in records if x["source"] == "Manual" and x["type"].lower() == "income" and x["status"].lower() == "completed")
     total_expenses = sum(x["amount"] for x in records if x["type"].lower() in ("expense", "investment") and x["status"].lower() == "completed")
@@ -12867,6 +12864,6 @@ def delete_manual_transaction(transaction_id):
     return redirect(url_for("transactions"))
 
 
-# RUN APP
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")

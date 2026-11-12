@@ -50865,7 +50865,427 @@
                 box-sizing: border-box;
             }
         }
+
+
+        /* =========================================================
+           FINAL UI REPAIR — INVENTMENT / RECURRING / INVOICE / OTIS
+           ========================================================= */
+
+        /* Keep inventory action buttons above section decoration and tappable. */
+        .module-items .section-header,
+        .module-items .section-header>div {
+            position: relative;
+            z-index: 2;
+        }
+
+        .module-items .section-header>button[onclick*="openInvestmentModal"],
+        .module-items .section-header>button[onclick*="openRecurringModal"] {
+            position: relative;
+            z-index: 5;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 11px 17px !important;
+            width: auto !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            white-space: nowrap;
+        }
+
+        /* Invoice/quotation action controls: restore readable labels and spacing. */
+        .module-invoice_view .actions,
+        .module-quotation_view .actions,
+        .invoice-view .actions,
+        .quotation-view .actions,
+        body:has(#quotationPaper) .actions {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            width: 100% !important;
+            margin: 0 0 20px !important;
+        }
+
+        .module-invoice_view .actions .btn,
+        .module-quotation_view .actions .btn,
+        body:has(#quotationPaper) .actions .btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 9px !important;
+            width: auto !important;
+            min-width: 44px !important;
+            min-height: 42px !important;
+            height: auto !important;
+            padding: 11px 16px !important;
+            border-radius: 10px !important;
+            font-family: Inter, sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            line-height: 1.25 !important;
+            white-space: nowrap !important;
+            text-decoration: none !important;
+            flex: 0 0 auto !important;
+        }
+
+        .module-invoice_view .actions .btn svg,
+        .module-quotation_view .actions .btn svg,
+        body:has(#quotationPaper) .actions .btn svg {
+            display: block !important;
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            flex: 0 0 18px !important;
+        }
+
+        .module-invoice_view .actions .button-label,
+        .module-quotation_view .actions .button-label,
+        body:has(#quotationPaper) .actions .button-label {
+            display: inline !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .module-invoice_view .actions .btn.primary,
+        .module-quotation_view .actions .btn.primary,
+        body:has(#quotationPaper) .actions .btn.primary {
+            background: linear-gradient(135deg, #6656d9, #4939b7) !important;
+            color: #fff !important;
+            border: 1px solid transparent !important;
+        }
+
+        .module-invoice_view .actions .btn.email-btn,
+        .module-quotation_view .actions .btn.email-btn,
+        body:has(#quotationPaper) .actions .btn.email-btn {
+            background: #fff !important;
+            color: #344054 !important;
+            border: 1px solid #d9dce8 !important;
+        }
+
+        .module-invoice_view .actions .btn.whatsapp-btn,
+        .module-quotation_view .actions .btn.whatsapp-btn,
+        body:has(#quotationPaper) .actions .btn.whatsapp-btn {
+            background: #eafaf0 !important;
+            color: #168447 !important;
+            border: 1px solid #bce8cc !important;
+        }
+
+        .module-invoice .actions,
+        .module-invoices .actions,
+        .invoice-list .actions,
+        .quotation-list .quote-actions {
+            display: flex !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 7px !important;
+        }
+
+        .module-invoice .actions .action,
+        .module-invoices .actions .action,
+        .invoice-list .actions .action,
+        .quotation-list .quote-actions .action {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 32px !important;
+            padding: 7px 10px !important;
+            font-size: 11px !important;
+            line-height: 1.25 !important;
+            white-space: nowrap !important;
+            cursor: pointer !important;
+        }
+
+        /* Otis — centered, spacious desktop dialog. */
+        #altairAIOverlay.altair-ai-overlay {
+            display: none;
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 99999 !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 24px !important;
+            background: rgba(5, 8, 20, .48) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+        }
+
+        #altairAIOverlay.altair-ai-overlay.is-open {
+            display: flex !important;
+        }
+
+        #altairAIOverlay .altair-ai-window {
+            width: min(1080px, calc(100vw - 48px)) !important;
+            height: min(780px, calc(100dvh - 48px)) !important;
+            max-width: 1080px !important;
+            max-height: calc(100dvh - 48px) !important;
+            min-height: 0 !important;
+            margin: auto !important;
+            border-radius: 24px !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 0 1 auto !important;
+            position: relative !important;
+        }
+
+        #altairAIOverlay .altair-ai-header {
+            flex: 0 0 auto !important;
+        }
+
+        #altairAIOverlay .altair-ai-stats {
+            flex: 0 0 auto !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        }
+
+        #altairAIOverlay .altair-ai-body {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr) !important;
+            align-items: stretch !important;
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+        }
+
+        #altairAIOverlay .altair-ai-main,
+        #altairAIOverlay .altair-ai-side {
+            min-width: 0 !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        #altairAIOverlay .advisor-welcome {
+            display: flex !important;
+            align-items: center !important;
+            gap: 14px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        #altairAIOverlay .advisor-welcome>div:last-child,
+        #altairAIOverlay .advisor-welcome p,
+        #altairAIOverlay .advisor-recommendation p,
+        #altairAIOverlay .focus-item p {
+            min-width: 0 !important;
+            overflow-wrap: anywhere !important;
+            word-break: normal !important;
+            line-height: 1.55 !important;
+        }
+
+        #altairAIOverlay .advisor-welcome h3 {
+            font-size: clamp(15px, 1.5vw, 20px) !important;
+            line-height: 1.3 !important;
+            overflow-wrap: anywhere !important;
+        }
+
+        #altairAIOverlay .advisor-welcome p,
+        #altairAIOverlay .advisor-recommendation p,
+        #altairAIOverlay .focus-item p {
+            font-size: 13px !important;
+            color: #aeb8cc !important;
+        }
+
+        #altairAIOverlay .advisor-section-title strong,
+        #altairAIOverlay .advisor-side-title {
+            font-size: 14px !important;
+        }
+
+        #altairAIOverlay .advisor-intelligence span,
+        #altairAIOverlay .advisor-intelligence strong,
+        #altairAIOverlay .focus-item strong {
+            font-size: 12px !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-area {
+            position: relative !important;
+            flex: 0 0 auto !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper {
+            min-height: 54px !important;
+            height: auto !important;
+        }
+
+        #altairAIOverlay .altair-ai-input-wrapper input {
+            font-size: 14px !important;
+            min-height: 42px !important;
+        }
+
+        #altairAIOverlay .altair-send-button {
+            min-height: 42px !important;
+            font-size: 12px !important;
+        }
+
+        /* Mobile: Otis becomes a true full-screen assistant, not a small popup. */
+        @media (max-width: 760px) {
+            #altairAIOverlay.altair-ai-overlay {
+                inset: 0 !important;
+                width: 100vw !important;
+                height: 100dvh !important;
+                padding: 0 !important;
+                align-items: stretch !important;
+                justify-content: stretch !important;
+                background: #090d1a !important;
+            }
+
+            #altairAIOverlay .altair-ai-window {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                min-height: 100dvh !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+
+            #altairAIOverlay .altair-ai-header {
+                min-height: 68px !important;
+                padding: 10px 15px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                padding: 10px 12px !important;
+                gap: 8px !important;
+            }
+
+            #altairAIOverlay .altair-ai-stat {
+                min-width: 0 !important;
+                padding: 10px !important;
+            }
+
+            #altairAIOverlay .altair-ai-body {
+                display: flex !important;
+                flex: 1 1 auto !important;
+                min-height: 0 !important;
+                padding: 12px !important;
+                overflow: hidden !important;
+            }
+
+            #altairAIOverlay .altair-ai-main {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                overflow-y: auto !important;
+            }
+
+            #altairAIOverlay .altair-ai-side {
+                display: none !important;
+            }
+
+            #altairAIOverlay .advisor-welcome {
+                align-items: flex-start !important;
+                padding: 13px !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid button {
+                min-height: 44px !important;
+                font-size: 11px !important;
+                line-height: 1.35 !important;
+            }
+
+            #altairAIOverlay .altair-chat-messages,
+            #altairAIOverlay #altairChatMessages {
+                flex: 1 1 auto !important;
+                min-height: 90px !important;
+                overflow-y: auto !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-area {
+                padding: 10px 12px calc(12px + env(safe-area-inset-bottom)) !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-wrapper {
+                display: flex !important;
+                width: 100% !important;
+                gap: 8px !important;
+                padding: 5px 6px 5px 11px !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-wrapper input {
+                width: 100% !important;
+                min-width: 0 !important;
+                font-size: 16px !important;
+            }
+
+            #altairAIOverlay .altair-ai-input-area small {
+                font-size: 10px !important;
+                line-height: 1.4 !important;
+            }
+        }
+
+        @media (max-width: 380px) {
+            #altairAIOverlay .altair-ai-header {
+                padding-left: 11px !important;
+                padding-right: 11px !important;
+            }
+
+            #altairAIOverlay .advisor-question-grid {
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            #altairAIOverlay .altair-ai-stat span {
+                font-size: 9px !important;
+                line-height: 1.3 !important;
+            }
+        }
     </style>
+
+
+    <script>
+        /* ABS interaction repair: make the investment and recurring-payment launchers reliable
+           even if another module script has scoped or failed to expose its inline handler. */
+        (function () {
+            "use strict";
+
+            document.addEventListener("click", function (event) {
+                const investmentButton = event.target.closest('button[onclick*="openInvestmentModal"]');
+                const recurringButton = event.target.closest('button[onclick*="openRecurringModal"]');
+                const button = investmentButton || recurringButton;
+                if (!button) return;
+
+                const modalId = investmentButton ? "investmentModal" : "recurringModal";
+                const modal = document.getElementById(modalId);
+                if (!modal) {
+                    console.error("ABS modal not found:", modalId);
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                const dateIds = investmentButton
+                    ? ["investmentDate"]
+                    : ["recurringStartDate", "recurringNextDate"];
+
+                const today = new Date();
+                const localToday = [
+                    today.getFullYear(),
+                    String(today.getMonth() + 1).padStart(2, "0"),
+                    String(today.getDate()).padStart(2, "0")
+                ].join("-");
+
+                dateIds.forEach(function (id) {
+                    const field = document.getElementById(id);
+                    if (field && !field.value) field.value = localToday;
+                });
+
+                modal.classList.add("show");
+                modal.setAttribute("aria-hidden", "false");
+                document.body.classList.add("modal-open");
+            }, true);
+        })();
+    </script>
 
 </body>
 
