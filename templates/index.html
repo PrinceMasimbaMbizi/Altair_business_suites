@@ -36437,7 +36437,8 @@
             id="appSidebar" aria-label="Main navigation">
             <div class="company-brand">
                 {% if company and company.logo %}
-                <img src="{{ url_for('company_logo') }}" alt="{{ company.company_name }}" class="company-logo-image"
+                <img src="{{ company.logo if company and company.logo and company.logo.startswith('http') else url_for('company_logo') }}"
+                    alt="{{ company.company_name }}" class="company-logo-image"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="company-logo-placeholder" style="display:none;">
                     {{ company.company_name[0]|upper if company and company.company_name else 'A' }}
@@ -37548,8 +37549,8 @@
 
                             {% if company and company.get('logo') %}
 
-                            <img src="{{ url_for('company_logo') }}" alt="Company logo"
-                                onerror="this.style.display='none';">
+                            <img src="{{ company.logo if company and company.logo and company.logo.startswith('http') else url_for('company_logo') }}"
+                                alt="Company logo" onerror="this.style.display='none';">
 
                             {% else %}
 
@@ -39065,8 +39066,10 @@
                     data-company="{{ company.company_name if company and company.company_name else 'Altair Business Suite' }}">
                     <header class="header">
                         <div class="brand">
-                            {% if company and company.logo %}<img src="{{ url_for('company_logo') }}" alt="Company logo"
-                                onerror="this.style.display='none'">{% else %}<div class="placeholder">{{
+                            {% if company and company.logo %}<img
+                                src="{{ company.logo if company and company.logo and company.logo.startswith('http') else url_for('company_logo') }}"
+                                alt="Company logo" onerror="this.style.display='none'">{% else %}<div
+                                class="placeholder">{{
                                 company.company_name[0]|upper if company and company.company_name else 'A' }}</div>{%
                             endif %}
                             <div>
@@ -39183,7 +39186,8 @@
                     <header class="header">
                         <div class="brand">
                             {% if company and company.logo %}
-                            <img src="{{ url_for('company_logo') }}" alt="Company logo"
+                            <img src="{{ company.logo if company and company.logo and company.logo.startswith('http') else url_for('company_logo') }}"
+                                alt="Company logo"
                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                             <div class="placeholder" style="display:none">{{ company.company_name[0]|upper if
                                 company.company_name else
@@ -39312,8 +39316,12 @@
 
                         {% if company and company.logo %}
 
-                        <img src="{{ url_for('company_logo') }}" class="company-logo"
-                            alt="{{ company.company_name|default('Company') }}">
+                        <img src="{{ company.logo if company and company.logo and company.logo.startswith('http') else url_for('company_logo') }}"
+                            class="company-logo" alt="{{ company.company_name|default('Company') }}"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="company-logo-placeholder" style="display:none;">
+                            {{ company.company_name[0]|upper if company.company_name else 'A' }}
+                        </div>
 
                         {% elif company %}
 
