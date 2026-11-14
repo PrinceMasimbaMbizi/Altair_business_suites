@@ -7377,6 +7377,29 @@
             font-size: 11px
         }
 
+        .available-funds-card {
+            border-color: rgba(22, 163, 74, .24);
+            background: linear-gradient(145deg, #f0fff6, #fff);
+        }
+
+        .available-funds-card strong {
+            color: #15803d;
+        }
+
+        .loan-profit-report {
+            margin: 20px 0;
+        }
+
+        .loan-profit-report select {
+            min-width: 0;
+            border: 1px solid #dfe2ed;
+            border-radius: 9px;
+            padding: 11px 12px;
+            background: #fff;
+            color: #24243a;
+            font: 12px Inter, sans-serif;
+        }
+
         .loan-summary-card strong {
             display: block;
             color: #22233a;
@@ -40278,6 +40301,54 @@
 
                     </div>
 
+
+                    <div class="modal" id="investmentModal" aria-hidden="true" role="dialog" aria-modal="true"
+                        aria-labelledby="investmentModalTitle">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <div>
+                                    <h2 id="investmentModalTitle">Add Investment</h2>
+                                    <p>Record money invested in an asset, project or opportunity.</p>
+                                </div>
+                                <button type="button" class="altair-ai-close" aria-label="Close"
+                                    onclick="closeInvestmentModal()">×</button>
+                            </div>
+                            <form method="POST" action="/investments/add" class="modal-body">
+                                <div class="form-grid">
+                                    <label>Investment name
+                                        <input name="investment_name" type="text" required
+                                            placeholder="e.g. Equipment purchase">
+                                    </label>
+                                    <label>Amount
+                                        <input name="amount" type="number" min="0.01" step="0.01" required>
+                                    </label>
+                                    <label>Investment type
+                                        <input name="investment_type" type="text"
+                                            placeholder="e.g. Asset, Project, Shares">
+                                    </label>
+                                    <label>Date
+                                        <input id="investmentDate" name="investment_date" type="date" required>
+                                    </label>
+                                    <label>Status
+                                        <select name="status">
+                                            <option>Active</option>
+                                            <option>Completed</option>
+                                            <option>Paused</option>
+                                            <option>Inactive</option>
+                                        </select>
+                                    </label>
+                                    <label>Description
+                                        <input name="description" type="text" placeholder="Optional details">
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" onclick="closeInvestmentModal()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Investment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                 </section>
 
 
@@ -40584,6 +40655,65 @@
 
                     {% endif %}
 
+
+                    <div class="modal" id="recurringModal" aria-hidden="true" role="dialog" aria-modal="true"
+                        aria-labelledby="recurringModalTitle">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <div>
+                                    <h2 id="recurringModalTitle">Add Recurring Payment</h2>
+                                    <p>Set up a payment that repeats on a schedule.</p>
+                                </div>
+                                <button type="button" class="altair-ai-close" aria-label="Close"
+                                    onclick="closeRecurringModal()">×</button>
+                            </div>
+                            <form method="POST" action="/recurring-payments/add" class="modal-body">
+                                <div class="form-grid">
+                                    <label>Payment name
+                                        <input name="payment_name" type="text" required placeholder="e.g. Office rent">
+                                    </label>
+                                    <label>Amount
+                                        <input name="amount" type="number" min="0.01" step="0.01" required>
+                                    </label>
+                                    <label>Category
+                                        <input name="category" type="text" placeholder="e.g. Rent, Utilities, Software">
+                                    </label>
+                                    <label>Frequency
+                                        <select name="frequency" required>
+                                            <option>Daily</option>
+                                            <option>Weekly</option>
+                                            <option selected>Monthly</option>
+                                            <option>Quarterly</option>
+                                            <option>Yearly</option>
+                                        </select>
+                                    </label>
+                                    <label>Start date
+                                        <input id="recurringStartDate" name="start_date" type="date" required>
+                                    </label>
+                                    <label>Next payment date
+                                        <input id="recurringNextDate" name="next_payment_date" type="date" required>
+                                    </label>
+                                    <label>Payment method
+                                        <select name="payment_method">
+                                            <option>Cash</option>
+                                            <option>Bank Transfer</option>
+                                            <option>Card</option>
+                                            <option>Mobile Money</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </label>
+                                    <label>Description
+                                        <input name="description" type="text" placeholder="Optional details">
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" onclick="closeRecurringModal()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Recurring Payment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                 </section>
 
 
@@ -40807,9 +40937,9 @@
                     </div>
 
                     <div class="loan-summary-grid">
-                        <div class="loan-summary-card"><span>Total Disbursed</span><strong>R{{
-                                total_loans_issued|default(0)|money }}</strong><small>Actual money given to
-                                borrowers</small></div>
+                        <div class="loan-summary-card available-funds-card"><span>Available Funds</span><strong>R{{
+                                available_loan_funds|default(0)|money }}</strong><small>Investment capital + principal
+                                recovered − money disbursed</small></div>
                         <div class="loan-summary-card"><span>Principal Recovered</span><strong>R{{
                                 total_principal_recovered|default(0)|money }}</strong><small>Principal returned</small>
                         </div>
@@ -41125,6 +41255,71 @@
                             </div>
                             <div><span>Interest still outstanding</span><strong>R{{ outstanding_interest|money
                                     }}</strong></div>
+                        </div>
+
+                        <div class="monthly-interest-report loan-profit-report">
+                            <div class="monthly-interest-report-heading">
+                                <div>
+                                    <h4>Loan Profit by Custom Monthly Period</h4>
+                                    <p>Choose a date range and the day your financial month begins. For example, day 5
+                                        groups income from the 5th of one month up to the 5th of the next month.</p>
+                                </div>
+                                <div class="monthly-interest-total">
+                                    <span>Total profit in selected range</span>
+                                    <strong>R{{ loan_period_profit_total|default(0)|money }}</strong>
+                                </div>
+                            </div>
+                            <form method="GET" action="{{ url_for('items') }}" class="interest-date-filter"
+                                onsubmit="localStorage.setItem('absOpenLoanPanel','interest')">
+                                <label>Report from<input type="date" name="profit_start" value="{{ profit_start }}"
+                                        required></label>
+                                <label>Report to<input type="date" name="profit_end" value="{{ profit_end }}"
+                                        required></label>
+                                <label>Monthly cycle starts on
+                                    <select name="profit_cycle_day">
+                                        {% for day in range(1, 32) %}
+                                        <option value="{{ day }}" {% if day==profit_cycle_day %}selected{% endif %}>Day
+                                            {{ day }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <button type="submit">Calculate profit</button>
+                            </form>
+                            <div class="table-container loan-table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Profit period</th>
+                                            <th>Interest received</th>
+                                            <th>Penalties received</th>
+                                            <th>Total profit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for period in loan_profit_periods %}
+                                        <tr>
+                                            <td>{{ period.label }}</td>
+                                            <td>R{{ period.interest|money }}</td>
+                                            <td>R{{ period.penalties|money }}</td>
+                                            <td><strong>R{{ period.profit|money }}</strong></td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="4" class="loan-empty">No loan profit recorded for this date
+                                                range.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <th>R{{ loan_period_interest_total|money }}</th>
+                                            <th>R{{ loan_period_penalty_total|money }}</th>
+                                            <th>R{{ loan_period_profit_total|money }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- MONTHLY INTEREST REPORT AND DATE-RANGE FILTER -->
@@ -47045,7 +47240,7 @@
             }
 
             modal.classList.add("show");
-
+            modal.setAttribute("aria-hidden", "false");
             document.body.classList.add("modal-open");
 
         }
@@ -47060,6 +47255,7 @@
             }
 
             modal.classList.remove("show");
+            modal.setAttribute("aria-hidden", "true");
 
             const anyOpen = document.querySelector(".modal.show");
 

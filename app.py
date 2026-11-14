@@ -8665,6 +8665,11 @@ def items():
             FROM business_loans WHERE user_id = %s
         """, (user_id,))
         loan_stats = cursor.fetchone() or {}
+        total_lending_capital = float(total_investments or 0)
+        principal_returned = float(loan_stats.get("total_principal_recovered") or 0)
+        principal_disbursed = float(loan_stats.get("total_loans_issued") or 0)
+        available_loan_funds = max(0.0, total_lending_capital + principal_returned - principal_disbursed)
+
 
         
         
@@ -8723,6 +8728,74 @@ def items():
 
         
         
+        profit_start = date(today.year, 1, 1)
+        profit_end = today
+        profit_cycle_day = 1
+        try:
+            if request.args.get("profit_start"):
+                profit_start = date.fromisoformat(request.args["profit_start"])
+            if request.args.get("profit_end"):
+                profit_end = date.fromisoformat(request.args["profit_end"])
+            profit_cycle_day = int(request.args.get("profit_cycle_day", "1"))
+            if not 1 <= profit_cycle_day <= 31:
+                raise ValueError("Invalid cycle day")
+            if profit_start > profit_end:
+                profit_start, profit_end = profit_end, profit_start
+        except (TypeError, ValueError):
+            profit_start, profit_end, profit_cycle_day = date(today.year, 1, 1), today, 1
+
+        cursor.execute("""
+            SELECT payment_date, COALESCE(SUM(interest_paid),0) AS interest_amount,
+                   COALESCE(SUM(penalty_paid),0) AS penalty_amount
+            FROM business_loan_repayments
+            WHERE user_id=%s AND payment_date >= %s AND payment_date <= %s
+            GROUP BY payment_date ORDER BY payment_date
+        """, (user_id, profit_start, profit_end))
+        profit_payment_rows = cursor.fetchall() or []
+
+        def cycle_date(year, month, day_number):
+            return date(year, month, min(day_number, calendar.monthrange(year, month)[1]))
+
+        anchor = cycle_date(profit_start.year, profit_start.month, profit_cycle_day)
+        if anchor > profit_start:
+            previous_month = 12 if profit_start.month == 1 else profit_start.month - 1
+            previous_year = profit_start.year - 1 if profit_start.month == 1 else profit_start.year
+            anchor = cycle_date(previous_year, previous_month, profit_cycle_day)
+
+        loan_profit_periods = []
+        period_interest_total = period_penalty_total = 0.0
+        while anchor <= profit_end:
+            next_month = 1 if anchor.month == 12 else anchor.month + 1
+            next_year = anchor.year + 1 if anchor.month == 12 else anchor.year
+            next_anchor = cycle_date(next_year, next_month, profit_cycle_day)
+            interest_amount = penalty_amount = 0.0
+            for payment in profit_payment_rows:
+                payment_day = payment.get("payment_date")
+                if isinstance(payment_day, datetime):
+                    payment_day = payment_day.date()
+                elif isinstance(payment_day, str):
+                    try:
+                        payment_day = date.fromisoformat(payment_day[:10])
+                    except ValueError:
+                        continue
+                if payment_day and anchor <= payment_day < next_anchor:
+                    interest_amount += float(payment.get("interest_amount") or 0)
+                    penalty_amount += float(payment.get("penalty_amount") or 0)
+            if next_anchor > profit_start and anchor <= profit_end:
+                period_interest_total += interest_amount
+                period_penalty_total += penalty_amount
+                loan_profit_periods.append({
+                    "label": f"{anchor.strftime('%d %b %Y')} – {next_anchor.strftime('%d %b %Y')}",
+                    "interest": round(interest_amount, 2),
+                    "penalties": round(penalty_amount, 2),
+                    "profit": round(interest_amount + penalty_amount, 2)
+                })
+            anchor = next_anchor
+
+        loan_period_interest_total = round(period_interest_total, 2)
+        loan_period_penalty_total = round(period_penalty_total, 2)
+        loan_period_profit_total = round(period_interest_total + period_penalty_total, 2)
+
 
         return render_template(
             "items.html",
@@ -8770,6 +8843,14 @@ def items():
             loan_repayments=loan_repayments,
             overdue_loans=overdue_loans,
             total_loans_issued=loan_stats.get("total_loans_issued", 0),
+            available_loan_funds=available_loan_funds,
+            profit_start=profit_start.isoformat(),
+            profit_end=profit_end.isoformat(),
+            profit_cycle_day=profit_cycle_day,
+            loan_profit_periods=loan_profit_periods,
+            loan_period_interest_total=loan_period_interest_total,
+            loan_period_penalty_total=loan_period_penalty_total,
+            loan_period_profit_total=loan_period_profit_total,
             total_principal_recovered=loan_stats.get("total_principal_recovered", 0),
             outstanding_principal=loan_stats.get("outstanding_principal", 0),
             interest_collected_total=loan_stats.get("interest_collected_total", 0),
@@ -8853,7 +8934,12 @@ def items():
             
             loan_records=[], loan_applications=[], approved_loans=[],
             disbursed_loans=[], loan_repayments=[], overdue_loans=[],
-            total_loans_issued=0, total_principal_recovered=0,
+            total_loans_issued=0, available_loan_funds=0,
+            profit_start=date(date.today().year, 1, 1).isoformat(),
+            profit_end=date.today().isoformat(), profit_cycle_day=1,
+            loan_profit_periods=[], loan_period_interest_total=0,
+            loan_period_penalty_total=0, loan_period_profit_total=0,
+            total_principal_recovered=0,
             outstanding_principal=0, interest_collected_total=0,
             outstanding_interest=0, overdue_amount=0, active_loan_count=0,
             monthly_interest_report=[], monthly_interest_total=0,
