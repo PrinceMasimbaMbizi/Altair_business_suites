@@ -38191,6 +38191,125 @@
 
 
 
+
+                <!-- INVOICE CREATION MODAL -->
+                <div id="createModal" class="altair-document-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="createInvoiceTitle">
+                    <div class="altair-document-modal-card">
+                        <div class="altair-document-modal-header">
+                            <div>
+                                <h2 id="createInvoiceTitle">Create Invoice</h2>
+                                <p>Enter the customer and invoice details below.</p>
+                            </div>
+                            <button type="button" class="altair-modal-close" onclick="closeCreateModal()" aria-label="Close">&times;</button>
+                        </div>
+                        <form method="POST" action="{{ url_for('create_invoice') }}" class="altair-document-form">
+                            <div class="altair-form-grid">
+                                <label>Customer name *
+                                    <input type="text" name="customer_name" maxlength="255" required placeholder="Customer's full name">
+                                </label>
+                                <label>Customer email
+                                    <input type="email" name="customer_email" maxlength="254" placeholder="customer@example.com">
+                                </label>
+                                <label class="altair-form-full">Item / service description *
+                                    <input type="text" name="item_name" required placeholder="e.g. Website development or Business loan">
+                                </label>
+                                <label>Invoice amount *
+                                    <input type="number" name="amount" min="0.01" step="0.01" required placeholder="0.00">
+                                </label>
+                                <label>Due date
+                                    <input type="date" name="due_date">
+                                </label>
+                                <label class="altair-form-full">Notes
+                                    <textarea name="notes" rows="3" placeholder="Optional notes for this invoice"></textarea>
+                                </label>
+                            </div>
+                            <div class="altair-document-form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Invoice</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- QUOTATION CREATION MODAL -->
+                <div id="quotationModal" class="altair-document-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="createQuotationTitle" aria-hidden="true">
+                    <div class="altair-document-modal-card">
+                        <div class="altair-document-modal-header">
+                            <div>
+                                <h2 id="createQuotationTitle">Create Quotation</h2>
+                                <p>Prepare a price quotation for your customer.</p>
+                            </div>
+                            <button type="button" class="altair-modal-close" onclick="closeQuotationModal()" aria-label="Close">&times;</button>
+                        </div>
+                        <form method="POST" action="{{ url_for('create_quotation') }}" class="altair-document-form">
+                            <div class="altair-form-grid">
+                                <label>Customer name *
+                                    <input type="text" name="customer_name" maxlength="255" required placeholder="Customer's full name">
+                                </label>
+                                <label>Customer email
+                                    <input type="email" name="customer_email" maxlength="254" placeholder="customer@example.com">
+                                </label>
+                                <label>Customer phone
+                                    <input type="text" name="customer_phone" maxlength="50" placeholder="Phone number">
+                                </label>
+                                <label>Quotation date
+                                    <input type="date" name="quotation_date" id="quotationDate">
+                                </label>
+                                <label class="altair-form-full">Description *
+                                    <input type="text" name="description" required placeholder="Describe the product or service">
+                                </label>
+                                <label>Quantity *
+                                    <input type="number" name="quantity" id="quotationQuantity" min="0.01" step="0.01" value="1" required>
+                                </label>
+                                <label>Unit price *
+                                    <input type="number" name="unit_price" id="quotationUnitPrice" min="0" step="0.01" value="0" required>
+                                </label>
+                                <label>Discount (%)
+                                    <input type="number" name="discount_percent" id="quotationDiscount" min="0" max="100" step="0.01" value="0">
+                                </label>
+                                <label>Tax (%)
+                                    <input type="number" name="tax_percent" id="quotationTax" min="0" max="100" step="0.01" value="0">
+                                </label>
+                                <label>Valid until
+                                    <input type="date" name="valid_until" id="quotationValidUntil">
+                                </label>
+                                <label class="altair-form-full">Terms
+                                    <textarea name="terms" rows="2" placeholder="Optional payment or service terms"></textarea>
+                                </label>
+                                <label class="altair-form-full">Notes
+                                    <textarea name="notes" rows="2" placeholder="Optional notes"></textarea>
+                                </label>
+                            </div>
+                            <div class="altair-quotation-preview">
+                                <div>Subtotal: <strong id="quotationSubtotalPreview">0.00</strong></div>
+                                <div>Discount: <strong id="quotationDiscountPreview">0.00</strong></div>
+                                <div class="altair-quotation-total">Total: <strong id="quotationTotalPreview">0.00</strong></div>
+                            </div>
+                            <div class="altair-document-form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="closeQuotationModal()">Cancel</button>
+                                <button type="submit" class="btn btn-quotation">Save Quotation</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <style>
+                    .altair-document-modal{position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:20px;background:rgba(8,10,25,.68);backdrop-filter:blur(5px);overflow-y:auto}
+                    .altair-document-modal-card{width:min(720px,100%);max-height:calc(100vh - 40px);overflow-y:auto;background:var(--card-bg,#fff);color:var(--text-color,#171923);border-radius:18px;padding:24px;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+                    .altair-document-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:20px}
+                    .altair-document-modal-header h2{margin:0 0 5px;font-size:22px}.altair-document-modal-header p{margin:0;opacity:.7;font-size:13px}
+                    .altair-modal-close{border:0;background:transparent;font-size:28px;line-height:1;cursor:pointer;color:inherit}
+                    .altair-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+                    .altair-document-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600}
+                    .altair-document-form input,.altair-document-form textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid rgba(130,140,160,.35);border-radius:9px;background:transparent;color:inherit;font:inherit;font-weight:400}
+                    .altair-document-form input:focus,.altair-document-form textarea:focus{outline:2px solid rgba(99,102,241,.25);border-color:#6366f1}
+                    .altair-form-full{grid-column:1/-1}
+                    .altair-document-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap}
+                    .altair-quotation-preview{display:flex;justify-content:flex-end;gap:22px;flex-wrap:wrap;margin-top:18px;padding:14px;border-radius:10px;background:rgba(99,102,241,.07);font-size:13px}
+                    .altair-quotation-total{font-size:15px}
+                    @media(max-width:560px){.altair-document-modal{padding:10px}.altair-document-modal-card{padding:17px;max-height:calc(100vh - 20px)}.altair-form-grid{grid-template-columns:1fr}.altair-form-full{grid-column:auto}.altair-quotation-preview{justify-content:space-between;gap:10px}}
+                </style>
+
                 <!-- 
              FLASH MESSAGES
          -->
@@ -46826,6 +46945,11 @@
             modal.setAttribute("aria-hidden", "true");
         }
 
+        window.addEventListener("click", function (event) {
+            const modal = document.getElementById("quotationModal");
+            if (modal && event.target === modal) closeQuotationModal();
+        });
+
         function calculateQuotationTotal() {
             const quantity = Math.max(0, Number(document.getElementById("quotationQuantity")?.value || 0));
             const unitPrice = Math.max(0, Number(document.getElementById("quotationUnitPrice")?.value || 0));
@@ -46852,20 +46976,13 @@
         });
 
         function openCreateModal() {
-
-            document.getElementById(
-                "createModal"
-            ).style.display = "flex";
-
+            const modal = document.getElementById("createModal");
+            if (modal) modal.style.display = "flex";
         }
 
-
         function closeCreateModal() {
-
-            document.getElementById(
-                "createModal"
-            ).style.display = "none";
-
+            const modal = document.getElementById("createModal");
+            if (modal) modal.style.display = "none";
         }
 
 
@@ -46905,12 +47022,9 @@
             "keydown",
             function (event) {
 
-                if (
-                    event.key === "Escape"
-                ) {
-
+                if (event.key === "Escape") {
                     closeCreateModal();
-
+                    closeQuotationModal();
                 }
 
             }
@@ -51493,4 +51607,4 @@
 
 </body>
 
-</html>
+</html>SS
